@@ -1,4 +1,5 @@
 using CmsContentBuilder.Optimizely.Extensions;
+using CmsContentBuilder.Optimizely.Models;
 using CmsContentBuilder.Optimizely.Startup;
 using EPiServer;
 using EPiServer.Cms.UI.AspNetIdentity;
@@ -51,7 +52,8 @@ public class OptimizelyTests
                     builder.UseCmsContentBuilder(
                         builderOptions: new CmsContentApplicationBuilderOptions
                         {
-                            DefaultLanguage = "sr-RS"
+                            DefaultLanguage = "sr-RS",
+                            BuildMode = BuildModeEnum.OnlyIfEmpty
                         },
                         builder: contentBuilder =>
                         {
