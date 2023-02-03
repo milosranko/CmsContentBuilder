@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Piranha" Version="10.3.0" />
+    <PackageReference Include="Piranha.AspNetCore" Version="10.3.0" />
+    <PackageReference Include="Piranha.AspNetCore.Identity" Version="10.3.0" />
+    <PackageReference Include="Piranha.AspNetCore.Identity.SQLite" Version="10.3.0" />
+    <PackageReference Include="Piranha.AttributeBuilder" Version="10.3.0" />
+    <PackageReference Include="Piranha.Data.EF" Version="10.3.0" />
+    <PackageReference Include="Piranha.Data.EF.SQLite" Version="10.3.0" />
+    <PackageReference Include="Piranha.Local.FileStorage" Version="10.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CmsContentBuilder.Shared.Resources\CmsContentBuilder.Shared.Resources.csproj" />
+  </ItemGroup>
+
+</Project>
