@@ -1,8 +1,10 @@
 ﻿using CmsContentBuilder.Optimizely.Interfaces;
+using CmsContentBuilder.Optimizely.Startup;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Security;
+using System.Globalization;
 
 namespace CmsContentBuilder.Optimizely.Builders;
 
@@ -10,17 +12,19 @@ public class PageContentBuilder : IPageContentBuilder
 {
     private readonly PageData _parent;
     private readonly IContentRepository _contentRepository;
+    private readonly CmsContentApplicationBuilderOptions _options;
 
-    public PageContentBuilder(IContentRepository contentRepository, PageData parent)
+    public PageContentBuilder(IContentRepository contentRepository, PageData parent, CmsContentApplicationBuilderOptions options)
     {
         _parent = parent;
         _contentRepository = contentRepository;
+        _options = options;
     }
 
     public void WithSubPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)
         where T : PageData
     {
-        var page = _contentRepository.GetDefault<T>(_parent.ContentLink);
+        var page = _contentRepository.GetDefault<T>(_parent.ContentLink, new CultureInfo(_options.DefaultLanguage));
         value?.Invoke(page);
 
         if (string.IsNullOrEmpty(page.Name))
@@ -32,7 +36,7 @@ public class PageContentBuilder : IPageContentBuilder
 
         if (options == null) return;
 
-        var pageContentBuilder = new PageContentBuilder(_contentRepository, page);
+        var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
         options.Invoke(pageContentBuilder);
     }
 
@@ -46,7 +50,7 @@ public class PageContentBuilder : IPageContentBuilder
 
         for (int i = 0; i < totalPages; i++)
         {
-            page = _contentRepository.GetDefault<T>(_parent.ContentLink);
+            page = _contentRepository.GetDefault<T>(_parent.ContentLink, new CultureInfo(_options.DefaultLanguage));
             value?.Invoke(page);
 
             if (string.IsNullOrEmpty(page.Name))

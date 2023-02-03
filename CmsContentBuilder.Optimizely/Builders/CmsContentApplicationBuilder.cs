@@ -4,6 +4,7 @@ using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Security;
+using System.Globalization;
 using System.Reflection;
 
 namespace CmsContentBuilder.Optimizely.Builders;
@@ -22,7 +23,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
     public void WithPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)
         where T : PageData
     {
-        var page = _contentRepository.GetDefault<T>(ContentReference.RootPage);
+        var page = _contentRepository.GetDefault<T>(ContentReference.RootPage, new CultureInfo(_options.DefaultLanguage));
 
         InitContentAreas(page);
 
@@ -37,7 +38,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
 
         if (options == null) return;
 
-        var pageContentBuilder = new PageContentBuilder(_contentRepository, page);
+        var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
         options?.Invoke(pageContentBuilder);
     }
 
@@ -51,7 +52,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
 
         for (int i = 0; i < totalPages; i++)
         {
-            page = _contentRepository.GetDefault<T>(ContentReference.RootPage);
+            page = _contentRepository.GetDefault<T>(ContentReference.RootPage, new CultureInfo(_options.DefaultLanguage));
             value?.Invoke(page);
 
             if (string.IsNullOrEmpty(page.Name))
