@@ -53,7 +53,9 @@ public class OptimizelyTests
                         builderOptions: new CmsContentApplicationBuilderOptions
                         {
                             DefaultLanguage = "sr-RS",
-                            BuildMode = BuildModeEnum.OnlyIfEmpty
+                            BuildMode = BuildModeEnum.OnlyIfEmpty,
+                            RootPage = ContentReference.RootPage,
+                            BlocksDefaultPlacement = BlocksDefaultPlacementEnum.ParentPage
                         },
                         builder: contentBuilder =>
                         {
@@ -72,6 +74,7 @@ public class OptimizelyTests
                                 level1.WithSubPage<ArticlePage>(page =>
                                 {
                                     page.Name = "Article1_1";
+                                    page.MainContent = PropertyHelpers.AddRandomHtml();
                                 }, level2 =>
                                 {
                                     level2.WithSubPage<ArticlePage>(page =>

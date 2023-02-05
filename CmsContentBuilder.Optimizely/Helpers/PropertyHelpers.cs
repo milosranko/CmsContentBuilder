@@ -15,9 +15,9 @@ public static class PropertyHelpers
         return ResourceHelpers.GetText().Substring(0, maxLength);
     }
 
-    public static string AddRandomHtml()
+    public static XhtmlString AddRandomHtml()
     {
-        return ResourceHelpers.GetHtmlText();
+        return new XhtmlString(ResourceHelpers.GetHtmlText());
     }
 
     public static MediaData AddRandomImage()
