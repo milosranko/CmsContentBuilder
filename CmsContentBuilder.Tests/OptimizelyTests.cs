@@ -1,5 +1,4 @@
 using CmsContentBuilder.Optimizely.Extensions;
-using CmsContentBuilder.Optimizely.Models;
 using CmsContentBuilder.Optimizely.Startup;
 using EPiServer;
 using EPiServer.Cms.UI.AspNetIdentity;
@@ -47,16 +46,16 @@ public class OptimizelyTests
             })
             .ConfigureWebHostDefaults(config =>
             {
-                config.Configure(builder =>
+                config.Configure(appBuilder =>
                 {
-                    builder.UseCmsContentBuilder(
-                        builderOptions: new CmsContentApplicationBuilderOptions
-                        {
-                            DefaultLanguage = "sr-RS",
-                            BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage,
-                            RootPage = ContentReference.RootPage,
-                            BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage
-                        },
+                    appBuilder.UseCmsContentBuilder(
+                        //builderOptions: new CmsContentApplicationBuilderOptions
+                        //{
+                        //    DefaultLanguage = "sr-RS",
+                        //    BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage,
+                        //    RootPage = ContentReference.RootPage,
+                        //    BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage
+                        //},
                         builder: contentBuilder =>
                         {
                             contentBuilder.WithPage<StartPage>(page =>

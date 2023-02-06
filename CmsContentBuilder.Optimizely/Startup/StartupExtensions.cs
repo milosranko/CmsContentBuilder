@@ -39,24 +39,24 @@ public static class StartupExtensions
 
     private static bool ApplyOptions(IServiceProvider services, CmsContentApplicationBuilderOptions? builderOptions)
     {
-        if (builderOptions is null)
-            return true;
-
         var proceedBuildingContent = false;
         var options = services.GetRequiredService<CmsContentApplicationBuilderOptions>();
 
-        options.DefaultLanguage = builderOptions.DefaultLanguage;
-        options.BlocksDefaultLocation = builderOptions.BlocksDefaultLocation;
-        options.RootPage = builderOptions.RootPage;
-        options.BuildMode = builderOptions.BuildMode;
-        //options.CreateNewUser = builderOptions.CreateNewUser;
-        //options.UserSettings = builderOptions.UserSettings;
+        if (builderOptions != null)
+        {
+            options.DefaultLanguage = builderOptions.DefaultLanguage;
+            options.BlocksDefaultLocation = builderOptions.BlocksDefaultLocation;
+            options.RootPage = builderOptions.RootPage;
+            options.BuildMode = builderOptions.BuildMode;
+        }
 
         switch (options.BuildMode)
         {
             case BuildModeEnum.Append:
+                proceedBuildingContent = true;
                 break;
             case BuildModeEnum.Overwrite:
+                proceedBuildingContent = true;
                 break;
             case BuildModeEnum.OnlyIfEmptyInDefaultLanguage:
                 proceedBuildingContent = IsInstallationEmpty(services, options);
