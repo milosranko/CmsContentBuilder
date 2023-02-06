@@ -5,7 +5,7 @@ namespace CmsContentBuilder.Optimizely.Startup;
 
 public class CmsContentApplicationBuilderOptions
 {
-    public string DefaultLanguage { get; set; } = "en-US";
+    public string DefaultLanguage { get; set; } = "en";
     public BuildModeEnum BuildMode { get; set; } = BuildModeEnum.Append;
     public PageReference RootPage { get; set; } = ContentReference.RootPage;
     public BlocksDefaultLocationEnum BlocksDefaultLocation { get; set; } = BlocksDefaultLocationEnum.GlobalBlockFolder;

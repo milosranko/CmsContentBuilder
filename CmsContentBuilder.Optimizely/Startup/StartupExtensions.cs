@@ -28,27 +28,21 @@ public static class StartupExtensions
     public static void UseCmsContentBuilder(
         this IApplicationBuilder app,
         Action<ICmsContentApplicationBuilder> builder,
-        CmsContentApplicationBuilderOptions? builderOptions = null)
+        Action<CmsContentApplicationBuilderOptions>? builderOptions = null)
     {
-        if (ApplyOptions(app.ApplicationServices, builderOptions))
+        var options = app.ApplicationServices.GetRequiredService<CmsContentApplicationBuilderOptions>();
+        builderOptions?.Invoke(options);
+
+        if (ApplyOptions(app.ApplicationServices, options))
         {
             var appBuilder = app.ApplicationServices.GetRequiredService<ICmsContentApplicationBuilder>();
             builder.Invoke(appBuilder);
         }
     }
 
-    private static bool ApplyOptions(IServiceProvider services, CmsContentApplicationBuilderOptions? builderOptions)
+    private static bool ApplyOptions(IServiceProvider services, CmsContentApplicationBuilderOptions options)
     {
         var proceedBuildingContent = false;
-        var options = services.GetRequiredService<CmsContentApplicationBuilderOptions>();
-
-        if (builderOptions != null)
-        {
-            options.DefaultLanguage = builderOptions.DefaultLanguage;
-            options.BlocksDefaultLocation = builderOptions.BlocksDefaultLocation;
-            options.RootPage = builderOptions.RootPage;
-            options.BuildMode = builderOptions.BuildMode;
-        }
 
         switch (options.BuildMode)
         {

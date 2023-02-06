@@ -48,22 +48,13 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         if (totalPages < 1 || totalPages > 10000)
             throw new ArgumentOutOfRangeException(nameof(totalPages));
 
-        T page;
+        var page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
+        value?.Invoke(page);
+        var pageName = string.IsNullOrEmpty(page.Name) ? typeof(T).Name : page.Name;
 
         for (int i = 0; i < totalPages; i++)
         {
-            page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
-            value?.Invoke(page);
-
-            if (string.IsNullOrEmpty(page.Name))
-            {
-                page.Name = $"{typeof(T).Name}_{i}";
-            }
-            else
-            {
-                page.Name = $"{page.Name}_{i}";
-            }
-
+            page.Name = $"{pageName}_{i}";
             _contentRepository.Save(page, SaveAction.Default, AccessLevel.NoAccess);
         }
     }
