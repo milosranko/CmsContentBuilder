@@ -65,41 +65,10 @@ public static class StartupExtensions
         if (!proceedBuildingContent)
             return false;
 
-        //ApplyDefaultUser(services, options);
         ApplyDefaultLanguage(services, options);
 
         return true;
     }
-
-    //private static void ApplyDefaultUser(IServiceProvider services, CmsContentApplicationBuilderOptions options)
-    //{
-    //    var users = services.GetRequiredService<IUsersService>();
-
-    //    if (options.CreateNewUser && string.IsNullOrEmpty(options.UserSettings.UserName))
-    //    {
-    //        users.CreateUser(
-    //            options.UserSettings.UserName,
-    //            options.UserSettings.UserEmail,
-    //            options.UserSettings.Password,
-    //            new[] { options.UserSettings.UserRole })
-    //            .GetAwaiter()
-    //            .GetResult();
-    //    }
-    //    else if (options.CreateNewUser &&
-    //        !string.IsNullOrEmpty(options.UserSettings.UserName) &&
-    //        !string.IsNullOrEmpty(options.UserSettings.UserEmail) &&
-    //        !string.IsNullOrEmpty(options.UserSettings.Password) &&
-    //        !string.IsNullOrEmpty(options.UserSettings.UserRole))
-    //    {
-    //        users.CreateUser(
-    //            options.UserSettings.UserName,
-    //            options.UserSettings.UserEmail,
-    //            options.UserSettings.Password,
-    //            new[] { options.UserSettings.UserRole })
-    //            .GetAwaiter()
-    //            .GetResult();
-    //    }
-    //}
 
     private static bool IsInstallationEmpty(IServiceProvider services, CmsContentApplicationBuilderOptions options)
     {

@@ -38,6 +38,9 @@ public class PageContentBuilder : IPageContentBuilder
 
         var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
         options.Invoke(pageContentBuilder);
+
+        page = null;
+        pageContentBuilder = null;
     }
 
     public void WithSubPages<T>(Action<T>? value = null, int totalPages = 1)
@@ -46,14 +49,18 @@ public class PageContentBuilder : IPageContentBuilder
         if (totalPages < 1 || totalPages > 10000)
             throw new ArgumentOutOfRangeException(nameof(totalPages));
 
-        var page = _contentRepository.GetDefault<T>(_parent.ContentLink, new CultureInfo(_options.DefaultLanguage));
-        value?.Invoke(page);
-        var pageName = string.IsNullOrEmpty(page.Name) ? typeof(T).Name : page.Name;
+        T page;
+        var pageTypeName = typeof(T).Name;
 
         for (int i = 0; i < totalPages; i++)
         {
-            page.Name = $"{pageName}_{i}";
+            page = _contentRepository.GetDefault<T>(_parent.ContentLink, new CultureInfo(_options.DefaultLanguage));
+            value?.Invoke(page);
+
+            page.Name = string.IsNullOrEmpty(page.Name) ? $"{pageTypeName}_{i}" : $"{page.Name}_{i}";
             _contentRepository.Save(page, SaveAction.Default, AccessLevel.NoAccess);
         }
+
+        page = null;
     }
 }
