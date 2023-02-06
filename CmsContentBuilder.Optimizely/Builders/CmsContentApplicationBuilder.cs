@@ -59,7 +59,8 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         }
     }
 
-    private void InitContentAreas<T>(T page) where T : PageData
+    private void InitContentAreas<T>(T page)
+        where T : PageData
     {
         var contentAreaProperties = page.GetType()
             .GetProperties(BindingFlags.Instance | BindingFlags.Public)
