@@ -1,10 +1,12 @@
-﻿using CmsContentBuilder.Shared.Resources;
+﻿using CmsContentBuilder.Optimizely.Startup;
+using CmsContentBuilder.Shared.Resources;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
+using System.Globalization;
 
 namespace CmsContentBuilder.Optimizely.Extensions;
 
@@ -36,7 +38,24 @@ public static class PropertyHelpers
         where T : BlockData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var block = contentRepository.GetDefault<T>(ContentReference.GlobalBlockFolder);
+        var options = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
+        var blockLocation = ContentReference.GlobalBlockFolder;
+
+        switch (options.BlocksDefaultLocation)
+        {
+            case Models.BlocksDefaultLocationEnum.CurrentPage:
+                //TODO Discover current page
+                break;
+            case Models.BlocksDefaultLocationEnum.GlobalBlockFolder:
+                break;
+            case Models.BlocksDefaultLocationEnum.GlobalSiteFolder:
+                blockLocation = ContentReference.SiteBlockFolder;
+                break;
+            default:
+                break;
+        }
+
+        var block = contentRepository.GetDefault<T>(blockLocation, new CultureInfo(options.DefaultLanguage));
 
         blockOptions?.Invoke(block);
 
@@ -54,26 +73,4 @@ public static class PropertyHelpers
 
         return contentArea;
     }
-
-    //public static void Add(this ImageField field, string imagePath)
-    //{
-    //    //TODO Upload image and get guid
-    //    var media = new MediaFieldBase<ImageField>
-    //    {
-    //        Id = Guid.NewGuid()
-    //    };
-
-    //    field.Id = Guid.NewGuid();
-    //}
-
-    //public static IList<Block> Add<T>(this IList<Block> blocks, Action<T> blockOptions)
-    //    where T : Block, new()
-    //{
-    //    var block = new T();
-    //    blockOptions.Invoke(block);
-
-    //    blocks.Add(block);
-
-    //    return blocks;
-    //}
 }

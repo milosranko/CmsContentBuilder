@@ -4,5 +4,6 @@ public enum BuildModeEnum
 {
     Append,
     Overwrite,
-    OnlyIfEmpty
+    OnlyIfEmptyInDefaultLanguage,
+    OnlyIfEmptyRegardlessOfLanguage
 }

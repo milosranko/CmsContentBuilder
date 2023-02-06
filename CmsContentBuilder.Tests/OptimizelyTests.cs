@@ -53,9 +53,9 @@ public class OptimizelyTests
                         builderOptions: new CmsContentApplicationBuilderOptions
                         {
                             DefaultLanguage = "sr-RS",
-                            BuildMode = BuildModeEnum.OnlyIfEmpty,
+                            BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage,
                             RootPage = ContentReference.RootPage,
-                            BlocksDefaultPlacement = BlocksDefaultPlacementEnum.ParentPage
+                            BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage
                         },
                         builder: contentBuilder =>
                         {

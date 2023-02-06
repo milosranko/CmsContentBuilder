@@ -23,7 +23,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
     public void WithPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)
         where T : PageData
     {
-        var page = _contentRepository.GetDefault<T>(ContentReference.RootPage, new CultureInfo(_options.DefaultLanguage));
+        var page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
 
         InitContentAreas(page);
 
@@ -52,7 +52,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
 
         for (int i = 0; i < totalPages; i++)
         {
-            page = _contentRepository.GetDefault<T>(ContentReference.RootPage, new CultureInfo(_options.DefaultLanguage));
+            page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
             value?.Invoke(page);
 
             if (string.IsNullOrEmpty(page.Name))
