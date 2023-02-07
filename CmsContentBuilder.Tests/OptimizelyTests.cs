@@ -99,8 +99,7 @@ public class OptimizelyTests
                 });
             });
 
-        var app = builder.Build();
-        app.Start();
+        builder.Build().Start();
     }
 
     [TestCleanup]

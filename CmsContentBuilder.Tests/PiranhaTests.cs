@@ -106,8 +106,7 @@ public class PiranhaTests
                 });
             });
 
-        var app = builder.Build();
-        app.Start();
+        builder.Build().Start();
     }
 
     [TestCleanup]
