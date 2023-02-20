@@ -1,4 +1,4 @@
-﻿using CmsContentBuilder.Optimizely.Startup;
+﻿using CmsContentBuilder.Optimizely.Models;
 using CmsContentBuilder.Shared.Resources;
 using EPiServer;
 using EPiServer.Core;

@@ -1,7 +1,6 @@
-﻿using CmsContentBuilder.Optimizely.Models;
-using EPiServer.Core;
+﻿using EPiServer.Core;
 
-namespace CmsContentBuilder.Optimizely.Startup;
+namespace CmsContentBuilder.Optimizely.Models;
 
 public class CmsContentApplicationBuilderOptions
 {

@@ -87,7 +87,7 @@ public class OptimizelyTests
                                         level3.WithSubPages<ArticlePage>(totalPages: 20);
                                     });
                                 });
-                                level1.WithSubPages<ArticlePage>(totalPages: 10000);
+                                level1.WithSubPages<ArticlePage>(totalPages: 1000);
                             });
 
                             contentBuilder.WithPage<ArticlePage>();

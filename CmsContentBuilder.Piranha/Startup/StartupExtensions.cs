@@ -1,4 +1,6 @@
-﻿using CmsContentBuilder.Piranha.Interfaces;
+﻿using CmsContentBuilder.Piranha.Builders;
+using CmsContentBuilder.Piranha.Interfaces;
+using CmsContentBuilder.Piranha.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +30,7 @@ public static class StartupExtensions
         });
 
         services.AddScoped<ICmsContentApplicationBuilder, CmsContentApplicationBuilder>();
+        services.AddScoped(x => new CmsContentApplicationBuilderOptions());
 
         return services;
     }
@@ -35,8 +38,12 @@ public static class StartupExtensions
     public static void UseCmsContentBuilder(
         this IApplicationBuilder app,
         Assembly modelsAssembly,
-        Action<ICmsContentApplicationBuilder> options)
+        Action<ICmsContentApplicationBuilder> builder,
+        Action<CmsContentApplicationBuilderOptions>? builderOptions = null)
     {
+        var options = app.ApplicationServices.GetRequiredService<CmsContentApplicationBuilderOptions>();
+        builderOptions?.Invoke(options);
+
         var api = app.ApplicationServices.GetRequiredService<IApi>();
         App.Init(api);
 
@@ -45,7 +52,7 @@ public static class StartupExtensions
             .Build()
             .DeleteOrphans();
 
-        var builder = app.ApplicationServices.GetRequiredService<ICmsContentApplicationBuilder>();
-        options.Invoke(builder);
+        var appBuilder = app.ApplicationServices.GetRequiredService<ICmsContentApplicationBuilder>();
+        builder.Invoke(appBuilder);
     }
 }

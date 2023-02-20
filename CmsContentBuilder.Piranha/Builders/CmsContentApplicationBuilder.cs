@@ -2,20 +2,21 @@
 using CmsContentBuilder.Piranha.Models;
 using Piranha;
 using Piranha.Models;
+using System.ComponentModel.DataAnnotations;
 
-namespace CmsContentBuilder.Piranha.Startup;
+namespace CmsContentBuilder.Piranha.Builders;
 
 public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
 {
     private readonly IApi _api;
     private readonly Site _site;
-    public string DefaultLanguage { get; set; } = "en-US";
-    public BuildModeEnum BuildMode { get; set; } = BuildModeEnum.Overwrite;
+    private readonly CmsContentApplicationBuilderOptions _options;
 
-    public CmsContentApplicationBuilder(IApi api)
+    public CmsContentApplicationBuilder(IApi api, CmsContentApplicationBuilderOptions options)
     {
         _api = api;
         _site = _api.Sites.GetDefaultAsync().GetAwaiter().GetResult();
+        _options = options;
     }
 
     public void WithSite<T>(Action<T>? value = null)
@@ -24,14 +25,14 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         var availableLanguages = _api.Languages.GetAllAsync().GetAwaiter().GetResult();
         var languageId = _api.Languages.GetDefaultAsync().GetAwaiter().GetResult().Id;
 
-        if (!availableLanguages.Any(x => x.Culture.Equals(DefaultLanguage, StringComparison.InvariantCultureIgnoreCase)))
+        if (!availableLanguages.Any(x => x.Culture.Equals(_options.DefaultLanguage, StringComparison.InvariantCultureIgnoreCase)))
         {
             var newLanguage = new Language
             {
-                Culture = DefaultLanguage,
+                Culture = _options.DefaultLanguage,
                 Id = Guid.NewGuid(),
                 IsDefault = true,
-                Title = DefaultLanguage
+                Title = _options.DefaultLanguage
             };
 
             _api.Languages.SaveAsync(newLanguage).GetAwaiter().GetResult();
@@ -63,15 +64,20 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         }
 
         page.SiteId = _site.Id;
-        _api.Pages.SaveAsync(page).GetAwaiter().GetResult();
 
-        if (options == null) return;
+        if (_options.PublishContent)
+            _api.Pages.SaveAsync(page).GetAwaiter().GetResult();
+        else
+            _api.Pages.SaveDraftAsync(page).GetAwaiter().GetResult();
 
-        var pageContentBuilder = new PageContentBuilder(_api, page);
+        if (options == null)
+            return;
+
+        var pageContentBuilder = new PageContentBuilder(_api, page, _options);
         options?.Invoke(pageContentBuilder);
     }
 
-    public void WithPages<T>(Action<T>? value = null, int totalPages = 1)
+    public void WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1)
         where T : Page<T>
     {
         if (totalPages < 1 || totalPages > 10000)
@@ -95,7 +101,10 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
 
             page.SiteId = _site.Id;
 
-            _api.Pages.SaveAsync(page).GetAwaiter().GetResult();
+            if (_options.PublishContent)
+                _api.Pages.SaveAsync(page).GetAwaiter().GetResult();
+            else
+                _api.Pages.SaveDraftAsync(page).GetAwaiter().GetResult();
         }
     }
 }

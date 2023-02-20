@@ -1,5 +1,5 @@
 ﻿using CmsContentBuilder.Optimizely.Interfaces;
-using CmsContentBuilder.Optimizely.Startup;
+using CmsContentBuilder.Optimizely.Models;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
