@@ -55,6 +55,7 @@ public class OptimizelyTests
                             contentBuilderOptions.DefaultLanguage = "sr-RS";
                             contentBuilderOptions.BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage;
                             contentBuilderOptions.RootPage = ContentReference.RootPage;
+                            contentBuilderOptions.PublishContent = true;
                             contentBuilderOptions.BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage;
                         },
                         builder: contentBuilder =>
@@ -86,7 +87,7 @@ public class OptimizelyTests
                                         level3.WithSubPages<ArticlePage>(totalPages: 20);
                                     });
                                 });
-                                level1.WithSubPages<ArticlePage>(totalPages: 100);
+                                level1.WithSubPages<ArticlePage>(totalPages: 10000);
                             });
 
                             contentBuilder.WithPage<ArticlePage>();
@@ -94,7 +95,7 @@ public class OptimizelyTests
                             contentBuilder.WithPages<ArticlePage>(page =>
                             {
                                 page.Name = "Article2";
-                            }, 10);
+                            }, 100);
                         });
                 });
             });

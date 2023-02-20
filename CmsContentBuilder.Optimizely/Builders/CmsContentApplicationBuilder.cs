@@ -4,6 +4,7 @@ using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Security;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Reflection;
 
@@ -20,7 +21,9 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         _options = options;
     }
 
-    public void WithPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)
+    public void WithPage<T>(
+        Action<T>? value = null,
+        Action<IPageContentBuilder>? options = null)
         where T : PageData
     {
         var page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
@@ -34,18 +37,18 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             page.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
         }
 
-        _contentRepository.Save(page, SaveAction.Default, AccessLevel.NoAccess);
+        _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-        if (options == null) return;
+        if (options == null)
+            return;
 
         var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
         options?.Invoke(pageContentBuilder);
-
-        page = null;
-        pageContentBuilder = null;
     }
 
-    public void WithPages<T>(Action<T>? value = null, int totalPages = 1)
+    public void WithPages<T>(
+        Action<T>? value = null,
+        [Range(1, 10000)] int totalPages = 1)
         where T : PageData
     {
         if (totalPages < 1 || totalPages > 10000)
@@ -61,10 +64,8 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             value?.Invoke(page);
 
             page.Name = string.IsNullOrEmpty(page.Name) ? $"{pageTypeName}_{i}" : $"{page.Name}_{i}";
-            _contentRepository.Save(page, SaveAction.Default, AccessLevel.NoAccess);
+            _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
         }
-
-        page = null;
     }
 
     private void InitContentAreas<T>(T page)

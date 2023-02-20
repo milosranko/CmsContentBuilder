@@ -26,10 +26,11 @@ public static class PropertyHelpers
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var image = contentRepository.GetDefault<ImageData>(ContentReference.GlobalBlockFolder);
+        var options = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
 
         image.BinaryData.WriteAllBytes(ResourceHelpers.GetImage());
 
-        contentRepository.Save(image, SaveAction.Default, AccessLevel.NoAccess);
+        contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
         return image;
     }
@@ -64,7 +65,7 @@ public static class PropertyHelpers
         if (string.IsNullOrEmpty(blockContent.Name))
             blockContent.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
 
-        contentRepository.Save(blockContent, SaveAction.Default, AccessLevel.NoAccess);
+        contentRepository.Save(blockContent, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
         contentArea.Items.Add(new ContentAreaItem
         {
