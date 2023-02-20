@@ -4,6 +4,8 @@ using CmsContentBuilder.Optimizely.Startup;
 using EPiServer;
 using EPiServer.Cms.UI.AspNetIdentity;
 using EPiServer.Core;
+using EPiServer.DataAbstraction;
+using EPiServer.Filters;
 using EPiServer.ServiceLocation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -91,7 +93,6 @@ public class OptimizelyTests
                             });
 
                             contentBuilder.WithPage<ArticlePage>();
-
                             contentBuilder.WithPages<ArticlePage>(page =>
                             {
                                 page.Name = "Article2";
@@ -111,7 +112,7 @@ public class OptimizelyTests
     }
 
     [TestMethod]
-    public void TestMethod1()
+    public void InitializationTest_ShouldGetStartPage()
     {
         //Arrange
         var contentLoader = ServiceLocator.Current.GetRequiredService<IContentLoader>();
@@ -125,5 +126,56 @@ public class OptimizelyTests
         Assert.IsTrue(pages.Count() > 0);
         Assert.IsNotNull(startPage?.MainContentArea);
         Assert.IsFalse(startPage.MainContentArea.IsEmpty);
+    }
+
+    [TestMethod]
+    public void PerformanceTest_ShouldGetAllArticlePagesUsingPageCriteriaQueryService()
+    {
+        //Arrange
+        var contentTypeRepository = ServiceLocator.Current.GetInstance<IContentTypeRepository>();
+        var pageCriteriaQueryService = ServiceLocator.Current.GetInstance<IPageCriteriaQueryService>();
+        var criterias = new PropertyCriteriaCollection
+        {
+            new PropertyCriteria
+            {
+                Name = "PageTypeID",
+                Type = PropertyDataType.PageType,
+                Condition = CompareCondition.Equal,
+                Value = contentTypeRepository.Load<ArticlePage>().ID.ToString(),
+                Required = true
+            }
+        };
+
+        //Act
+        var res = pageCriteriaQueryService.FindAllPagesWithCriteria(PageReference.RootPage, criterias, "sr-RS", LanguageSelector.MasterLanguage());
+
+        //Assert
+        Assert.IsNotNull(res);
+        Assert.IsTrue(res.Count > 1000);
+    }
+
+    [TestMethod]
+    public void PerformanceTest_ShouldGetAllArticlePagesUsingContentLoader()
+    {
+        //Arrange
+        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+
+        //Act
+        var res = contentLoader.GetDescendents(ContentReference.RootPage)
+            .Where(x =>
+            {
+                PageData? page;
+                if (contentLoader.TryGet<PageData>(x, out page))
+                {
+                    return page is ArticlePage;
+                }
+
+                return false;
+            })
+            .ToArray();
+
+        //Assert
+        Assert.IsNotNull(res);
+        Assert.IsTrue(res.Length > 1000);
     }
 }
