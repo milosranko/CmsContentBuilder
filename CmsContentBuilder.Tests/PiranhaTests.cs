@@ -17,8 +17,8 @@ namespace CmsContentBuilder.Tests;
 [TestClass]
 public class PiranhaTests
 {
-    [TestInitialize]
-    public void Initialize()
+    [ClassInitialize]
+    public static void Initialize(TestContext context)
     {
         var builder = WebHost.CreateDefaultBuilder()
             .ConfigureAppConfiguration((context, config) =>
@@ -46,14 +46,16 @@ public class PiranhaTests
                     },
                     builder: contentBuilder =>
                     {
-                        contentBuilder.WithSite<PublicSite>(site =>
+                        contentBuilder
+                        .WithSite<PublicSite>(site =>
                         {
                             site.SiteFooter.Column1Header = PropertyHelpers.AddRandomText();
                             site.SiteFooter.Column2Header = PropertyHelpers.AddRandomText();
                             site.SiteFooter.Column3Header = PropertyHelpers.AddRandomText();
                         });
 
-                        contentBuilder.WithPage<StartPage>(page =>
+                        contentBuilder
+                        .WithPage<StartPage>(page =>
                         {
                             page.Title = "StartPage";
                             page.PrimaryImage = PropertyHelpers.AddRandomImage(Globals.Services.GetRequiredService<IApi>());
@@ -68,53 +70,53 @@ public class PiranhaTests
                             });
                         }, level1 =>
                         {
-                            level1.WithSubPage<ArticlePage>(page =>
+                            level1
+                            .WithSubPage<ArticlePage>(page =>
                             {
                                 page.Title = "Article1_1";
                                 page.PageRegion.Heading = PropertyHelpers.AddRandomText();
                             }, level2 =>
                             {
-                                level2.WithSubPage<ArticlePage>(page =>
+                                level2
+                                .WithSubPage<ArticlePage>(page =>
                                 {
                                     page.Title = "Article2_1";
                                     page.PageRegion.Heading = PropertyHelpers.AddRandomText();
-                                });
-                                level2.WithSubPage<ArticlePage>(page =>
+                                })
+                                .WithSubPage<ArticlePage>(page =>
                                 {
                                     page.Title = "Article2_2";
                                     page.PageRegion.Heading = PropertyHelpers.AddRandomText();
                                 });
-                            });
-                            level1.WithSubPages<ArticlePage>(page =>
+                            })
+                            .WithSubPages<ArticlePage>(page =>
                             {
                                 page.Title = "Article1_2";
                                 page.PageRegion.Heading = PropertyHelpers.AddRandomText();
                             }, 1000);
-                        });
-
-                        contentBuilder.WithPage<ArticlePage>(page =>
+                        })
+                        .WithPage<ArticlePage>(page =>
                         {
                             page.Title = "Article2";
                             page.PageRegion.Heading = PropertyHelpers.AddRandomText();
                             page.PageRegion.LeadText = PropertyHelpers.AddRandomText(100);
                             page.PageRegion.MainContent = PropertyHelpers.AddRandomHtml();
-                        });
-
-                        contentBuilder.WithPages<ArticlePage>(page =>
+                        })
+                        .WithPages<ArticlePage>(page =>
                         {
-                            page.Title = "Article2";
+                            page.Title = "Article3";
                             page.PageRegion.Heading = PropertyHelpers.AddRandomText();
                             page.PageRegion.LeadText = PropertyHelpers.AddRandomText(150);
                             page.PageRegion.MainContent = PropertyHelpers.AddRandomHtml();
-                        }, 10);
+                        }, 100);
                     });
             });
 
         builder.Build().Start();
     }
 
-    [TestCleanup]
-    public void Uninitialize()
+    [ClassCleanup]
+    public static void Uninitialize()
     {
         #region DB cleanup
 
@@ -137,7 +139,7 @@ public class PiranhaTests
     public void TestMethod1()
     {
         //Arrange
-        var api = Globals.Services.GetService<IApi>();
+        var api = Globals.Services.GetRequiredService<IApi>();
 
         //Act
         var pages = api.Pages.GetAllAsync().GetAwaiter().GetResult();
@@ -148,6 +150,6 @@ public class PiranhaTests
         Assert.IsNotNull(site);
         Assert.IsTrue(site.LanguageId.Equals(defaultLanguage.Id));
         Assert.IsNotNull(pages);
-        Assert.IsTrue(pages.Count() > 0);
+        Assert.IsTrue(pages.Count() > 1000);
     }
 }

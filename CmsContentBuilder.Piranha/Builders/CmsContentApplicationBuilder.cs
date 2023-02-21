@@ -51,7 +51,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         _api.Sites.SaveContentAsync(defaultSite.Id, site).GetAwaiter().GetResult();
     }
 
-    public void WithPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)
+    public ICmsContentApplicationBuilder WithPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)
         where T : Page<T>
     {
         var page = Page<T>.CreateAsync(_api).GetAwaiter().GetResult();
@@ -71,10 +71,12 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             _api.Pages.SaveDraftAsync(page).GetAwaiter().GetResult();
 
         if (options == null)
-            return;
+            return this;
 
         var pageContentBuilder = new PageContentBuilder(_api, page, _options);
         options?.Invoke(pageContentBuilder);
+
+        return this;
     }
 
     public void WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1)

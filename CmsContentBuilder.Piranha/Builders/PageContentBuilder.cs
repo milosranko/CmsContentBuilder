@@ -19,7 +19,7 @@ public class PageContentBuilder : IPageContentBuilder
         _options = options;
     }
 
-    public void WithSubPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)
+    public IPageContentBuilder WithSubPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)
         where T : Page<T>
     {
         var page = Page<T>.CreateAsync(_api).GetAwaiter().GetResult();
@@ -38,10 +38,12 @@ public class PageContentBuilder : IPageContentBuilder
         else
             _api.Pages.SaveDraftAsync(page).GetAwaiter().GetResult();
 
-        if (options == null) return;
+        //if (options == null) return;
 
         var pageContentBuilder = new PageContentBuilder(_api, page, _options);
-        options.Invoke(pageContentBuilder);
+        options?.Invoke(pageContentBuilder);
+
+        return pageContentBuilder;
     }
 
     public void WithSubPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1)

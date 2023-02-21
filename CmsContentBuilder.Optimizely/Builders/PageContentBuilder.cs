@@ -22,7 +22,7 @@ public class PageContentBuilder : IPageContentBuilder
         _options = options;
     }
 
-    public void WithSubPage<T>(
+    public IPageContentBuilder WithSubPage<T>(
         Action<T>? value = null,
         Action<IPageContentBuilder>? options = null)
         where T : PageData
@@ -37,11 +37,10 @@ public class PageContentBuilder : IPageContentBuilder
 
         _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-        if (options == null)
-            return;
-
         var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
-        options.Invoke(pageContentBuilder);
+        options?.Invoke(pageContentBuilder);
+
+        return pageContentBuilder;
     }
 
     public void WithSubPages<T>(

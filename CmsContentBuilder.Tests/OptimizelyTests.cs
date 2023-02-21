@@ -20,8 +20,8 @@ namespace CmsContentBuilder.Tests;
 [TestClass]
 public class OptimizelyTests
 {
-    [TestInitialize]
-    public void Initialize()
+    [ClassInitialize]
+    public static void Initialize(TestContext context)
     {
         var builder = Host
             .CreateDefaultBuilder()
@@ -62,7 +62,8 @@ public class OptimizelyTests
                         },
                         builder: contentBuilder =>
                         {
-                            contentBuilder.WithPage<StartPage>(page =>
+                            contentBuilder
+                            .WithPage<StartPage>(page =>
                             {
                                 page.Name = "StartPage";
                                 page.MainContentArea
@@ -74,7 +75,8 @@ public class OptimizelyTests
                                 });
                             }, level1 =>
                             {
-                                level1.WithSubPage<ArticlePage>(page =>
+                                level1
+                                .WithSubPage<ArticlePage>(page =>
                                 {
                                     page.Name = "Article1_1";
                                     page.MainContent = PropertyHelpers.AddRandomHtml();
@@ -88,12 +90,11 @@ public class OptimizelyTests
                                     {
                                         level3.WithSubPages<ArticlePage>(totalPages: 20);
                                     });
-                                });
-                                level1.WithSubPages<ArticlePage>(totalPages: 1000);
-                            });
-
-                            contentBuilder.WithPage<ArticlePage>();
-                            contentBuilder.WithPages<ArticlePage>(page =>
+                                })
+                                .WithSubPages<ArticlePage>(totalPages: 1000);
+                            })
+                            .WithPage<ArticlePage>()
+                            .WithPages<ArticlePage>(page =>
                             {
                                 page.Name = "Article2";
                             }, 100);
@@ -104,8 +105,8 @@ public class OptimizelyTests
         builder.Build().Start();
     }
 
-    [TestCleanup]
-    public void Uninitialize()
+    [ClassCleanup]
+    public static void Uninitialize()
     {
         var dbContext = Globals.Services.GetRequiredService<ApplicationDbContext<ApplicationUser>>();
         dbContext.Database.EnsureDeleted();
@@ -164,8 +165,7 @@ public class OptimizelyTests
         var res = contentLoader.GetDescendents(ContentReference.RootPage)
             .Where(x =>
             {
-                PageData? page;
-                if (contentLoader.TryGet<PageData>(x, out page))
+                if (contentLoader.TryGet<PageData>(x, out var page))
                 {
                     return page is ArticlePage;
                 }

@@ -21,7 +21,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         _options = options;
     }
 
-    public void WithPage<T>(
+    public ICmsContentApplicationBuilder WithPage<T>(
         Action<T>? value = null,
         Action<IPageContentBuilder>? options = null)
         where T : PageData
@@ -40,10 +40,12 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
         if (options == null)
-            return;
+            return this;
 
         var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
         options?.Invoke(pageContentBuilder);
+
+        return this;
     }
 
     public void WithPages<T>(
@@ -55,7 +57,6 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             throw new ArgumentOutOfRangeException(nameof(totalPages));
 
         T page;
-
         var pageTypeName = typeof(T).Name;
 
         for (int i = 0; i < totalPages; i++)
