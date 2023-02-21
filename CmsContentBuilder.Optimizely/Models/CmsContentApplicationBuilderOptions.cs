@@ -9,4 +9,5 @@ public class CmsContentApplicationBuilderOptions
     public PageReference RootPage { get; set; } = ContentReference.RootPage;
     public bool PublishContent { get; set; } = false;
     public BlocksDefaultLocationEnum BlocksDefaultLocation { get; set; } = BlocksDefaultLocationEnum.GlobalBlockFolder;
+    public Type? StartPageType { get; set; }
 }

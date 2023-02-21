@@ -7,6 +7,7 @@ using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.Filters;
 using EPiServer.ServiceLocation;
+using EPiServer.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -59,6 +60,7 @@ public class OptimizelyTests
                             contentBuilderOptions.RootPage = ContentReference.RootPage;
                             contentBuilderOptions.PublishContent = true;
                             contentBuilderOptions.BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage;
+                            contentBuilderOptions.StartPageType = typeof(StartPage);
                         },
                         builder: contentBuilder =>
                         {
@@ -117,15 +119,17 @@ public class OptimizelyTests
     {
         //Arrange
         var contentLoader = ServiceLocator.Current.GetRequiredService<IContentLoader>();
+        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
 
         //Act
         var pages = contentLoader.GetDescendents(ContentReference.RootPage);
-        var startPage = contentLoader.Get<StartPage>(pages.Single(x => x.ID.Equals(7)));
+        var startPage = contentLoader.Get<StartPage>(siteDefinitionRepository.List().First().StartPage);
 
         //Assert
         Assert.IsNotNull(pages);
         Assert.IsTrue(pages.Count() > 0);
-        Assert.IsNotNull(startPage?.MainContentArea);
+        Assert.IsNotNull(startPage);
+        Assert.IsNotNull(startPage.MainContentArea);
         Assert.IsFalse(startPage.MainContentArea.IsEmpty);
     }
 

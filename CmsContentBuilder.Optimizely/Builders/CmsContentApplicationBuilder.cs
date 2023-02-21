@@ -4,6 +4,9 @@ using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Security;
+using EPiServer.ServiceLocation;
+using EPiServer.Web;
+using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Reflection;
@@ -37,7 +40,14 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             page.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
         }
 
-        _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+
+        if (_options.StartPageType != null &&
+            _options.StartPageType.Equals(typeof(T)) &&
+            ContentReference.IsNullOrEmpty(ContentReference.StartPage))
+        {
+            SetAsStartPage(pageRef);
+        }
 
         if (options == null)
             return this;
@@ -86,5 +96,32 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         }
 
         contentAreaProperties = null;
+    }
+
+    private void SetAsStartPage(ContentReference pageRef)
+    {
+        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+        var sites = siteDefinitionRepository.List();
+
+        if (sites.Any())
+            return;
+
+        var siteDefinition = new SiteDefinition
+        {
+            Name = "Demo",
+            StartPage = pageRef,
+            Id = Guid.NewGuid(),
+            SiteUrl = new Uri("https://localhost:5000"),
+            Hosts = new List<HostDefinition>
+            {
+                new HostDefinition
+                {
+                    Name = "Test",
+                    Language = new CultureInfo(_options.DefaultLanguage),
+                    Type = HostDefinitionType.Primary
+                }
+            }
+        };
+        siteDefinitionRepository.Save(siteDefinition);
     }
 }
