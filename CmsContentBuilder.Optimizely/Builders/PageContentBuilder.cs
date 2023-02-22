@@ -40,7 +40,7 @@ public class PageContentBuilder : IPageContentBuilder
         var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
         options?.Invoke(pageContentBuilder);
 
-        return pageContentBuilder;
+        return this;
     }
 
     public void WithSubPages<T>(
