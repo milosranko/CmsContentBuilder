@@ -80,7 +80,7 @@ public static class StartupExtensions
             if (languageBranchRepository.ListAll().Any(x => x.LanguageID.Equals(options.DefaultLanguage, StringComparison.InvariantCultureIgnoreCase)))
             {
                 var pages = contentLoader.GetChildren<IContentData>(options.RootPage, new CultureInfo(options.DefaultLanguage));
-                return pages is null || !pages.Any();
+                return pages is null || pages.Count() == 3;
             }
             else
             {

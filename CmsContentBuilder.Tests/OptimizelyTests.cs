@@ -15,12 +15,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Optimizely.Demo.PublicWeb.Models.Blocks;
 using Optimizely.Demo.PublicWeb.Models.Pages;
+using System.Globalization;
 
 namespace CmsContentBuilder.Tests;
 
 [TestClass]
 public class OptimizelyTests
 {
+    private const string Language = "en";
+
     [ClassInitialize]
     public static void Initialize(TestContext context)
     {
@@ -55,12 +58,12 @@ public class OptimizelyTests
                     app.UseCmsContentBuilder(
                         builderOptions: contentBuilderOptions =>
                         {
-                            contentBuilderOptions.DefaultLanguage = "sr-RS";
+                            contentBuilderOptions.DefaultLanguage = Language;
                             contentBuilderOptions.BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage;
                             contentBuilderOptions.RootPage = ContentReference.RootPage;
+                            contentBuilderOptions.StartPageType = typeof(StartPage);
                             contentBuilderOptions.PublishContent = true;
                             contentBuilderOptions.BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage;
-                            contentBuilderOptions.StartPageType = typeof(StartPage);
                         },
                         builder: contentBuilder =>
                         {
@@ -123,7 +126,11 @@ public class OptimizelyTests
 
         //Act
         var pages = contentLoader.GetDescendents(ContentReference.RootPage);
-        var startPage = contentLoader.Get<StartPage>(siteDefinitionRepository.List().First().StartPage);
+        var siteDefinition = siteDefinitionRepository
+            .List()
+            .Where(x => x.GetHosts(new CultureInfo(Language), false).Any())
+            .Single();
+        var startPage = contentLoader.Get<StartPage>(siteDefinition.StartPage);
 
         //Assert
         Assert.IsNotNull(pages);
@@ -152,7 +159,7 @@ public class OptimizelyTests
         };
 
         //Act
-        var res = pageCriteriaQueryService.FindAllPagesWithCriteria(PageReference.RootPage, criterias, "sr-RS", LanguageSelector.MasterLanguage());
+        var res = pageCriteriaQueryService.FindAllPagesWithCriteria(PageReference.RootPage, criterias, Language, LanguageSelector.MasterLanguage());
 
         //Assert
         Assert.IsNotNull(res);
