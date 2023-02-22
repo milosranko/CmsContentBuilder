@@ -127,7 +127,7 @@ public class OptimizelyTests
 
         //Assert
         Assert.IsNotNull(pages);
-        Assert.IsTrue(pages.Count() > 0);
+        Assert.IsTrue(pages.Any());
         Assert.IsNotNull(startPage);
         Assert.IsNotNull(startPage.MainContentArea);
         Assert.IsFalse(startPage.MainContentArea.IsEmpty);
