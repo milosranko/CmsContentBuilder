@@ -56,52 +56,68 @@ public class OptimizelyTests
                 config.Configure(app =>
                 {
                     app.UseCmsContentBuilder(
-                        builderOptions: contentBuilderOptions =>
+                        builderOptions: o =>
                         {
-                            contentBuilderOptions.DefaultLanguage = Language;
-                            contentBuilderOptions.BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage;
-                            contentBuilderOptions.RootPage = ContentReference.RootPage;
-                            contentBuilderOptions.StartPageType = typeof(StartPage);
-                            contentBuilderOptions.PublishContent = true;
-                            contentBuilderOptions.BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage;
+                            o.DefaultLanguage = Language;
+                            o.BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage;
+                            o.RootPage = ContentReference.RootPage;
+                            o.StartPageType = typeof(StartPage);
+                            o.PublishContent = true;
+                            o.BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage;
                         },
-                        builder: contentBuilder =>
+                        builder: b =>
                         {
-                            contentBuilder
-                            .WithPage<StartPage>(page =>
+                            b
+                            .WithPage<StartPage>(p =>
                             {
-                                page.Name = "StartPage";
-                                page.MainContentArea
+                                p.Name = "StartPage";
+                                p.MainContentArea
                                 .AddBlock<TeaserBlock>()
                                 .AddBlock<TeaserBlock>(block =>
                                 {
                                     block.Heading = PropertyHelpers.AddRandomText();
                                     block.LeadText = PropertyHelpers.AddRandomText(150);
                                 });
-                            }, level1 =>
+                            }, l1 =>
                             {
-                                level1
-                                .WithSubPage<ArticlePage>(page =>
+                                l1
+                                .WithSubPage<ArticlePage>(p =>
                                 {
-                                    page.Name = "Article1_1";
-                                    page.MainContent = PropertyHelpers.AddRandomHtml();
-                                }, level2 =>
+                                    p.Name = "Article1_1";
+                                    p.Heading = PropertyHelpers.AddRandomText();
+                                    p.LeadText = PropertyHelpers.AddRandomText(150);
+                                    p.MainContent = PropertyHelpers.AddRandomHtml();
+                                }, l2 =>
                                 {
-                                    level2.WithSubPage<ArticlePage>(page =>
+                                    l2
+                                    .WithSubPage<ArticlePage>(p =>
                                     {
-                                        page.Name = "Article2_1";
-                                    });
-                                    level2.WithSubPage<ArticlePage>(options: level3 =>
+                                        p.Name = "Article2_1";
+                                        p.Heading = PropertyHelpers.AddRandomText();
+                                        p.LeadText = PropertyHelpers.AddRandomText(150);
+                                        p.MainContent = PropertyHelpers.AddRandomHtml();
+                                    })
+                                    .WithSubPage<ArticlePage>(options: l3 =>
                                     {
-                                        level3.WithSubPages<ArticlePage>(totalPages: 20);
+                                        l3.WithSubPages<ArticlePage>(p =>
+                                        {
+                                            p.Heading = PropertyHelpers.AddRandomText();
+                                            p.LeadText = PropertyHelpers.AddRandomText(150);
+                                            p.MainContent = PropertyHelpers.AddRandomHtml();
+                                        }, 20);
                                     });
                                 })
-                                .WithSubPages<ArticlePage>(totalPages: 1000);
+                                .WithSubPages<ArticlePage>(p =>
+                                {
+                                    p.Heading = PropertyHelpers.AddRandomText();
+                                    p.LeadText = PropertyHelpers.AddRandomText(150);
+                                    p.MainContent = PropertyHelpers.AddRandomHtml();
+                                }, 1000);
                             })
                             .WithPage<ArticlePage>()
-                            .WithPages<ArticlePage>(page =>
+                            .WithPages<ArticlePage>(p =>
                             {
-                                page.Name = "Article2";
+                                p.Name = "Article2";
                             }, 100);
                         });
                 });
