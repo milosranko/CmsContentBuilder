@@ -29,7 +29,8 @@ public static class PropertyHelpers
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var blobFactory = ServiceLocator.Current.GetInstance<IBlobFactory>();
         var options = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
-        var image = contentRepository.GetDefault<T>(GetSiteDefinition(options.DefaultLanguage).GlobalAssetsRoot);
+        var site = GetSiteDefinition(options.DefaultLanguage);
+        var image = contentRepository.GetDefault<T>(site != null ? site.GlobalAssetsRoot : ContentReference.GlobalBlockFolder);
         var blob = blobFactory.CreateBlob(image.BinaryDataContainer, ".png");
 
         blob.WriteAllBytes(ResourceHelpers.GetImage());
@@ -79,13 +80,14 @@ public static class PropertyHelpers
         return contentArea;
     }
 
-    public static SiteDefinition GetSiteDefinition(string language)
+    public static SiteDefinition? GetSiteDefinition(string language)
     {
         var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+        var culture = new CultureInfo(language);
 
         return siteDefinitionRepository
             .List()
-            .Where(x => x.GetHosts(new CultureInfo(language), false).Any())
-            .Single();
+            .Where(x => x.GetHosts(culture, false).Any())
+            .SingleOrDefault();
     }
 }

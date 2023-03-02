@@ -1,4 +1,5 @@
-﻿using CmsContentBuilder.Optimizely.Interfaces;
+﻿using CmsContentBuilder.Optimizely.Extensions;
+using CmsContentBuilder.Optimizely.Interfaces;
 using CmsContentBuilder.Optimizely.Models;
 using EPiServer;
 using EPiServer.Core;
@@ -46,7 +47,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             _options.StartPageType.Equals(typeof(T)) &&
             ContentReference.IsNullOrEmpty(ContentReference.StartPage))
         {
-            SetAsStartPage(pageRef);
+            SetAsStartPage(pageRef, _options.DefaultLanguage);
         }
 
         if (options == null)
@@ -98,12 +99,11 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         contentAreaProperties = null;
     }
 
-    private void SetAsStartPage(ContentReference pageRef)
+    private void SetAsStartPage(ContentReference pageRef, string language)
     {
         var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
-        var sites = siteDefinitionRepository.List();
 
-        if (sites.Any())
+        if (PropertyHelpers.GetSiteDefinition(language) != null)
             return;
 
         var siteDefinition = new SiteDefinition
@@ -116,12 +116,14 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             {
                 new HostDefinition
                 {
-                    Name = "Test",
+                    Name = "localhost:5000",
                     Language = new CultureInfo(_options.DefaultLanguage),
-                    Type = HostDefinitionType.Primary
+                    Type = HostDefinitionType.Primary,
+                    UseSecureConnection = true
                 }
             }
         };
+
         siteDefinitionRepository.Save(siteDefinition);
     }
 }

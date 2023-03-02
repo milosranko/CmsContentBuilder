@@ -23,7 +23,7 @@ namespace CmsContentBuilder.Tests;
 [TestClass]
 public class OptimizelyTests
 {
-    private const string Language = "en";
+    private const string Language = "sr";
 
     [ClassInitialize]
     public static void Initialize(TestContext context)
@@ -156,6 +156,19 @@ public class OptimizelyTests
         Assert.IsNotNull(startPage);
         Assert.IsNotNull(startPage.MainContentArea);
         Assert.IsFalse(startPage.MainContentArea.IsEmpty);
+    }
+
+    [TestMethod]
+    public void SiteDefinitions_ShouldHaveDefaultSiteDefinition()
+    {
+        //Arrange
+        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+
+        //Act
+        var siteDefinitions = siteDefinitionRepository.List();
+
+        //Assert
+        Assert.IsTrue(siteDefinitions.Any());
     }
 
     [TestMethod]
