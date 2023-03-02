@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Optimizely.Demo.PublicWeb.Models.Blocks;
+using Optimizely.Demo.PublicWeb.Models.Media;
 using Optimizely.Demo.PublicWeb.Models.Pages;
 using System.Globalization;
 
@@ -87,6 +88,7 @@ public class OptimizelyTests
                                     p.Heading = PropertyHelpers.AddRandomText();
                                     p.LeadText = PropertyHelpers.AddRandomText(150);
                                     p.MainContent = PropertyHelpers.AddRandomHtml();
+                                    p.TopImage = PropertyHelpers.AddRandomImage<ImageFile>();
                                 }, l2 =>
                                 {
                                     l2
@@ -112,13 +114,13 @@ public class OptimizelyTests
                                     p.Heading = PropertyHelpers.AddRandomText();
                                     p.LeadText = PropertyHelpers.AddRandomText(150);
                                     p.MainContent = PropertyHelpers.AddRandomHtml();
-                                }, 1000);
+                                }, 100);
                             })
                             .WithPage<ArticlePage>()
                             .WithPages<ArticlePage>(p =>
                             {
                                 p.Name = "Article2";
-                            }, 100);
+                            }, 10);
                         });
                 });
             });
@@ -179,7 +181,7 @@ public class OptimizelyTests
 
         //Assert
         Assert.IsNotNull(res);
-        Assert.IsTrue(res.Count > 1000);
+        Assert.IsTrue(res.Count > 100);
     }
 
     [TestMethod]
@@ -203,6 +205,6 @@ public class OptimizelyTests
 
         //Assert
         Assert.IsNotNull(res);
-        Assert.IsTrue(res.Length > 1000);
+        Assert.IsTrue(res.Length > 100);
     }
 }

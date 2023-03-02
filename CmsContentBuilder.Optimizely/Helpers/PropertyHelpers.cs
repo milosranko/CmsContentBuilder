@@ -6,6 +6,8 @@ using EPiServer.DataAccess;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
+using EPiServer.Web;
+using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 
 namespace CmsContentBuilder.Optimizely.Extensions;
@@ -22,17 +24,19 @@ public static class PropertyHelpers
         return new XhtmlString(ResourceHelpers.GetHtmlText());
     }
 
-    public static MediaData AddRandomImage()
+    public static ContentReference AddRandomImage<T>() where T : ImageData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var image = contentRepository.GetDefault<ImageData>(ContentReference.GlobalBlockFolder);
+        var blobFactory = ServiceLocator.Current.GetInstance<IBlobFactory>();
         var options = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
+        var image = contentRepository.GetDefault<T>(GetSiteDefinition(options.DefaultLanguage).GlobalAssetsRoot);
+        var blob = blobFactory.CreateBlob(image.BinaryDataContainer, ".png");
 
-        image.BinaryData.WriteAllBytes(ResourceHelpers.GetImage());
+        blob.WriteAllBytes(ResourceHelpers.GetImage());
+        image.BinaryData = blob;
+        image.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
 
-        contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-
-        return image;
+        return contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
     }
 
     public static ContentArea AddBlock<T>(this ContentArea contentArea, Action<T>? blockOptions = null)
@@ -44,12 +48,12 @@ public static class PropertyHelpers
 
         switch (options.BlocksDefaultLocation)
         {
-            case Models.BlocksDefaultLocationEnum.CurrentPage:
+            case BlocksDefaultLocationEnum.CurrentPage:
                 //TODO Discover current page
                 break;
-            case Models.BlocksDefaultLocationEnum.GlobalBlockFolder:
+            case BlocksDefaultLocationEnum.GlobalBlockFolder:
                 break;
-            case Models.BlocksDefaultLocationEnum.GlobalSiteFolder:
+            case BlocksDefaultLocationEnum.GlobalSiteFolder:
                 blockLocation = ContentReference.SiteBlockFolder;
                 break;
             default:
@@ -73,5 +77,15 @@ public static class PropertyHelpers
         });
 
         return contentArea;
+    }
+
+    public static SiteDefinition GetSiteDefinition(string language)
+    {
+        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+
+        return siteDefinitionRepository
+            .List()
+            .Where(x => x.GetHosts(new CultureInfo(language), false).Any())
+            .Single();
     }
 }
