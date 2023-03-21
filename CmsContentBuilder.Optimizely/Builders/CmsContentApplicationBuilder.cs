@@ -10,7 +10,6 @@ using EPiServer.Web;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.Reflection;
 
 namespace CmsContentBuilder.Optimizely.Builders;
 
@@ -31,9 +30,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         where T : PageData
     {
         var page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
-
-        InitContentAreas(page);
-
+        PropertyHelpers.InitContentAreas(page);
         value?.Invoke(page);
 
         if (string.IsNullOrEmpty(page.Name))
@@ -73,30 +70,12 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         for (int i = 0; i < totalPages; i++)
         {
             page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
+            PropertyHelpers.InitContentAreas(page);
             value?.Invoke(page);
 
             page.Name = string.IsNullOrEmpty(page.Name) ? $"{pageTypeName}_{i}" : $"{page.Name}_{i}";
             _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
         }
-    }
-
-    private void InitContentAreas<T>(T page)
-        where T : PageData
-    {
-        var contentAreaProperties = page.GetType()
-            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(x => x.PropertyType == typeof(ContentArea))
-            .ToArray();
-
-        if (contentAreaProperties.Length == 0)
-            return;
-
-        foreach (var contentArea in contentAreaProperties)
-        {
-            contentArea.SetValue(page, new ContentArea());
-        }
-
-        contentAreaProperties = null;
     }
 
     private void SetAsStartPage(ContentReference pageRef, string language)

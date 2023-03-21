@@ -38,8 +38,6 @@ public class PageContentBuilder : IPageContentBuilder
         else
             _api.Pages.SaveDraftAsync(page).GetAwaiter().GetResult();
 
-        //if (options == null) return;
-
         var pageContentBuilder = new PageContentBuilder(_api, page, _options);
         options?.Invoke(pageContentBuilder);
 

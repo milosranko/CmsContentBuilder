@@ -1,4 +1,5 @@
-﻿using CmsContentBuilder.Optimizely.Interfaces;
+﻿using CmsContentBuilder.Optimizely.Extensions;
+using CmsContentBuilder.Optimizely.Interfaces;
 using CmsContentBuilder.Optimizely.Models;
 using EPiServer;
 using EPiServer.Core;
@@ -28,6 +29,7 @@ public class PageContentBuilder : IPageContentBuilder
         where T : PageData
     {
         var page = _contentRepository.GetDefault<T>(_parent.ContentLink, new CultureInfo(_options.DefaultLanguage));
+        PropertyHelpers.InitContentAreas(page);
         value?.Invoke(page);
 
         if (string.IsNullOrEmpty(page.Name))
@@ -57,6 +59,7 @@ public class PageContentBuilder : IPageContentBuilder
         for (int i = 0; i < totalPages; i++)
         {
             page = _contentRepository.GetDefault<T>(_parent.ContentLink, new CultureInfo(_options.DefaultLanguage));
+            PropertyHelpers.InitContentAreas(page);
             value?.Invoke(page);
 
             page.Name = string.IsNullOrEmpty(page.Name) ? $"{pageTypeName}_{i}" : $"{page.Name}_{i}";

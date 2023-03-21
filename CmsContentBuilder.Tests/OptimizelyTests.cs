@@ -34,10 +34,11 @@ public class OptimizelyTests
             .ConfigureAppConfiguration((context, config) =>
             {
                 config
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddConfiguration(context.Configuration)
                 .AddEnvironmentVariables()
                 .AddJsonFile("appsettings.json", false, true)
-                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true, true)
+                .AddJsonFile("appsettings.unittest.json", true, true)
                 .Build();
             })
             .ConfigureServices((context, services) =>
@@ -114,12 +115,19 @@ public class OptimizelyTests
                                     p.Heading = PropertyHelpers.AddRandomText();
                                     p.LeadText = PropertyHelpers.AddRandomText(150);
                                     p.MainContent = PropertyHelpers.AddRandomHtml();
+                                    p.MainContentArea.AddBlock<TeaserBlock>();
                                 }, 100);
                             })
                             .WithPage<ArticlePage>()
                             .WithPages<ArticlePage>(p =>
                             {
                                 p.Name = "Article2";
+                                p.MainContentArea.AddBlocks<TeaserBlock>(block =>
+                                {
+                                    block.Heading = PropertyHelpers.AddRandomText();
+                                    block.LeadText = PropertyHelpers.AddRandomText(150);
+                                    block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                                }, 10);
                             }, 10);
                         });
                 });
@@ -204,7 +212,8 @@ public class OptimizelyTests
         var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
 
         //Act
-        var res = contentLoader.GetDescendents(ContentReference.RootPage)
+        var res = contentLoader
+            .GetDescendents(ContentReference.RootPage)
             .Where(x =>
             {
                 if (contentLoader.TryGet<PageData>(x, out var page))
@@ -219,5 +228,22 @@ public class OptimizelyTests
         //Assert
         Assert.IsNotNull(res);
         Assert.IsTrue(res.Length > 100);
+    }
+
+    [TestMethod]
+    public void ArticlePageBlocksTest_ShouldGetAllBlocksFromMainContentArea()
+    {
+        //Arrange
+        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+
+        //Act
+        var res = contentLoader
+            .GetChildren<ArticlePage>(ContentReference.RootPage, new LoaderOptions { LanguageLoaderOption.MasterLanguage() })
+            .Where(x => x.MainContentArea != null && x.MainContentArea.Count.Equals(10))
+            .ToArray();
+
+        //Assert
+        Assert.IsNotNull(res);
+        Assert.IsTrue(res.Length == 10);
     }
 }
