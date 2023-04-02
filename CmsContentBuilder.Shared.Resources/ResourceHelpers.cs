@@ -21,9 +21,9 @@ public static class ResourceHelpers
     public static byte[] GetImage()
     {
         using var stream = typeof(ResourceHelpers).Assembly.GetManifestResourceStream("CmsContentBuilder.Shared.Resources.Images.HLD_Screenshot_01_mech_1080.png");
-        var buffer = new byte[stream.Length];
 
-        stream.Read(buffer, 0, 0);
+        var buffer = new byte[stream.Length];
+        stream.Read(buffer, 0, buffer.Length);
 
         return buffer;
     }

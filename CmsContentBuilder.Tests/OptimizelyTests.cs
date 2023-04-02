@@ -74,12 +74,12 @@ public class OptimizelyTests
                             {
                                 p.Name = "StartPage";
                                 p.MainContentArea
-                                .AddBlock<TeaserBlock>()
-                                .AddBlock<TeaserBlock>(block =>
+                                .AddBlocks<TeaserBlock>(block =>
                                 {
                                     block.Heading = PropertyHelpers.AddRandomText();
                                     block.LeadText = PropertyHelpers.AddRandomText(150);
-                                });
+                                    block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                                }, 3);
                             }, l1 =>
                             {
                                 l1
@@ -118,7 +118,15 @@ public class OptimizelyTests
                                     p.MainContentArea.AddBlock<TeaserBlock>();
                                 }, 100);
                             })
-                            .WithPage<ArticlePage>()
+                            .WithPage<NotFoundPage>(p =>
+                            {
+                                p.Name = "NotFoundPage";
+                                p.Teaser.Heading = PropertyHelpers.AddRandomText(20);
+                                p.Teaser.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                                p.Teaser.LeadText = PropertyHelpers.AddRandomText(50);
+                                p.Teaser.LinkButton.LinkText = PropertyHelpers.AddRandomText(15);
+                                p.Teaser.LinkButton.LinkUrl = new Url("https://google.com");
+                            })
                             .WithPages<ArticlePage>(p =>
                             {
                                 p.Name = "Article2";
@@ -245,5 +253,26 @@ public class OptimizelyTests
         //Assert
         Assert.IsNotNull(res);
         Assert.IsTrue(res.Length == 10);
+    }
+
+    [TestMethod]
+    public void LocalBlockTest_ShouldHaveValues()
+    {
+        //Arrange
+        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+
+        //Act
+        var res = contentLoader
+            .GetChildren<NotFoundPage>(ContentReference.RootPage, new LoaderOptions { LanguageLoaderOption.MasterLanguage() })
+            .Single();
+
+        //Assert
+        Assert.IsNotNull(res);
+        Assert.IsNotNull(res.Teaser);
+        Assert.IsNotNull(res.Teaser.Heading);
+        Assert.IsFalse(ContentReference.IsNullOrEmpty(res.Teaser.Image));
+        Assert.IsNotNull(res.Teaser.LinkButton);
+        Assert.IsFalse(string.IsNullOrEmpty(res.Teaser.LinkButton.LinkText));
+        Assert.IsNotNull(res.Teaser.LinkButton.LinkUrl);
     }
 }
