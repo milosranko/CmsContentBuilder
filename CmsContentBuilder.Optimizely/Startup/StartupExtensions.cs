@@ -7,6 +7,7 @@ using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAccess;
 using EPiServer.Security;
+using EPiServer.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
@@ -79,17 +80,22 @@ public static class StartupExtensions
         {
             if (languageBranchRepository.ListAll().Any(x => x.LanguageID.Equals(options.DefaultLanguage, StringComparison.InvariantCultureIgnoreCase)))
             {
-                var pages = contentLoader.GetChildren<IContentData>(options.RootPage, new CultureInfo(options.DefaultLanguage));
-                return pages is null || pages.Count() == 3;
+                var siteDefinitionRepository = services.GetRequiredService<ISiteDefinitionRepository>();
+                var siteDefinition = siteDefinitionRepository
+                    .List()
+                    .Where(x => x.GetHosts(new CultureInfo(options.DefaultLanguage), false).Any())
+                    .SingleOrDefault();
+                //var pages = contentLoader.GetChildren<IContentData>(options.RootPage, new CultureInfo(options.DefaultLanguage));
+
+                return siteDefinition is null; //|| pages is null || pages.Count() == 3;
             }
-            else
-            {
-                return true;
-            }
+
+            return true;
         }
         else if (options.BuildMode.Equals(BuildModeEnum.OnlyIfEmptyRegardlessOfLanguage))
         {
             var pages = contentLoader.GetChildren<IContentData>(options.RootPage);
+
             return pages is null || !pages.Any();
         }
 
