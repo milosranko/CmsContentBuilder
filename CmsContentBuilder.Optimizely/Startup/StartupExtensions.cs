@@ -85,9 +85,9 @@ public static class StartupExtensions
                     .List()
                     .Where(x => x.GetHosts(new CultureInfo(options.DefaultLanguage), false).Any())
                     .SingleOrDefault();
-                //var pages = contentLoader.GetChildren<IContentData>(options.RootPage, new CultureInfo(options.DefaultLanguage));
+                var pages = contentLoader.GetChildren<IContentData>(options.RootPage, new CultureInfo(options.DefaultLanguage));
 
-                return siteDefinition is null; //|| pages is null || pages.Count() == 3;
+                return siteDefinition is null || pages is null || pages.Count() < 3;
             }
 
             return true;
