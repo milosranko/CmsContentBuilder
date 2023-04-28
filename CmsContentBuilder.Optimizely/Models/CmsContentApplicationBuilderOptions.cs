@@ -5,6 +5,7 @@ namespace CmsContentBuilder.Optimizely.Models;
 public class CmsContentApplicationBuilderOptions
 {
     public string DefaultLanguage { get; set; } = "en";
+    public string DefaultHost { get; set; } = "http://localhost";
     public BuildModeEnum BuildMode { get; set; } = BuildModeEnum.Append;
     public PageReference RootPage { get; set; } = ContentReference.RootPage;
     public bool PublishContent { get; set; } = false;

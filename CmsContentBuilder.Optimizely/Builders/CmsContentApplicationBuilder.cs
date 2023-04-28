@@ -44,7 +44,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             _options.StartPageType.Equals(typeof(T)) &&
             ContentReference.IsNullOrEmpty(ContentReference.StartPage))
         {
-            SetAsStartPage(pageRef, _options.DefaultLanguage);
+            SetAsStartPage(pageRef);
         }
 
         if (options == null)
@@ -78,11 +78,12 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         }
     }
 
-    private void SetAsStartPage(ContentReference pageRef, string language)
+    private void SetAsStartPage(ContentReference pageRef)
     {
         var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+        var siteUri = new Uri(_options.DefaultHost);
 
-        if (PropertyHelpers.GetSiteDefinition(language) != null)
+        if (PropertyHelpers.GetSiteDefinition(_options.DefaultLanguage) != null)
             return;
 
         var siteDefinition = new SiteDefinition
@@ -90,15 +91,15 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             Name = "Demo",
             StartPage = pageRef,
             Id = Guid.NewGuid(),
-            SiteUrl = new Uri("https://localhost:5000"),
+            SiteUrl = siteUri,
             Hosts = new List<HostDefinition>
             {
                 new HostDefinition
                 {
-                    Name = "localhost:5000",
+                    Name = siteUri.Authority,
                     Language = new CultureInfo(_options.DefaultLanguage),
-                    Type = HostDefinitionType.Primary,
-                    UseSecureConnection = true
+                    Type = HostDefinitionType.Undefined,
+                    UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
                 }
             }
         };

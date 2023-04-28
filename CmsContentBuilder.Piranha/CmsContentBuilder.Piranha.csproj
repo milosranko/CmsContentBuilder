@@ -4,6 +4,14 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>CmsContentBuilder for Piranha CMS</Title>
+    <Authors>Milos Rankovic</Authors>
+    <Company>MDR Solutions DOO</Company>
+    <Description>Unit tests helper for Piranha CMS</Description>
+    <PackageProjectUrl>https://github.com/milosranko/CmsContentBuilder</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/milosranko/CmsContentBuilder</RepositoryUrl>
+    <Copyright>MDR Solutions DOO</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

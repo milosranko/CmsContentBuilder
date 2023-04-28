@@ -24,7 +24,7 @@ namespace CmsContentBuilder.Tests;
 public class OptimizelyTests
 {
     private const string Language = "sr";
-    private const string HostUrl = "https://localhost:5000";
+    private const string HostUrl = "http://localhost:5001";
 
     [ClassInitialize]
     public static void Initialize(TestContext context)
@@ -62,6 +62,7 @@ public class OptimizelyTests
                     app.UseCmsContentBuilder(
                         builderOptions: o =>
                         {
+                            o.DefaultHost = HostUrl;
                             o.DefaultLanguage = Language;
                             o.BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage;
                             o.RootPage = ContentReference.RootPage;
