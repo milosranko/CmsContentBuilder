@@ -21,13 +21,13 @@ public static class PropertyHelpers
     public static ImageField AddRandomImage(IApi api)
     {
         var imageId = Guid.NewGuid();
-        var imageBytes = ResourceHelpers.GetImage();
+        var image = ResourceHelpers.GetImage();
 
         api.Media.SaveAsync(new BinaryMediaContent
         {
             Id = imageId,
-            Filename = "image.png",
-            Data = imageBytes
+            Filename = image.Name,
+            Data = image.Bytes
         }).GetAwaiter().GetResult();
 
         return new ImageField { Id = imageId };

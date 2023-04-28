@@ -28,16 +28,27 @@ public static class PropertyHelpers
 
     public static ContentReference AddRandomImage<T>() where T : ImageData
     {
-        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var blobFactory = ServiceLocator.Current.GetInstance<IBlobFactory>();
         var options = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
         var site = GetSiteDefinition(options.DefaultLanguage);
-        var image = contentRepository.GetDefault<T>(site != null ? site.GlobalAssetsRoot : ContentReference.GlobalBlockFolder);
+        var mediaFolder = site != null ? site.GlobalAssetsRoot : ContentReference.GlobalBlockFolder;
+        var randomImage = ResourceHelpers.GetImage();
+        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
+        var existingItems = contentRepository
+            .GetChildren<T>(mediaFolder)
+            .Where(x => x.Name.Equals(randomImage.Name, StringComparison.InvariantCultureIgnoreCase));
+
+        if (existingItems != null && existingItems.Any())
+        {
+            return existingItems.ElementAt(0).ContentLink;
+        }
+
+        var blobFactory = ServiceLocator.Current.GetInstance<IBlobFactory>();
+        var image = contentRepository.GetDefault<T>(mediaFolder);
         var blob = blobFactory.CreateBlob(image.BinaryDataContainer, ".png");
 
-        blob.WriteAllBytes(ResourceHelpers.GetImage());
+        blob.WriteAllBytes(randomImage.Bytes);
         image.BinaryData = blob;
-        image.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
+        image.Name = randomImage.Name;
 
         return contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
     }

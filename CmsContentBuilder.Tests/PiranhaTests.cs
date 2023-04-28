@@ -27,7 +27,7 @@ public class PiranhaTests
                 .AddConfiguration(context.Configuration)
                 .AddEnvironmentVariables()
                 .AddJsonFile("appsettings.json", false, true)
-                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true, true)
+                .AddJsonFile("appsettings.unittest.json", true, true)
                 .Build();
             })
             .ConfigureServices((context, services) =>

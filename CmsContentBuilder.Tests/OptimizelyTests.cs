@@ -73,6 +73,7 @@ public class OptimizelyTests
                             .WithPage<StartPage>(p =>
                             {
                                 p.Name = "StartPage";
+                                p.OpenGraphImage = PropertyHelpers.AddRandomImage<ImageFile>();
                                 p.MainContentArea
                                 .AddBlocks<TeaserBlock>(block =>
                                 {

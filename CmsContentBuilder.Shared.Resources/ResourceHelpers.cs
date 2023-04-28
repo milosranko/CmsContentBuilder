@@ -1,4 +1,6 @@
-﻿namespace CmsContentBuilder.Shared.Resources;
+﻿using CmsContentBuilder.Shared.Resources.Extensions;
+
+namespace CmsContentBuilder.Shared.Resources;
 
 public static class ResourceHelpers
 {
@@ -18,13 +20,17 @@ public static class ResourceHelpers
         return reader.ReadToEnd();
     }
 
-    public static byte[] GetImage()
+    public static (string Name, byte[] Bytes) GetImage()
     {
-        using var stream = typeof(ResourceHelpers).Assembly.GetManifestResourceStream("CmsContentBuilder.Shared.Resources.Images.HLD_Screenshot_01_mech_1080.png");
+        var image = typeof(ResourceHelpers).Assembly.GetManifestResourceNames()
+            .Where(x => x.EndsWith(".png"))
+            .Random();
+
+        using var stream = typeof(ResourceHelpers).Assembly.GetManifestResourceStream(image);
 
         var buffer = new byte[stream.Length];
         stream.Read(buffer, 0, buffer.Length);
 
-        return buffer;
+        return (image, buffer);
     }
 }
