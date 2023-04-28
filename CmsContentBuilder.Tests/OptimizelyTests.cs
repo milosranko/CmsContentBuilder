@@ -24,6 +24,7 @@ namespace CmsContentBuilder.Tests;
 public class OptimizelyTests
 {
     private const string Language = "sr";
+    private const string HostUrl = "https://localhost:5000";
 
     [ClassInitialize]
     public static void Initialize(TestContext context)
@@ -43,8 +44,8 @@ public class OptimizelyTests
             })
             .ConfigureServices((context, services) =>
             {
-                services.AddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services
+                    .AddSingleton<IHttpContextFactory, DefaultHttpContextFactory>()
                     .AddCmsAspNetIdentity<ApplicationUser>()
                     .AddCms()
                     .AddCmsContentBuilder();
@@ -55,6 +56,7 @@ public class OptimizelyTests
             })
             .ConfigureWebHostDefaults(config =>
             {
+                config.UseUrls(HostUrl);
                 config.Configure(app =>
                 {
                     app.UseCmsContentBuilder(
@@ -275,5 +277,23 @@ public class OptimizelyTests
         Assert.IsNotNull(res.Teaser.LinkButton);
         Assert.IsFalse(string.IsNullOrEmpty(res.Teaser.LinkButton.LinkText));
         Assert.IsNotNull(res.Teaser.LinkButton.LinkUrl);
+    }
+
+    [TestMethod]
+    public async Task GetSiteStartPage_ShouldReturnHtml()
+    {
+        //Arrange
+        var client = new HttpClient
+        {
+            BaseAddress = new Uri(HostUrl)
+        };
+
+        //Act
+        var res = await client.GetAsync("/");
+
+        //Assert
+        Assert.IsNotNull(res);
+        //Assert.IsTrue(res.IsSuccessStatusCode);
+        client.Dispose();
     }
 }
