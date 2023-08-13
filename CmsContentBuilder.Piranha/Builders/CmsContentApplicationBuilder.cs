@@ -19,7 +19,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         _options = options;
     }
 
-    public void WithSite<T>(Action<T>? value = null)
+    public ICmsContentApplicationBuilder WithSite<T>(Action<T>? value = null)
         where T : SiteContent<T>
     {
         var availableLanguages = _api.Languages.GetAllAsync().GetAwaiter().GetResult();
@@ -49,6 +49,8 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         value?.Invoke(site);
 
         _api.Sites.SaveContentAsync(defaultSite.Id, site).GetAwaiter().GetResult();
+
+        return this;
     }
 
     public ICmsContentApplicationBuilder WithPage<T>(Action<T>? value = null, Action<IPageContentBuilder>? options = null)

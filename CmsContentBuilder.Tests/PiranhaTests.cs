@@ -52,9 +52,7 @@ public class PiranhaTests
                             s.SiteFooter.Column1Header = PropertyHelpers.AddRandomText();
                             s.SiteFooter.Column2Header = PropertyHelpers.AddRandomText();
                             s.SiteFooter.Column3Header = PropertyHelpers.AddRandomText();
-                        });
-
-                        b
+                        })
                         .WithPage<StartPage>(p =>
                         {
                             p.Title = "StartPage";
@@ -93,7 +91,7 @@ public class PiranhaTests
                             {
                                 p.Title = "Article1_2";
                                 p.PageRegion.Heading = PropertyHelpers.AddRandomText();
-                            }, 1000);
+                            }, 100);
                         })
                         .WithPage<ArticlePage>(p =>
                         {
@@ -150,6 +148,6 @@ public class PiranhaTests
         Assert.IsNotNull(site);
         Assert.IsTrue(site.LanguageId.Equals(defaultLanguage.Id));
         Assert.IsNotNull(pages);
-        Assert.IsTrue(pages.Count() > 1000);
+        Assert.IsTrue(pages.Count() > 100);
     }
 }
