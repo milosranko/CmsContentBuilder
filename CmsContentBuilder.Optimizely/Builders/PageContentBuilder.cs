@@ -29,15 +29,16 @@ public class PageContentBuilder : IPageContentBuilder
         where T : PageData
     {
         var page = _contentRepository.GetDefault<T>(_parent.ContentLink, new CultureInfo(_options.DefaultLanguage));
-        PropertyHelpers.InitContentAreas(page);
+        page.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
+        var contentAreas = PropertyHelpers.InitContentAreas(page);
         value?.Invoke(page);
 
-        if (string.IsNullOrEmpty(page.Name))
-        {
-            page.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
-        }
+        var contentRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-        _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        if (contentAreas.Any())
+        {
+            //TODO Check if there is a collection of blocks waiting to be created under that page
+        }
 
         var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
         options?.Invoke(pageContentBuilder);
@@ -59,11 +60,16 @@ public class PageContentBuilder : IPageContentBuilder
         for (int i = 0; i < totalPages; i++)
         {
             page = _contentRepository.GetDefault<T>(_parent.ContentLink, new CultureInfo(_options.DefaultLanguage));
-            PropertyHelpers.InitContentAreas(page);
+            var contentAreas = PropertyHelpers.InitContentAreas(page);
             value?.Invoke(page);
 
             page.Name = string.IsNullOrEmpty(page.Name) ? $"{pageTypeName}_{i}" : $"{page.Name}_{i}";
-            _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+            var contentRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+
+            if (contentAreas.Any())
+            {
+                //TODO Check if there is a collection of blocks waiting to be created under that page
+            }
         }
     }
 }

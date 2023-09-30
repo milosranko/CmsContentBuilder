@@ -1,6 +1,5 @@
-using CmsContentBuilder.Optimizely.Extensions;
-using CmsContentBuilder.Optimizely.Models;
 using CmsContentBuilder.Optimizely.Startup;
+using CmsContentBuilder.Tests.Optimizely.Extensions;
 using EPiServer;
 using EPiServer.Cms.UI.AspNetIdentity;
 using EPiServer.Core;
@@ -13,19 +12,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Optimizely.Demo.PublicWeb.Models.Blocks;
-using Optimizely.Demo.PublicWeb.Models.Media;
 using Optimizely.Demo.PublicWeb.Models.Pages;
 using System.Globalization;
+using static CmsContentBuilder.Tests.Optimizely.Constants.StringConstants;
 
 namespace CmsContentBuilder.Tests;
 
 [TestClass]
 public class OptimizelyTests
 {
-    private const string Language = "sr";
-    private const string HostUrl = "http://localhost:5001";
-
     [ClassInitialize]
     public static void Initialize(TestContext context)
     {
@@ -59,89 +54,7 @@ public class OptimizelyTests
                 config.UseUrls(HostUrl);
                 config.Configure(app =>
                 {
-                    app.UseCmsContentBuilder(
-                        builderOptions: o =>
-                        {
-                            o.DefaultHost = HostUrl;
-                            o.DefaultLanguage = Language;
-                            o.BuildMode = BuildModeEnum.OnlyIfEmptyInDefaultLanguage;
-                            o.RootPage = ContentReference.RootPage;
-                            o.StartPageType = typeof(StartPage);
-                            o.PublishContent = true;
-                            o.BlocksDefaultLocation = BlocksDefaultLocationEnum.CurrentPage;
-                        },
-                        builder: b =>
-                        {
-                            b
-                            .WithPage<StartPage>(p =>
-                            {
-                                p.Name = "StartPage";
-                                p.OpenGraphImage = PropertyHelpers.AddRandomImage<ImageFile>();
-                                p.MainContentArea
-                                .AddBlocks<TeaserBlock>(block =>
-                                {
-                                    block.Heading = PropertyHelpers.AddRandomText();
-                                    block.LeadText = PropertyHelpers.AddRandomText(150);
-                                    block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
-                                }, 3);
-                            }, l1 =>
-                            {
-                                l1
-                                .WithSubPage<ArticlePage>(p =>
-                                {
-                                    p.Name = "Article1_1";
-                                    p.Heading = PropertyHelpers.AddRandomText();
-                                    p.LeadText = PropertyHelpers.AddRandomText(150);
-                                    p.MainContent = PropertyHelpers.AddRandomHtml();
-                                    p.TopImage = PropertyHelpers.AddRandomImage<ImageFile>();
-                                }, l2 =>
-                                {
-                                    l2
-                                    .WithSubPage<ArticlePage>(p =>
-                                    {
-                                        p.Name = "Article2_1";
-                                        p.Heading = PropertyHelpers.AddRandomText();
-                                        p.LeadText = PropertyHelpers.AddRandomText(150);
-                                        p.MainContent = PropertyHelpers.AddRandomHtml();
-                                    })
-                                    .WithSubPage<ArticlePage>(options: l3 =>
-                                    {
-                                        l3.WithSubPages<ArticlePage>(p =>
-                                        {
-                                            p.Heading = PropertyHelpers.AddRandomText();
-                                            p.LeadText = PropertyHelpers.AddRandomText(150);
-                                            p.MainContent = PropertyHelpers.AddRandomHtml();
-                                        }, 20);
-                                    });
-                                })
-                                .WithSubPages<ArticlePage>(p =>
-                                {
-                                    p.Heading = PropertyHelpers.AddRandomText();
-                                    p.LeadText = PropertyHelpers.AddRandomText(150);
-                                    p.MainContent = PropertyHelpers.AddRandomHtml();
-                                    p.MainContentArea.AddBlock<TeaserBlock>();
-                                }, 100);
-                            })
-                            .WithPage<NotFoundPage>(p =>
-                            {
-                                p.Name = "NotFoundPage";
-                                p.Teaser.Heading = PropertyHelpers.AddRandomText(20);
-                                p.Teaser.Image = PropertyHelpers.AddRandomImage<ImageFile>();
-                                p.Teaser.LeadText = PropertyHelpers.AddRandomText(50);
-                                p.Teaser.LinkButton.LinkText = PropertyHelpers.AddRandomText(15);
-                                p.Teaser.LinkButton.LinkUrl = new Url("https://google.com");
-                            })
-                            .WithPages<ArticlePage>(p =>
-                            {
-                                p.Name = "Article2";
-                                p.MainContentArea.AddBlocks<TeaserBlock>(block =>
-                                {
-                                    block.Heading = PropertyHelpers.AddRandomText();
-                                    block.LeadText = PropertyHelpers.AddRandomText(150);
-                                    block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
-                                }, 10);
-                            }, 10);
-                        });
+                    app.ConfigureCmsContentBuilder();
                 });
             });
 
@@ -256,7 +169,7 @@ public class OptimizelyTests
 
         //Assert
         Assert.IsNotNull(res);
-        Assert.IsTrue(res.Length == 10);
+        Assert.IsTrue(res.Length.Equals(10));
     }
 
     [TestMethod]
@@ -294,7 +207,24 @@ public class OptimizelyTests
 
         //Assert
         Assert.IsNotNull(res);
-        //Assert.IsTrue(res.IsSuccessStatusCode);
         client.Dispose();
+    }
+
+    [TestMethod]
+    public void GetBlocksFromFolder_ShouldReturnBlocks()
+    {
+        //Arrange
+        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+        var res = contentLoader
+            .GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder)
+            .FirstOrDefault(x => x.Name.Equals(TeaserBlocksFolderName));
+
+        //Act
+        var blocks = contentLoader.GetChildren<BlockData>(res.ContentLink, new LoaderOptions { LanguageLoaderOption.MasterLanguage() });
+
+        //Assert
+        Assert.IsNotNull(res);
+        Assert.IsNotNull(blocks);
+        Assert.IsTrue(blocks.Count() > 1);
     }
 }

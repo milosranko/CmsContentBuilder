@@ -47,16 +47,16 @@ public static class StartupExtensions
 
         switch (options.BuildMode)
         {
-            case BuildModeEnum.Append:
+            case BuildMode.Append:
                 proceedBuildingContent = true;
                 break;
-            case BuildModeEnum.Overwrite:
+            case BuildMode.Overwrite:
                 proceedBuildingContent = true;
                 break;
-            case BuildModeEnum.OnlyIfEmptyInDefaultLanguage:
+            case BuildMode.OnlyIfEmptyInDefaultLanguage:
                 proceedBuildingContent = IsInstallationEmpty(services, options);
                 break;
-            case BuildModeEnum.OnlyIfEmptyRegardlessOfLanguage:
+            case BuildMode.OnlyIfEmptyRegardlessOfLanguage:
                 proceedBuildingContent = IsInstallationEmpty(services, options);
                 break;
             default:
@@ -76,7 +76,7 @@ public static class StartupExtensions
         var contentLoader = services.GetRequiredService<IContentLoader>();
         var languageBranchRepository = services.GetRequiredService<ILanguageBranchRepository>();
 
-        if (options.BuildMode.Equals(BuildModeEnum.OnlyIfEmptyInDefaultLanguage))
+        if (options.BuildMode.Equals(BuildMode.OnlyIfEmptyInDefaultLanguage))
         {
             if (languageBranchRepository.ListAll().Any(x => x.LanguageID.Equals(options.DefaultLanguage, StringComparison.InvariantCultureIgnoreCase)))
             {
@@ -92,7 +92,7 @@ public static class StartupExtensions
 
             return true;
         }
-        else if (options.BuildMode.Equals(BuildModeEnum.OnlyIfEmptyRegardlessOfLanguage))
+        else if (options.BuildMode.Equals(BuildMode.OnlyIfEmptyRegardlessOfLanguage))
         {
             var pages = contentLoader.GetChildren<IContentData>(options.RootPage);
 

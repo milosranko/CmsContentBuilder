@@ -30,7 +30,7 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         where T : PageData
     {
         var page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
-        PropertyHelpers.InitContentAreas(page);
+        var contentAreas = PropertyHelpers.InitContentAreas(page);
         value?.Invoke(page);
 
         if (string.IsNullOrEmpty(page.Name))
@@ -45,6 +45,11 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
             ContentReference.IsNullOrEmpty(ContentReference.StartPage))
         {
             SetAsStartPage(pageRef);
+        }
+
+        if (contentAreas.Any())
+        {
+            //TODO Check if there is a collection of blocks waiting to be created under that page
         }
 
         if (options == null)
@@ -70,11 +75,16 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         for (int i = 0; i < totalPages; i++)
         {
             page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
-            PropertyHelpers.InitContentAreas(page);
+            var contentAreas = PropertyHelpers.InitContentAreas(page);
             value?.Invoke(page);
 
             page.Name = string.IsNullOrEmpty(page.Name) ? $"{pageTypeName}_{i}" : $"{page.Name}_{i}";
             _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+
+            if (contentAreas.Any())
+            {
+                //TODO Check if there is a collection of blocks waiting to be created under that page
+            }
         }
     }
 

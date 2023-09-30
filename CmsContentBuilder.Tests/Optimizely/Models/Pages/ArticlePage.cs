@@ -54,8 +54,10 @@ public class ArticlePage : PageBaseSeo
         GroupName = SystemTabNames.Content,
         Order = 50)]
     [AllowedTypes(new[] {
-            typeof(TeaserBlock)
-        })]
+        typeof(TeaserBlock),
+        typeof(AccordionContainerBlock),
+        typeof(ImageData)
+    })]
     public virtual ContentArea MainContentArea { get; set; }
 
     #endregion

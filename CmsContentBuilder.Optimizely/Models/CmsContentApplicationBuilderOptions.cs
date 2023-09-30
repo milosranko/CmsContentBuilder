@@ -6,9 +6,9 @@ public class CmsContentApplicationBuilderOptions
 {
     public string DefaultLanguage { get; set; } = "en";
     public string DefaultHost { get; set; } = "http://localhost";
-    public BuildModeEnum BuildMode { get; set; } = BuildModeEnum.Append;
+    public BuildMode BuildMode { get; set; } = BuildMode.Append;
     public PageReference RootPage { get; set; } = ContentReference.RootPage;
     public bool PublishContent { get; set; } = false;
-    public BlocksDefaultLocationEnum BlocksDefaultLocation { get; set; } = BlocksDefaultLocationEnum.GlobalBlockFolder;
+    public BlocksDefaultLocation BlocksDefaultLocation { get; set; } = BlocksDefaultLocation.GlobalBlockFolder;
     public Type? StartPageType { get; set; }
 }

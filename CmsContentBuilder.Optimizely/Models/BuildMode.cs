@@ -1,6 +1,6 @@
 ﻿namespace CmsContentBuilder.Optimizely.Models;
 
-public enum BuildModeEnum
+public enum BuildMode
 {
     Append,
     Overwrite,

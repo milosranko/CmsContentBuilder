@@ -1,6 +1,6 @@
 ﻿namespace CmsContentBuilder.Optimizely.Models;
 
-public enum BlocksDefaultLocationEnum
+public enum BlocksDefaultLocation
 {
     CurrentPage,
     GlobalBlockFolder,
