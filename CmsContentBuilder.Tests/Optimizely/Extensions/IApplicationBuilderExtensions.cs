@@ -31,14 +31,15 @@ internal static class IApplicationBuilderExtensions
                 b
                 .WithPage<StartPage>(p =>
                 {
-                    p.Name = "StartPage";
+                    p.Name = "Home Page";
                     p.OpenGraphImage = PropertyHelpers.AddRandomImage<ImageFile>();
                     p.MainContentArea
-                    .AddItems<TeaserBlock>(block =>
+                    .AddItems<TeaserBlock>(b =>
                     {
-                        block.Heading = PropertyHelpers.AddRandomText();
-                        block.LeadText = PropertyHelpers.AddRandomText(150);
-                        block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                        b.Name = "Teaser Test 1";
+                        b.Heading = PropertyHelpers.AddRandomText();
+                        b.LeadText = PropertyHelpers.AddRandomText(150);
+                        b.Image = PropertyHelpers.AddRandomImage<ImageFile>();
                     }, 3, p.Name);
                 }, l1 =>
                 {
@@ -53,9 +54,11 @@ internal static class IApplicationBuilderExtensions
                         p.MainContentArea
                         .AddItem<AccordionContainerBlock>(b =>
                         {
+                            b.Name = "Accordion Container";
                             b.Heading = PropertyHelpers.AddRandomText();
                             b.Items.AddItems<AccordionItemBlock>(b1 =>
                             {
+                                b1.Name = "Accordion Item";
                                 b1.Heading = PropertyHelpers.AddRandomText();
                                 b1.Image = PropertyHelpers.AddRandomImage<ImageFile>();
                                 b1.LeadText = PropertyHelpers.AddRandomText(105);

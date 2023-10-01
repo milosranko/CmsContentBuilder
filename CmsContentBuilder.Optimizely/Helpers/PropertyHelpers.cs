@@ -7,6 +7,7 @@ using EPiServer.Framework.Blobs;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -82,6 +83,20 @@ public static class PropertyHelpers
         return AddItemToContentArea(contentArea, iContent.ContentLink);
     }
 
+    public static ContentReference GetOrCreateItem<T>(
+        Action<T>? options = null,
+        string? folderName = default) where T : IContent
+    {
+        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
+        var globalOptions = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
+        var parent = GetOrCreateBlockFolder(folderName, globalOptions);
+        var content = contentRepository.GetDefault<T>(parent, new CultureInfo(globalOptions.DefaultLanguage));
+
+        options?.Invoke(content);
+
+        return GetOrCreateDefaultContent(content);
+    }
+
     public static ContentArea AddItems<T>(
         this ContentArea contentArea,
         Action<T>? options = null,
@@ -90,13 +105,13 @@ public static class PropertyHelpers
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
-        var location = GetOrCreateBlockFolder(folderName, globalOptions);
+        var parent = GetOrCreateBlockFolder(folderName, globalOptions);
         T content;
         var typeName = typeof(T).Name;
 
         for (int i = 0; i < totalBlocks; i++)
         {
-            content = contentRepository.GetDefault<T>(location, new CultureInfo(globalOptions.DefaultLanguage));
+            content = contentRepository.GetDefault<T>(parent, new CultureInfo(globalOptions.DefaultLanguage));
             var totalContentAreas = InitContentAreas(content);
             options?.Invoke(content);
 
@@ -200,5 +215,23 @@ public static class PropertyHelpers
         }
 
         return blockLocation;
+    }
+
+    private static ContentReference GetOrCreateDefaultContent<T>(
+        T content) where T : IContent
+    {
+        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
+        var globalOptions = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
+        var foundContent = contentRepository
+            .GetChildren<T>(content.ParentLink)
+            .FirstOrDefault(x => x.Name.Equals(content.Name, StringComparison.InvariantCultureIgnoreCase));
+
+        if (foundContent == null)
+        {
+            contentRepository.Save(content, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+            return content.ContentLink;
+        }
+
+        return foundContent.ContentLink;
     }
 }
