@@ -11,7 +11,7 @@ using static CmsContentBuilder.Tests.Optimizely.Constants.StringConstants;
 
 namespace CmsContentBuilder.Tests.Optimizely.Extensions;
 
-internal static class IApplicationBuilderExtensions
+internal static class ApplicationBuilderExtensions
 {
     public static IApplicationBuilder ConfigureCmsContentBuilder(this IApplicationBuilder app)
     {
@@ -36,15 +36,14 @@ internal static class IApplicationBuilderExtensions
                     p.MainContentArea
                     .AddItems<TeaserBlock>(b =>
                     {
-                        b.Name = "Teaser Test 1";
                         b.Heading = PropertyHelpers.AddRandomText();
                         b.LeadText = PropertyHelpers.AddRandomText(150);
                         b.Image = PropertyHelpers.AddRandomImage<ImageFile>();
-                    }, 3, p.Name);
+                    }, "Teaser Test", 3, p.Name);
                 }, l1 =>
                 {
                     l1
-                    .WithSubPage<ArticlePage>(p =>
+                    .WithPage<ArticlePage>(p =>
                     {
                         p.Name = "Article1_1";
                         p.Heading = PropertyHelpers.AddRandomText();
@@ -54,16 +53,14 @@ internal static class IApplicationBuilderExtensions
                         p.MainContentArea
                         .AddItem<AccordionContainerBlock>(b =>
                         {
-                            b.Name = "Accordion Container";
                             b.Heading = PropertyHelpers.AddRandomText();
                             b.Items.AddItems<AccordionItemBlock>(b1 =>
                             {
-                                b1.Name = "Accordion Item";
                                 b1.Heading = PropertyHelpers.AddRandomText();
                                 b1.Image = PropertyHelpers.AddRandomImage<ImageFile>();
                                 b1.LeadText = PropertyHelpers.AddRandomText(105);
-                            }, 5);
-                        })
+                            }, "Accordion Item", 5);
+                        }, "Accordion Container")
                         .AddItem<ImageFile>(i =>
                         {
                             i.Name = "Test Image";
@@ -72,16 +69,16 @@ internal static class IApplicationBuilderExtensions
                     }, l2 =>
                     {
                         l2
-                        .WithSubPage<ArticlePage>(p =>
+                        .WithPage<ArticlePage>(p =>
                         {
                             p.Name = "Article2_1";
                             p.Heading = PropertyHelpers.AddRandomText();
                             p.LeadText = PropertyHelpers.AddRandomText(150);
                             p.MainContent = PropertyHelpers.AddRandomHtml();
                         })
-                        .WithSubPage<ArticlePage>(options: l3 =>
+                        .WithPage<ArticlePage>(options: l3 =>
                         {
-                            l3.WithSubPages<ArticlePage>(p =>
+                            l3.WithPages<ArticlePage>(p =>
                             {
                                 p.Heading = PropertyHelpers.AddRandomText();
                                 p.LeadText = PropertyHelpers.AddRandomText(150);
@@ -89,7 +86,7 @@ internal static class IApplicationBuilderExtensions
                             }, 20);
                         });
                     })
-                    .WithSubPages<ArticlePage>(p =>
+                    .WithPages<ArticlePage>(p =>
                     {
                         p.Heading = PropertyHelpers.AddRandomText();
                         p.LeadText = PropertyHelpers.AddRandomText(150);
@@ -114,7 +111,7 @@ internal static class IApplicationBuilderExtensions
                         block.Heading = PropertyHelpers.AddRandomText();
                         block.LeadText = PropertyHelpers.AddRandomText(150);
                         block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
-                    }, 10, TeaserBlocksFolderName);
+                    }, null, 10, TeaserBlocksFolderName);
                 }, 10);
             });
 

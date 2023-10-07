@@ -2,7 +2,7 @@
 
 namespace CmsContentBuilder.Optimizely.Models;
 
-public class CmsContentApplicationBuilderOptions
+public class ContentBuilderOptions
 {
     public string DefaultLanguage { get; set; } = "en";
     public string DefaultHost { get; set; } = "http://localhost";

@@ -29,7 +29,7 @@ public static class PropertyHelpers
 
     public static ContentReference AddRandomImage<T>() where T : MediaData
     {
-        var options = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
+        var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var site = GetSiteDefinition(options.DefaultLanguage);
         var mediaFolder = site != null ? site.GlobalAssetsRoot : ContentReference.GlobalBlockFolder;
         var randomImage = ResourceHelpers.GetImage();
@@ -57,10 +57,11 @@ public static class PropertyHelpers
     public static ContentArea AddItem<T>(
         this ContentArea contentArea,
         Action<T>? options = null,
+        string? name = default,
         string? folderName = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var globalOptions = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
+        var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var location = GetOrCreateBlockFolder(folderName, globalOptions);
         var content = contentRepository.GetDefault<T>(location, new CultureInfo(globalOptions.DefaultLanguage));
 
@@ -70,8 +71,10 @@ public static class PropertyHelpers
 
         var iContent = (IContent)content;
 
-        if (string.IsNullOrEmpty(iContent.Name))
+        if (string.IsNullOrEmpty(iContent.Name) && string.IsNullOrEmpty(name))
             iContent.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
+        else if (string.IsNullOrEmpty(iContent.Name))
+            iContent.Name = name;
 
         if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
         {
@@ -83,28 +86,42 @@ public static class PropertyHelpers
         return AddItemToContentArea(contentArea, iContent.ContentLink);
     }
 
-    public static ContentReference GetOrCreateItem<T>(
+    public static ContentReference GetOrCreateContent<T>(
         Action<T>? options = null,
         string? folderName = default) where T : IContent
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var globalOptions = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
+        var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var parent = GetOrCreateBlockFolder(folderName, globalOptions);
         var content = contentRepository.GetDefault<T>(parent, new CultureInfo(globalOptions.DefaultLanguage));
 
         options?.Invoke(content);
 
-        return GetOrCreateDefaultContent(content);
+        if (string.IsNullOrEmpty(content.Name))
+            content.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
+
+        var foundContent = contentRepository
+            .GetChildren<T>(content.ParentLink)
+            .FirstOrDefault(x => x.Name.Equals(content.Name, StringComparison.InvariantCultureIgnoreCase));
+
+        if (foundContent == null)
+        {
+            contentRepository.Save(content, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+            return content.ContentLink;
+        }
+
+        return foundContent.ContentLink;
     }
 
     public static ContentArea AddItems<T>(
         this ContentArea contentArea,
         Action<T>? options = null,
+        string? name = default,
         [Range(1, 10000)] int totalBlocks = 1,
         string? folderName = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var globalOptions = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
+        var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var parent = GetOrCreateBlockFolder(folderName, globalOptions);
         T content;
         var typeName = typeof(T).Name;
@@ -116,7 +133,10 @@ public static class PropertyHelpers
             options?.Invoke(content);
 
             var iContent = (IContent)content;
-            iContent.Name = string.IsNullOrEmpty(iContent.Name) ? $"{typeName}_{i}" : $"{iContent.Name}_{i}";
+            if (string.IsNullOrEmpty(iContent.Name) && string.IsNullOrEmpty(name))
+                iContent.Name = $"{typeName}_{i}";
+            else
+                iContent.Name = string.IsNullOrEmpty(name) ? $"{typeName}_{i}" : $"{iContent.Name}_{i}";
 
             if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
             {
@@ -179,7 +199,7 @@ public static class PropertyHelpers
 
     private static ContentReference GetOrCreateBlockFolder(
         string? folderName,
-        CmsContentApplicationBuilderOptions options)
+        ContentBuilderOptions options)
     {
         if (string.IsNullOrEmpty(folderName))
             return options.BlocksDefaultLocation switch
@@ -215,23 +235,5 @@ public static class PropertyHelpers
         }
 
         return blockLocation;
-    }
-
-    private static ContentReference GetOrCreateDefaultContent<T>(
-        T content) where T : IContent
-    {
-        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var globalOptions = ServiceLocator.Current.GetInstance<CmsContentApplicationBuilderOptions>();
-        var foundContent = contentRepository
-            .GetChildren<T>(content.ParentLink)
-            .FirstOrDefault(x => x.Name.Equals(content.Name, StringComparison.InvariantCultureIgnoreCase));
-
-        if (foundContent == null)
-        {
-            contentRepository.Save(content, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-            return content.ContentLink;
-        }
-
-        return foundContent.ContentLink;
     }
 }

@@ -19,29 +19,29 @@ public static class StartupExtensions
     public static IServiceCollection AddCmsContentBuilder(
         this IServiceCollection services)
     {
-        services.AddTransient<ICmsContentApplicationBuilder, CmsContentApplicationBuilder>();
+        services.AddTransient<IContentBuilder, ContentBuilder>();
         services.AddTransient<IUsersService, UsersService>();
-        services.AddScoped(x => new CmsContentApplicationBuilderOptions());
+        services.AddScoped(x => new ContentBuilderOptions());
 
         return services;
     }
 
     public static void UseCmsContentBuilder(
         this IApplicationBuilder app,
-        Action<ICmsContentApplicationBuilder> builder,
-        Action<CmsContentApplicationBuilderOptions>? builderOptions = null)
+        Action<IContentBuilder> builder,
+        Action<ContentBuilderOptions>? builderOptions = null)
     {
-        var options = app.ApplicationServices.GetRequiredService<CmsContentApplicationBuilderOptions>();
+        var options = app.ApplicationServices.GetRequiredService<ContentBuilderOptions>();
         builderOptions?.Invoke(options);
 
         if (ApplyOptions(app.ApplicationServices, options))
         {
-            var appBuilder = app.ApplicationServices.GetRequiredService<ICmsContentApplicationBuilder>();
+            var appBuilder = app.ApplicationServices.GetRequiredService<IContentBuilder>();
             builder.Invoke(appBuilder);
         }
     }
 
-    private static bool ApplyOptions(IServiceProvider services, CmsContentApplicationBuilderOptions options)
+    private static bool ApplyOptions(IServiceProvider services, ContentBuilderOptions options)
     {
         var proceedBuildingContent = false;
 
@@ -71,7 +71,7 @@ public static class StartupExtensions
         return true;
     }
 
-    private static bool IsInstallationEmpty(IServiceProvider services, CmsContentApplicationBuilderOptions options)
+    private static bool IsInstallationEmpty(IServiceProvider services, ContentBuilderOptions options)
     {
         var contentLoader = services.GetRequiredService<IContentLoader>();
         var languageBranchRepository = services.GetRequiredService<ILanguageBranchRepository>();
@@ -102,7 +102,7 @@ public static class StartupExtensions
         return false;
     }
 
-    private static void ApplyDefaultLanguage(IServiceProvider services, CmsContentApplicationBuilderOptions options)
+    private static void ApplyDefaultLanguage(IServiceProvider services, ContentBuilderOptions options)
     {
         var languageBranchRepository = services.GetRequiredService<ILanguageBranchRepository>();
         var contentLoader = services.GetRequiredService<IContentLoader>();

@@ -13,23 +13,28 @@ using System.Globalization;
 
 namespace CmsContentBuilder.Optimizely.Builders;
 
-public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
+public class ContentBuilder : IContentBuilder
 {
+    private readonly PageData _parent;
     private readonly IContentRepository _contentRepository;
-    private readonly CmsContentApplicationBuilderOptions _options;
+    private readonly ContentBuilderOptions _options;
 
-    public CmsContentApplicationBuilder(IContentRepository contentRepository, CmsContentApplicationBuilderOptions options)
+    public ContentBuilder(IContentRepository contentRepository, PageData parent, ContentBuilderOptions options)
     {
+        _parent = parent;
         _contentRepository = contentRepository;
         _options = options;
     }
 
-    public ICmsContentApplicationBuilder WithPage<T>(
+    public IContentBuilder WithPage<T>(
         Action<T>? value = null,
-        Action<IPageContentBuilder>? options = null)
+        Action<IContentBuilder>? options = null)
         where T : PageData
     {
-        var page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
+        var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent.ContentLink)
+            ? _parent.ContentLink
+            : _options.RootPage;
+        var page = _contentRepository.GetDefault<T>(parent, new CultureInfo(_options.DefaultLanguage));
         var contentAreas = PropertyHelpers.InitContentAreas(page);
         value?.Invoke(page);
 
@@ -55,8 +60,8 @@ public class CmsContentApplicationBuilder : ICmsContentApplicationBuilder
         if (options == null)
             return this;
 
-        var pageContentBuilder = new PageContentBuilder(_contentRepository, page, _options);
-        options?.Invoke(pageContentBuilder);
+        var builder = new ContentBuilder(_contentRepository, page, _options);
+        options?.Invoke(builder);
 
         return this;
     }
