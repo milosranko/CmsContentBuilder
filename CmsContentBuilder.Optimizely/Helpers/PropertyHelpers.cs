@@ -54,10 +54,45 @@ public static class PropertyHelpers
         return contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
     }
 
+    public static ContentArea AddItem<T>(this ContentArea contentArea) where T : IContentData
+    {
+        return AddItem<T>(contentArea, default, default, default);
+    }
+
     public static ContentArea AddItem<T>(
         this ContentArea contentArea,
-        Action<T>? options = null,
+        string name) where T : IContentData
+    {
+        return AddItem<T>(contentArea, name, default, default);
+    }
+
+    public static ContentArea AddItem<T>(
+        this ContentArea contentArea,
+        Action<T> options) where T : IContentData
+    {
+        return AddItem(contentArea, default, options, default);
+    }
+
+    public static ContentArea AddItem<T>(
+        this ContentArea contentArea,
+        string name,
+        Action<T> options) where T : IContentData
+    {
+        return AddItem(contentArea, name, options, default);
+    }
+
+    public static ContentArea AddItem<T>(
+        this ContentArea contentArea,
+        Action<T> options,
+        string folderName) where T : IContentData
+    {
+        return AddItem(contentArea, default, options, folderName);
+    }
+
+    public static ContentArea AddItem<T>(
+        this ContentArea contentArea,
         string? name = default,
+        Action<T>? options = null,
         string? folderName = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
@@ -113,10 +148,46 @@ public static class PropertyHelpers
         return foundContent.ContentLink;
     }
 
+    public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData
+    {
+        return AddItems<T>(contentArea, default, default, default, default);
+    }
+
     public static ContentArea AddItems<T>(
         this ContentArea contentArea,
-        Action<T>? options = null,
+        string name) where T : IContentData
+    {
+        return AddItems<T>(contentArea, name, default, default, default);
+    }
+
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        string name,
+        Action<T> options) where T : IContentData
+    {
+        return AddItems(contentArea, name, options, default, default);
+    }
+
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        [Range(1, 10000)] int totalBlocks) where T : IContentData
+    {
+        return AddItems<T>(contentArea, default, default, totalBlocks, default);
+    }
+
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        Action<T> options,
+        [Range(1, 10000)] int totalBlocks,
+        string folderName) where T : IContentData
+    {
+        return AddItems(contentArea, default, options, totalBlocks, folderName);
+    }
+
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
         string? name = default,
+        Action<T>? options = null,
         [Range(1, 10000)] int totalBlocks = 1,
         string? folderName = default) where T : IContentData
     {

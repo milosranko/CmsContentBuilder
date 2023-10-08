@@ -7,6 +7,7 @@ using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAccess;
 using EPiServer.Security;
+using EPiServer.Shell.Security;
 using EPiServer.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +67,8 @@ public static class StartupExtensions
             return false;
 
         ApplyDefaultLanguage(services, options);
+        CreateRoles(services, options.Roles);
+        CreateUsers(services, options.Users);
 
         return true;
     }
@@ -130,6 +133,35 @@ public static class StartupExtensions
             var rootPageClone = rootPage.CreateWritableClone();
             rootPageClone.ExistingLanguages.Append(options.DefaultLanguage);
             contentRepository.Save(rootPageClone, SaveAction.Default, AccessLevel.NoAccess);
+        }
+    }
+
+    private static void CreateRoles(IServiceProvider services, IEnumerable<string> roles)
+    {
+        if (!roles.Any()) return;
+
+        var roleProvider = services.GetService<UIRoleProvider>();
+
+        foreach (var role in roles)
+        {
+            roleProvider.CreateRoleAsync(role).GetAwaiter().GetResult();
+        }
+    }
+
+    private static void CreateUsers(IServiceProvider services, IEnumerable<UserModel> users)
+    {
+        if (!users.Any()) return;
+
+        var userProvider = services.GetService<UIUserProvider>();
+        var roleProvider = services.GetService<UIRoleProvider>();
+
+        foreach (var user in users)
+        {
+            userProvider.CreateUserAsync(user.UserName, user.Password, user.Email, null, null, true).GetAwaiter().GetResult();
+            if (user.Roles.Any())
+            {
+                roleProvider.AddUserToRolesAsync(user.UserName, user.Roles).GetAwaiter().GetResult();
+            }
         }
     }
 }

@@ -17,5 +17,5 @@ public class ContentBuilderOptions
     public BlocksDefaultLocation BlocksDefaultLocation { get; set; } = BlocksDefaultLocation.GlobalBlockFolder;
     public Type? StartPageType { get; set; }
     public IList<string> Roles { get; set; } = new List<string>();
-    //public IList<ApplicationUser>
+    public IList<UserModel> Users { get; set; } = new List<UserModel>();
 }
