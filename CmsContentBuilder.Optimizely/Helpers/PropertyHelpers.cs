@@ -63,7 +63,7 @@ public static class PropertyHelpers
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var location = GetOrCreateBlockFolder(folderName, globalOptions);
-        var content = contentRepository.GetDefault<T>(location, new CultureInfo(globalOptions.DefaultLanguage));
+        var content = contentRepository.GetDefault<T>(location, globalOptions.DefaultLanguage);
 
         InitContentAreas(content);
 
@@ -93,7 +93,7 @@ public static class PropertyHelpers
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var parent = GetOrCreateBlockFolder(folderName, globalOptions);
-        var content = contentRepository.GetDefault<T>(parent, new CultureInfo(globalOptions.DefaultLanguage));
+        var content = contentRepository.GetDefault<T>(parent, globalOptions.DefaultLanguage);
 
         options?.Invoke(content);
 
@@ -128,7 +128,7 @@ public static class PropertyHelpers
 
         for (int i = 0; i < totalBlocks; i++)
         {
-            content = contentRepository.GetDefault<T>(parent, new CultureInfo(globalOptions.DefaultLanguage));
+            content = contentRepository.GetDefault<T>(parent, globalOptions.DefaultLanguage);
             var totalContentAreas = InitContentAreas(content);
             options?.Invoke(content);
 
@@ -152,14 +152,13 @@ public static class PropertyHelpers
         return contentArea;
     }
 
-    public static SiteDefinition? GetSiteDefinition(string language)
+    public static SiteDefinition? GetSiteDefinition(CultureInfo language)
     {
         var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
-        var culture = new CultureInfo(language);
 
         return siteDefinitionRepository
             .List()
-            .Where(x => x.GetHosts(culture, false).Any())
+            .Where(x => x.GetHosts(language, false).Any())
             .SingleOrDefault();
     }
 
@@ -223,7 +222,7 @@ public static class PropertyHelpers
 
             if (foundFolder == null)
             {
-                var folder = contentRepository.GetDefault<ContentFolder>(blockLocation, new CultureInfo(options.DefaultLanguage));
+                var folder = contentRepository.GetDefault<ContentFolder>(blockLocation, options.DefaultLanguage);
                 folder.Name = folderName;
                 contentRepository.Save(folder, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
                 blockLocation = folder.ContentLink;

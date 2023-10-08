@@ -10,7 +10,6 @@ using EPiServer.Security;
 using EPiServer.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using System.Globalization;
 
 namespace CmsContentBuilder.Optimizely.Startup;
 
@@ -78,14 +77,14 @@ public static class StartupExtensions
 
         if (options.BuildMode.Equals(BuildMode.OnlyIfEmptyInDefaultLanguage))
         {
-            if (languageBranchRepository.ListAll().Any(x => x.LanguageID.Equals(options.DefaultLanguage, StringComparison.InvariantCultureIgnoreCase)))
+            if (languageBranchRepository.ListAll().Any(x => x.Culture.Equals(options.DefaultLanguage)))
             {
                 var siteDefinitionRepository = services.GetRequiredService<ISiteDefinitionRepository>();
                 var siteDefinition = siteDefinitionRepository
                     .List()
-                    .Where(x => x.GetHosts(new CultureInfo(options.DefaultLanguage), false).Any())
+                    .Where(x => x.GetHosts(options.DefaultLanguage, false).Any())
                     .SingleOrDefault();
-                var pages = contentLoader.GetChildren<IContentData>(options.RootPage, new CultureInfo(options.DefaultLanguage));
+                var pages = contentLoader.GetChildren<IContentData>(options.RootPage, options.DefaultLanguage);
 
                 return siteDefinition is null || pages is null || pages.Count() < 3;
             }
@@ -109,7 +108,7 @@ public static class StartupExtensions
         var contentRepository = services.GetRequiredService<IContentRepository>();
         var availableLanguages = languageBranchRepository.ListAll();
 
-        if (!availableLanguages.Any(x => x.LanguageID.Equals(options.DefaultLanguage, StringComparison.InvariantCultureIgnoreCase)))
+        if (!availableLanguages.Any(x => x.Culture.Equals(options.DefaultLanguage)))
         {
             var newLanguageBranch = new LanguageBranch(options.DefaultLanguage);
 
@@ -118,7 +117,7 @@ public static class StartupExtensions
         }
         else
         {
-            var existingLanguage = availableLanguages.Single(x => x.LanguageID.Equals(options.DefaultLanguage, StringComparison.InvariantCultureIgnoreCase));
+            var existingLanguage = availableLanguages.Single(x => x.Culture.Equals(options.DefaultLanguage));
             if (!existingLanguage.Enabled)
             {
                 languageBranchRepository.Enable(existingLanguage.Culture);
@@ -126,10 +125,10 @@ public static class StartupExtensions
         }
 
         var rootPage = contentLoader.Get<PageData>(options.RootPage);
-        if (!rootPage.ExistingLanguages.Any(x => x.Name.Equals(options.DefaultLanguage, StringComparison.InvariantCultureIgnoreCase)))
+        if (!rootPage.ExistingLanguages.Any(x => x.Equals(options.DefaultLanguage)))
         {
             var rootPageClone = rootPage.CreateWritableClone();
-            rootPageClone.ExistingLanguages.Append(new CultureInfo(options.DefaultLanguage));
+            rootPageClone.ExistingLanguages.Append(options.DefaultLanguage);
             contentRepository.Save(rootPageClone, SaveAction.Default, AccessLevel.NoAccess);
         }
     }

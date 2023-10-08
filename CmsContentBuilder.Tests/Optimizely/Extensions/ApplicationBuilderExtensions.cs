@@ -25,6 +25,8 @@ internal static class ApplicationBuilderExtensions
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
                 o.BlocksDefaultLocation = BlocksDefaultLocation.CurrentPage;
+                //o.Roles.Add("rolename");
+                //o.Users.Add("username", "email@test.com", "password", Roles.WebEditors)
             },
             builder: b =>
             {

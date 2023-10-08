@@ -9,7 +9,6 @@ using EPiServer.ServiceLocation;
 using EPiServer.Web;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 
 namespace CmsContentBuilder.Optimizely.Builders;
 
@@ -34,7 +33,7 @@ public class ContentBuilder : IContentBuilder
         var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent.ContentLink)
             ? _parent.ContentLink
             : _options.RootPage;
-        var page = _contentRepository.GetDefault<T>(parent, new CultureInfo(_options.DefaultLanguage));
+        var page = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
         var contentAreas = PropertyHelpers.InitContentAreas(page);
         value?.Invoke(page);
 
@@ -79,7 +78,7 @@ public class ContentBuilder : IContentBuilder
 
         for (int i = 0; i < totalPages; i++)
         {
-            page = _contentRepository.GetDefault<T>(_options.RootPage, new CultureInfo(_options.DefaultLanguage));
+            page = _contentRepository.GetDefault<T>(_options.RootPage, _options.DefaultLanguage);
             var contentAreas = PropertyHelpers.InitContentAreas(page);
             value?.Invoke(page);
 
@@ -112,7 +111,7 @@ public class ContentBuilder : IContentBuilder
                 new HostDefinition
                 {
                     Name = siteUri.Authority,
-                    Language = new CultureInfo(_options.DefaultLanguage),
+                    Language = _options.DefaultLanguage,
                     Type = HostDefinitionType.Undefined,
                     UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
                 }

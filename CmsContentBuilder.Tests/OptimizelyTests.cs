@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Optimizely.Demo.PublicWeb.Models.Pages;
-using System.Globalization;
 using static CmsContentBuilder.Tests.Optimizely.Constants.StringConstants;
 
 namespace CmsContentBuilder.Tests;
@@ -78,7 +77,7 @@ public class OptimizelyTests
         var pages = contentLoader.GetDescendents(ContentReference.RootPage);
         var siteDefinition = siteDefinitionRepository
             .List()
-            .Where(x => x.GetHosts(new CultureInfo(Language), false).Any())
+            .Where(x => x.GetHosts(Language, false).Any())
             .Single();
         var startPage = contentLoader.Get<StartPage>(siteDefinition.StartPage);
 
@@ -122,7 +121,7 @@ public class OptimizelyTests
         };
 
         //Act
-        var res = pageCriteriaQueryService.FindAllPagesWithCriteria(PageReference.RootPage, criterias, Language, LanguageSelector.MasterLanguage());
+        var res = pageCriteriaQueryService.FindAllPagesWithCriteria(PageReference.RootPage, criterias, Language.TwoLetterISOLanguageName, LanguageSelector.MasterLanguage());
 
         //Assert
         Assert.IsNotNull(res);
