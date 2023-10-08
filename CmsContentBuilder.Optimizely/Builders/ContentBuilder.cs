@@ -25,10 +25,12 @@ public class ContentBuilder : IContentBuilder
         _options = options;
     }
 
-    public IContentBuilder WithPage<T>(
-        Action<T>? value = null,
-        Action<IContentBuilder>? options = null)
-        where T : PageData
+    public IContentBuilder WithPage<T>(Action<IContentBuilder> options) where T : PageData
+    {
+        return WithPage<T>(default, options);
+    }
+
+    public IContentBuilder WithPage<T>(Action<T>? value = null, Action<IContentBuilder>? options = null) where T : PageData
     {
         var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent.ContentLink)
             ? _parent.ContentLink
@@ -65,10 +67,12 @@ public class ContentBuilder : IContentBuilder
         return this;
     }
 
-    public void WithPages<T>(
-        Action<T>? value = null,
-        [Range(1, 10000)] int totalPages = 1)
-        where T : PageData
+    public IContentBuilder WithPages<T>([Range(1, 10000)] int totalPages = 1) where T : PageData
+    {
+        return WithPages<T>(default, totalPages);
+    }
+
+    public IContentBuilder WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
     {
         if (totalPages < 1 || totalPages > 10000)
             throw new ArgumentOutOfRangeException(nameof(totalPages));
@@ -90,6 +94,8 @@ public class ContentBuilder : IContentBuilder
                 //TODO Check if there is a collection of blocks waiting to be created under that page
             }
         }
+
+        return this;
     }
 
     private void SetAsStartPage(ContentReference pageRef)

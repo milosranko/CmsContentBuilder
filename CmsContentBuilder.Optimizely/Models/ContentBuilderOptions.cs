@@ -16,6 +16,6 @@ public class ContentBuilderOptions
     public bool PublishContent { get; set; } = false;
     public BlocksDefaultLocation BlocksDefaultLocation { get; set; } = BlocksDefaultLocation.GlobalBlockFolder;
     public Type? StartPageType { get; set; }
-    public IList<string> Roles { get; set; } = new List<string>();
+    public IList<string> Roles { get; set; } = new List<string> { EPiServer.Authorization.Roles.WebEditors, EPiServer.Authorization.Roles.WebAdmins };
     public IList<UserModel> Users { get; set; } = new List<UserModel>();
 }

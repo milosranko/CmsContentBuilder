@@ -111,19 +111,20 @@ public static class StartupExtensions
         var contentRepository = services.GetRequiredService<IContentRepository>();
         var availableLanguages = languageBranchRepository.ListAll();
 
-        if (!availableLanguages.Any(x => x.Culture.Equals(options.DefaultLanguage)))
+        foreach (var lang in options.EnabledLanguages)
         {
-            var newLanguageBranch = new LanguageBranch(options.DefaultLanguage);
-
-            languageBranchRepository.Save(newLanguageBranch);
-            languageBranchRepository.Enable(newLanguageBranch.Culture);
-        }
-        else
-        {
-            var existingLanguage = availableLanguages.Single(x => x.Culture.Equals(options.DefaultLanguage));
-            if (!existingLanguage.Enabled)
+            if (availableLanguages.Any(x => x.Culture.Equals(lang)))
             {
-                languageBranchRepository.Enable(existingLanguage.Culture);
+                var existingLanguage = availableLanguages.Single(x => x.Culture.Equals(lang));
+
+                if (!existingLanguage.Enabled)
+                    languageBranchRepository.Enable(existingLanguage.Culture);
+            }
+            else
+            {
+                var newLanguageBranch = new LanguageBranch(lang);
+                languageBranchRepository.Save(newLanguageBranch);
+                languageBranchRepository.Enable(newLanguageBranch.Culture);
             }
         }
 
@@ -144,7 +145,8 @@ public static class StartupExtensions
 
         foreach (var role in roles)
         {
-            roleProvider.CreateRoleAsync(role).GetAwaiter().GetResult();
+            if (!roleProvider.RoleExistsAsync(role).GetAwaiter().GetResult())
+                roleProvider.CreateRoleAsync(role).GetAwaiter().GetResult();
         }
     }
 
@@ -154,10 +156,17 @@ public static class StartupExtensions
 
         var userProvider = services.GetService<UIUserProvider>();
         var roleProvider = services.GetService<UIRoleProvider>();
+        IUIUser? uiUser = default;
 
         foreach (var user in users)
         {
+            uiUser = userProvider.GetUserAsync(user.UserName).GetAwaiter().GetResult();
+
+            if (uiUser != null)
+                continue;
+
             userProvider.CreateUserAsync(user.UserName, user.Password, user.Email, null, null, true).GetAwaiter().GetResult();
+
             if (user.Roles.Any())
             {
                 roleProvider.AddUserToRolesAsync(user.UserName, user.Roles).GetAwaiter().GetResult();

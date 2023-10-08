@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Optimizely.Demo.PublicWeb.Models.Blocks;
 using Optimizely.Demo.PublicWeb.Models.Media;
 using Optimizely.Demo.PublicWeb.Models.Pages;
+using System.Globalization;
 using static CmsContentBuilder.Tests.Optimizely.Constants.StringConstants;
 
 namespace CmsContentBuilder.Tests.Optimizely.Extensions;
@@ -19,16 +20,15 @@ internal static class ApplicationBuilderExtensions
         app.UseCmsContentBuilder(
             builderOptions: o =>
             {
-                //TODO Define enabled languages, site hosts and host default language
+                o.EnabledLanguages.Add(new CultureInfo("sr"));
                 o.DefaultHost = HostUrl;
-                o.DefaultLanguage = Language;
+                o.DefaultLanguage = o.EnabledLanguages.Last();
                 o.BuildMode = BuildMode.OnlyIfEmptyInDefaultLanguage;
                 o.RootPage = ContentReference.RootPage;
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
                 o.BlocksDefaultLocation = BlocksDefaultLocation.CurrentPage;
                 o.Roles.Add(TestRole);
-                o.Roles.Add(Roles.WebEditors);
                 o.Users.Add(new UserModel
                 {
                     UserName = "TestUser",
@@ -87,7 +87,7 @@ internal static class ApplicationBuilderExtensions
                             p.LeadText = PropertyHelpers.AddRandomText(150);
                             p.MainContent = PropertyHelpers.AddRandomHtml();
                         })
-                        .WithPage<ArticlePage>(options: l3 =>
+                        .WithPage<ArticlePage>(l3 =>
                         {
                             l3.WithPages<ArticlePage>(p =>
                             {
@@ -123,7 +123,17 @@ internal static class ApplicationBuilderExtensions
                         block.LeadText = PropertyHelpers.AddRandomText(150);
                         block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
                     }, 10, TeaserBlocksFolderName);
-                }, 10);
+                }, 10)
+                .WithPages<ArticlePage>(p =>
+                {
+                    p.Name = "Articles4";
+                    p.MainContentArea.AddItems<TeaserBlock>(block =>
+                    {
+                        block.Heading = PropertyHelpers.AddRandomText();
+                        block.LeadText = PropertyHelpers.AddRandomText(150);
+                        block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                    }, 2, TeaserBlocksFolderName);
+                }, 2);
             });
 
         return app;

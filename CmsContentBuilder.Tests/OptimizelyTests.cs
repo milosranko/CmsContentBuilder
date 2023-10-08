@@ -121,7 +121,11 @@ public class OptimizelyTests
         };
 
         //Act
-        var res = pageCriteriaQueryService.FindAllPagesWithCriteria(PageReference.RootPage, criterias, Language.TwoLetterISOLanguageName, LanguageSelector.MasterLanguage());
+        var res = pageCriteriaQueryService.FindAllPagesWithCriteria(
+            PageReference.RootPage,
+            criterias,
+            Language.TwoLetterISOLanguageName,
+            LanguageSelector.MasterLanguage());
 
         //Assert
         Assert.IsNotNull(res);
@@ -161,7 +165,7 @@ public class OptimizelyTests
 
         //Act
         var res = contentLoader
-            .GetChildren<ArticlePage>(ContentReference.RootPage, new LoaderOptions { LanguageLoaderOption.MasterLanguage() })
+            .GetChildren<ArticlePage>(ContentReference.RootPage, Language)
             .Where(x => x.MainContentArea != null && x.MainContentArea.Count.Equals(10))
             .ToArray();
 
@@ -178,7 +182,7 @@ public class OptimizelyTests
 
         //Act
         var res = contentLoader
-            .GetChildren<NotFoundPage>(ContentReference.RootPage, new LoaderOptions { LanguageLoaderOption.MasterLanguage() })
+            .GetChildren<NotFoundPage>(ContentReference.RootPage, Language)
             .Single();
 
         //Assert
@@ -218,7 +222,7 @@ public class OptimizelyTests
             .FirstOrDefault(x => x.Name.Equals(TeaserBlocksFolderName));
 
         //Act
-        var blocks = contentLoader.GetChildren<BlockData>(res.ContentLink, new LoaderOptions { LanguageLoaderOption.MasterLanguage() });
+        var blocks = contentLoader.GetChildren<BlockData>(res.ContentLink, Language);
 
         //Assert
         Assert.IsNotNull(res);
