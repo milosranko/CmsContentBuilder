@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>1.0.21-alpha</Version>
+    <Title>CmsContentScaffolding for Optimizely CMS</Title>
+    <Company>MDR Solutions</Company>
+    <Authors>Milos Rankovic</Authors>
+    <Description>Unit testing helper for Optimizely CMS</Description>
+    <RepositoryUrl>https://github.com/milosranko/CmsContentScaffolding</RepositoryUrl>
+    <Copyright>MDR Solutions DOO</Copyright>
+    <PackageProjectUrl>https://github.com/milosranko/CmsContentScaffolding</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EPiServer.CMS" Version="12.16.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CmsContentScaffolding.Shared.Resources\CmsContentScaffolding.Shared.Resources.csproj">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>
