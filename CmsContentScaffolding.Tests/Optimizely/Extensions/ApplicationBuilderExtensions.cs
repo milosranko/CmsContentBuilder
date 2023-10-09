@@ -15,7 +15,7 @@ namespace CmsContentScaffolding.Tests.Optimizely.Extensions;
 
 internal static class ApplicationBuilderExtensions
 {
-    public static IApplicationBuilder ConfigureCmsContentScaffolding(this IApplicationBuilder app)
+    public static IApplicationBuilder UseCmsContentScaffolding(this IApplicationBuilder app)
     {
         app.UseCmsContentScaffolding(
             builderOptions: o =>
@@ -43,13 +43,13 @@ internal static class ApplicationBuilderExtensions
                 .WithPage<StartPage>(p =>
                 {
                     p.Name = "Home Page";
-                    p.OpenGraphImage = PropertyHelpers.AddRandomImage<ImageFile>();
+                    p.OpenGraphImage = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     p.MainContentArea
                     .AddItems<TeaserBlock>("Teaser Test", b =>
                     {
                         b.Heading = PropertyHelpers.AddRandomText();
                         b.LeadText = PropertyHelpers.AddRandomText(150);
-                        b.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                        b.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     }, 3, p.Name);
                 }, l1 =>
                 {
@@ -60,7 +60,7 @@ internal static class ApplicationBuilderExtensions
                         p.Heading = PropertyHelpers.AddRandomText();
                         p.LeadText = PropertyHelpers.AddRandomText(150);
                         p.MainContent = PropertyHelpers.AddRandomHtml();
-                        p.TopImage = PropertyHelpers.AddRandomImage<ImageFile>();
+                        p.TopImage = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                         p.MainContentArea
                         .AddItem<AccordionContainerBlock>("Accordion Container", b =>
                         {
@@ -68,14 +68,14 @@ internal static class ApplicationBuilderExtensions
                             b.Items.AddItems<AccordionItemBlock>("Accordion Item", b1 =>
                             {
                                 b1.Heading = PropertyHelpers.AddRandomText();
-                                b1.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                                b1.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                                 b1.LeadText = PropertyHelpers.AddRandomText(105);
                             }, 5);
                         })
                         .AddItem<ImageFile>(options: i =>
                         {
                             i.Name = "Test Image";
-                            i.ContentLink = PropertyHelpers.AddRandomImage<ImageFile>();
+                            i.ContentLink = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                         });
                     }, l2 =>
                     {
@@ -109,7 +109,7 @@ internal static class ApplicationBuilderExtensions
                 {
                     p.Name = "NotFoundPage";
                     p.Teaser.Heading = PropertyHelpers.AddRandomText(20);
-                    p.Teaser.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                    p.Teaser.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     p.Teaser.LeadText = PropertyHelpers.AddRandomText(50);
                     p.Teaser.LinkButton.LinkText = PropertyHelpers.AddRandomText(15);
                     p.Teaser.LinkButton.LinkUrl = new Url("https://google.com");
@@ -121,7 +121,7 @@ internal static class ApplicationBuilderExtensions
                     {
                         block.Heading = PropertyHelpers.AddRandomText();
                         block.LeadText = PropertyHelpers.AddRandomText(150);
-                        block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                        block.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     }, 10, TeaserBlocksFolderName);
                 }, 10)
                 .WithPages<ArticlePage>(p =>
@@ -131,7 +131,7 @@ internal static class ApplicationBuilderExtensions
                     {
                         block.Heading = PropertyHelpers.AddRandomText();
                         block.LeadText = PropertyHelpers.AddRandomText(150);
-                        block.Image = PropertyHelpers.AddRandomImage<ImageFile>();
+                        block.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     }, 2, TeaserBlocksFolderName);
                 }, 2);
             });

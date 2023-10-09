@@ -27,7 +27,7 @@ public static class PropertyHelpers
         return new XhtmlString(ResourceHelpers.GetHtmlText());
     }
 
-    public static ContentReference AddRandomImage<T>() where T : MediaData
+    public static ContentReference GetOrAddRandomImage<T>() where T : MediaData
     {
         var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var site = GetSiteDefinition(options.DefaultLanguage);

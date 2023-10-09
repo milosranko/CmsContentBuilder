@@ -52,7 +52,7 @@ public class OptimizelyTests
                 config.UseUrls(HostUrl);
                 config.Configure(app =>
                 {
-                    app.ConfigureCmsContentScaffolding();
+                    app.UseCmsContentScaffolding();
                 });
             });
 
