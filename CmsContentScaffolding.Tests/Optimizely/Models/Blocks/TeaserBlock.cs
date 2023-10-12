@@ -1,4 +1,5 @@
 ﻿using EPiServer.Core;
+using EPiServer.DataAbstraction;
 using EPiServer.DataAnnotations;
 using EPiServer.Framework.DataAnnotations;
 using EPiServer.Web;
@@ -8,14 +9,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Optimizely.Demo.PublicWeb.Models.Blocks;
 
-[ContentType(GUID = "{C98C99EA-A630-49CD-8A45-5AEF47EE265D}")]
+[ContentType(
+    GUID = "{C98C99EA-A630-49CD-8A45-5AEF47EE265D}",
+    DisplayName = "Teaser Block")]
 public class TeaserBlock : BlockBase
 {
     #region Content tab
 
     [CultureSpecific]
     [Display(
-        GroupName = "Content",
+        Name = "Heading",
+        GroupName = SystemTabNames.Content,
         Order = 100)]
     public virtual string Heading { get; set; }
 

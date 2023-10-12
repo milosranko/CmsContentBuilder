@@ -4,6 +4,7 @@ using CmsContentScaffolding.Optimizely.Models;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
+using EPiServer.DataAnnotations;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
@@ -39,10 +40,7 @@ public class ContentBuilder : IContentBuilder
         var contentAreas = PropertyHelpers.InitContentAreas(page);
         value?.Invoke(page);
 
-        if (string.IsNullOrEmpty(page.Name))
-        {
-            page.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
-        }
+        GetOrSetPageName<T>(page);
 
         var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
@@ -78,7 +76,6 @@ public class ContentBuilder : IContentBuilder
             throw new ArgumentOutOfRangeException(nameof(totalPages));
 
         T page;
-        var pageTypeName = typeof(T).Name;
 
         for (int i = 0; i < totalPages; i++)
         {
@@ -86,7 +83,8 @@ public class ContentBuilder : IContentBuilder
             var contentAreas = PropertyHelpers.InitContentAreas(page);
             value?.Invoke(page);
 
-            page.Name = string.IsNullOrEmpty(page.Name) ? $"{pageTypeName}_{i}" : $"{page.Name}_{i}";
+            GetOrSetPageName<T>(page);
+
             _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
             if (contentAreas.Any())
@@ -96,6 +94,26 @@ public class ContentBuilder : IContentBuilder
         }
 
         return this;
+    }
+
+    private void GetOrSetPageName<T>(PageData page, string? nameSuffix = default) where T : PageData
+    {
+        if (!string.IsNullOrEmpty(page.Name))
+            return;
+
+        var type = typeof(T);
+        var displayName = type
+            .GetCustomAttributes(typeof(ContentTypeAttribute), false)
+            .Cast<ContentTypeAttribute>()
+            .FirstOrDefault()?.DisplayName;
+
+        if (!string.IsNullOrEmpty(displayName))
+        {
+            page.Name = $"{displayName} {nameSuffix ?? Guid.NewGuid().ToString()}";
+            return;
+        }
+
+        page.Name = $"{type.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
     }
 
     private void SetAsStartPage(ContentReference pageRef)
