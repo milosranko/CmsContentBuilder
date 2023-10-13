@@ -111,6 +111,12 @@ public static class StartupExtensions
         var contentRepository = services.GetRequiredService<IContentRepository>();
         var availableLanguages = languageBranchRepository.ListAll();
 
+        var svLang = availableLanguages.SingleOrDefault(x => x.LanguageID.Equals("sv"));
+        if (svLang != null)
+        {
+            languageBranchRepository.Disable(svLang.Culture);
+        }
+
         foreach (var lang in options.EnabledLanguages)
         {
             if (availableLanguages.Any(x => x.Culture.Equals(lang)))
