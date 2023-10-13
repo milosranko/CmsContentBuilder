@@ -1,11 +1,11 @@
-# CmsContentBuilder
-Build thousands of pages with any structure using just a few lines of code,
+# CmsContentScaffolding
+Scaffold thousands of pages with any structure using just a few lines of code,
 Optimizely CMS and Piranha CMS supported
 
     builder.UseCmsContentBuilder(
       builderOptions: new CmsContentApplicationBuilderOptions
       {
-          DefaultLanguage = "sr-RS",
+          DefaultLanguage = "sr",
           BuildMode = BuildModeEnum.OnlyIfEmpty
       },
       builder: contentBuilder =>
