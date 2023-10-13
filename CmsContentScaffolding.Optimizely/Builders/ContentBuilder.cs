@@ -77,10 +77,13 @@ public class ContentBuilder : IContentBuilder
             throw new ArgumentOutOfRangeException(nameof(totalPages));
 
         T page;
+        var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent.ContentLink)
+            ? _parent.ContentLink
+            : _options.RootPage;
 
         for (int i = 0; i < totalPages; i++)
         {
-            page = _contentRepository.GetDefault<T>(_options.RootPage, _options.DefaultLanguage);
+            page = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
             var contentAreas = PropertyHelpers.InitContentAreas(page);
             value?.Invoke(page);
 

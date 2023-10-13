@@ -3,7 +3,6 @@ using CmsContentScaffolding.Optimizely.Models;
 using CmsContentScaffolding.Optimizely.Startup;
 using EPiServer;
 using EPiServer.Authorization;
-using EPiServer.Core;
 using Microsoft.AspNetCore.Builder;
 using Optimizely.Demo.PublicWeb.Models.Blocks;
 using Optimizely.Demo.PublicWeb.Models.Media;
@@ -24,7 +23,7 @@ internal static class ApplicationBuilderExtensions
                 o.DefaultHost = HostUrl;
                 o.DefaultLanguage = o.EnabledLanguages.Last();
                 o.BuildMode = BuildMode.OnlyIfEmptyInDefaultLanguage;
-                o.RootPage = ContentReference.RootPage;
+                //o.RootPage = ContentReference.RootPage;
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
                 o.BlocksDefaultLocation = BlocksDefaultLocation.CurrentPage;
