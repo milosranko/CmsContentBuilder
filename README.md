@@ -22,20 +22,20 @@ Optimizely CMS and Piranha CMS supported
               });
           }, level1 =>
           {
-              level1.WithSubPage<ArticlePage>(page =>
+              level1.WithPage<ArticlePage>(page =>
               {
                   page.Name = "Article1_1";
               }, level2 =>
               {
-                  level2.WithSubPage<ArticlePage>(page =>
+                  level2.WithPage<ArticlePage>(page =>
                   {
                       page.Name = "Article2_1";
                   });
-                  level2.WithSubPage<ArticlePage>(options: level3 =>
+                  level2.WithPage<ArticlePage>(options: level3 =>
                   {
-                      level3.WithSubPages<ArticlePage>(totalPages: 20);
+                      level3.WithPages<ArticlePage>(totalPages: 20);
                   });
               });
-              level1.WithSubPages<ArticlePage>(totalPages: 100);
+              level1.WithPages<ArticlePage>(totalPages: 100);
           });
       });
