@@ -38,6 +38,7 @@ public class ContentBuilder : IContentBuilder
             : _options.RootPage;
         var page = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
         var contentAreas = PropertyHelpers.InitContentAreas(page);
+
         value?.Invoke(page);
 
         GetOrSetPageName<T>(page);
@@ -83,7 +84,7 @@ public class ContentBuilder : IContentBuilder
             var contentAreas = PropertyHelpers.InitContentAreas(page);
             value?.Invoke(page);
 
-            GetOrSetPageName<T>(page);
+            GetOrSetPageName<T>(page, i.ToString());
 
             _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
