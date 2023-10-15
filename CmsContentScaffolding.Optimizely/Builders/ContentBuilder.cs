@@ -43,18 +43,21 @@ public class ContentBuilder : IContentBuilder
 
         GetOrSetPageName<T>(page);
 
-        var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-
-        if (_options.StartPageType != null &&
-            _options.StartPageType.Equals(typeof(T)) &&
-            ContentReference.IsNullOrEmpty(ContentReference.StartPage))
+        var existingPage = _contentRepository.GetChildren<T>(parent).SingleOrDefault(x => x.Name.Equals(page.Name));
+        if (existingPage is null)
         {
-            SetAsStartPage(pageRef);
-        }
+            var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-        if (contentAreas.Any())
-        {
-            //TODO Check if there is a collection of blocks waiting to be created under that page
+            if (_options.StartPageType != null && _options.StartPageType.Equals(typeof(T)))
+            {
+                SetAsStartPage(pageRef);
+            }
+
+            var contentToMove = _contentRepository.GetChildren<IContent>(PropertyHelpers.GetOrCreateTempFolder(_options), _options.DefaultLanguage);
+            foreach (var item in contentToMove)
+            {
+                _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
+            }
         }
 
         if (options == null)
@@ -89,11 +92,16 @@ public class ContentBuilder : IContentBuilder
 
             GetOrSetPageName<T>(page, i.ToString());
 
-            _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-
-            if (contentAreas.Any())
+            var existingPage = _contentRepository.GetChildren<T>(parent).SingleOrDefault(x => x.Name.Equals(page.Name));
+            if (existingPage is null)
             {
-                //TODO Check if there is a collection of blocks waiting to be created under that page
+                var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+
+                var contentToMove = _contentRepository.GetChildren<IContent>(PropertyHelpers.GetOrCreateTempFolder(_options), _options.DefaultLanguage);
+                foreach (var item in contentToMove)
+                {
+                    _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
+                }
             }
         }
 
@@ -125,14 +133,16 @@ public class ContentBuilder : IContentBuilder
         var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
         var siteUri = new Uri(_options.DefaultHost);
 
-        if (PropertyHelpers.GetSiteDefinition(_options.DefaultLanguage) != null)
+        if (siteDefinitionRepository.List().Any(x => x.Name.Equals(_options.SiteName)))
             return;
+
+        //if (PropertyHelpers.GetSiteDefinition(_options.DefaultLanguage) != null)
+        //    return;
 
         var siteDefinition = new SiteDefinition
         {
-            Name = "Demo",
+            Name = _options.SiteName,
             StartPage = pageRef,
-            Id = Guid.NewGuid(),
             SiteUrl = siteUri,
             Hosts = new List<HostDefinition>
             {
@@ -140,12 +150,12 @@ public class ContentBuilder : IContentBuilder
                 {
                     Name = siteUri.Authority,
                     Language = _options.DefaultLanguage,
-                    Type = HostDefinitionType.Undefined,
+                    Type = HostDefinitionType.Primary,
                     UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
                 }
             }
         };
-
+        //siteDefinition.SiteAssetsRoot = 
         siteDefinitionRepository.Save(siteDefinition);
     }
 }

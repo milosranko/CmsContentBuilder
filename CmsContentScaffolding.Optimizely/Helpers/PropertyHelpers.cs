@@ -84,23 +84,22 @@ public static class PropertyHelpers
     public static ContentArea AddItem<T>(
         this ContentArea contentArea,
         Action<T> options,
-        string folderName) where T : IContentData
+        AssetOptions? assetOptions = null) where T : IContentData
     {
-        return AddItem(contentArea, default, options, folderName);
+        return AddItem(contentArea, default, options, assetOptions);
     }
 
     public static ContentArea AddItem<T>(
         this ContentArea contentArea,
         string? name = default,
         Action<T>? options = null,
-        string? folderName = default) where T : IContentData
+        AssetOptions? assetOptions = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var location = GetOrCreateBlockFolder(folderName, globalOptions);
+        var location = GetOrCreateBlockFolder(assetOptions, globalOptions);
         var content = contentRepository.GetDefault<T>(location, globalOptions.DefaultLanguage);
-
-        InitContentAreas(content);
+        var contentAreas = InitContentAreas(content);
 
         options?.Invoke(content);
 
@@ -116,18 +115,23 @@ public static class PropertyHelpers
             return AddItemToContentArea(contentArea, iContent.ContentLink);
         }
 
-        contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        var contentRef = contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        //var contentToMove = contentRepository.GetChildren<IContent>(GetOrCreateTempFolder(globalOptions), globalOptions.DefaultLanguage);
+        //foreach (var item in contentToMove.Where(x => x.ContentLink != contentRef))
+        //{
+        //    contentRepository.Move(item.ContentLink, contentRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
+        //}
 
         return AddItemToContentArea(contentArea, iContent.ContentLink);
     }
 
     public static ContentReference GetOrCreateContent<T>(
         Action<T>? options = null,
-        string? folderName = default) where T : IContent
+        AssetOptions? assetOptions = default) where T : IContent
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var parent = GetOrCreateBlockFolder(folderName, globalOptions);
+        var parent = GetOrCreateBlockFolder(assetOptions, globalOptions);
         var content = contentRepository.GetDefault<T>(parent, globalOptions.DefaultLanguage);
 
         options?.Invoke(content);
@@ -179,9 +183,9 @@ public static class PropertyHelpers
         this ContentArea contentArea,
         Action<T> options,
         [Range(1, 10000)] int totalBlocks,
-        string folderName) where T : IContentData
+        AssetOptions assetOptions) where T : IContentData
     {
-        return AddItems(contentArea, default, options, totalBlocks, folderName);
+        return AddItems(contentArea, default, options, totalBlocks, assetOptions);
     }
 
     public static ContentArea AddItems<T>(
@@ -189,11 +193,12 @@ public static class PropertyHelpers
         string? name = default,
         Action<T>? options = null,
         [Range(1, 10000)] int totalBlocks = 1,
-        string? folderName = default) where T : IContentData
+        AssetOptions? assetOptions = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var parent = GetOrCreateBlockFolder(folderName, globalOptions);
+        var parent = GetOrCreateBlockFolder(assetOptions, globalOptions);
+
         T content;
         var typeName = typeof(T).Name;
 
@@ -207,7 +212,7 @@ public static class PropertyHelpers
             if (string.IsNullOrEmpty(iContent.Name) && string.IsNullOrEmpty(name))
                 iContent.Name = $"{typeName}_{i}";
             else
-                iContent.Name = string.IsNullOrEmpty(name) ? $"{typeName}_{i}" : $"{iContent.Name}_{i}";
+                iContent.Name = string.IsNullOrEmpty(name) ? $"{typeName}_{i}" : $"{name}_{i}";
 
             if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
             {
@@ -215,8 +220,7 @@ public static class PropertyHelpers
                 continue;
             }
 
-            contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-
+            var contentRef = contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
             AddItemToContentArea(contentArea, iContent.ContentLink);
         }
 
@@ -268,42 +272,71 @@ public static class PropertyHelpers
     }
 
     private static ContentReference GetOrCreateBlockFolder(
-        string? folderName,
+        AssetOptions? assetOptions,
         ContentBuilderOptions options)
     {
-        if (string.IsNullOrEmpty(folderName))
-            return options.BlocksDefaultLocation switch
+        var site = GetSiteDefinition(options.DefaultLanguage);
+
+        if (assetOptions == null)
+            return options.BlocksLocation switch
             {
-                //TODO BlocksDefaultLocation.CurrentPage => Need to create blocks after the page is created
-                //Temporarely store block data and page details so they can be created at the end of the process
-                BlocksDefaultLocation.CurrentPage => ContentReference.GlobalBlockFolder,
-                BlocksDefaultLocation.GlobalBlockFolder => ContentReference.GlobalBlockFolder,
-                BlocksDefaultLocation.GlobalSiteFolder => ContentReference.SiteBlockFolder,
+                BlocksLocation.CurrentContent => GetOrCreateTempFolder(options),
+                BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
+                BlocksLocation.SiteRoot => site != null ? site.SiteAssetsRoot : ContentReference.SiteBlockFolder,
                 _ => ContentReference.GlobalBlockFolder,
             };
 
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var blockLocation = ContentReference.GlobalBlockFolder;
-
-        if (!string.IsNullOrEmpty(folderName))
+        var blockLocation = assetOptions.BlocksLocation switch
         {
-            var foundFolder = contentRepository
-                .GetChildren<ContentFolder>(blockLocation)
-                .FirstOrDefault(x => x.Name.Equals(folderName, StringComparison.InvariantCultureIgnoreCase));
+            BlocksLocation.CurrentContent => GetOrCreateTempFolder(options),
+            BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
+            BlocksLocation.SiteRoot => site != null ? site.SiteAssetsRoot : ContentReference.SiteBlockFolder,
+            _ => ContentReference.GlobalBlockFolder,
+        };
 
-            if (foundFolder == null)
+        if (!string.IsNullOrEmpty(assetOptions.FolderName) && blockLocation != ContentReference.EmptyReference)
+        {
+            var existingFolder = contentRepository
+                .GetChildren<ContentFolder>(blockLocation)
+                .FirstOrDefault(x => x.Name.Equals(assetOptions.FolderName, StringComparison.InvariantCultureIgnoreCase));
+
+            if (existingFolder == null)
             {
                 var folder = contentRepository.GetDefault<ContentFolder>(blockLocation, options.DefaultLanguage);
-                folder.Name = folderName;
+                folder.Name = assetOptions.FolderName;
                 contentRepository.Save(folder, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
                 blockLocation = folder.ContentLink;
             }
             else
             {
-                blockLocation = foundFolder.ContentLink;
+                blockLocation = existingFolder.ContentLink;
             }
         }
 
+        if (ContentReference.IsNullOrEmpty(blockLocation))
+        {
+            return GetOrCreateTempFolder(options);
+        }
+
         return blockLocation;
+    }
+
+    private const string tempFolderName = "Temp";
+
+    public static ContentReference GetOrCreateTempFolder(ContentBuilderOptions options)
+    {
+        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
+        var existingFolder = contentRepository
+            .GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, options.DefaultLanguage)
+            .FirstOrDefault(x => x.Name.Equals(tempFolderName));
+
+        if (existingFolder != null)
+            return existingFolder.ContentLink;
+
+        var folder = contentRepository.GetDefault<ContentFolder>(ContentReference.GlobalBlockFolder, options.DefaultLanguage);
+        folder.Name = tempFolderName;
+
+        return contentRepository.Save(folder, SaveAction.Default, AccessLevel.NoAccess);
     }
 }
