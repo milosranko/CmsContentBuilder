@@ -49,7 +49,7 @@ public class OptimizelyTests
             })
             .ConfigureWebHostDefaults(config =>
             {
-                config.UseUrls(HostUrl);
+                config.UseUrls(Site1HostUrl, Site2HostUrl);
                 config.Configure(app =>
                 {
                     app.UseCmsContentScaffolding();
@@ -201,7 +201,7 @@ public class OptimizelyTests
         //Arrange
         var client = new HttpClient
         {
-            BaseAddress = new Uri(HostUrl)
+            BaseAddress = new Uri(Site1HostUrl)
         };
 
         //Act

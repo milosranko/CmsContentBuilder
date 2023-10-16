@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Title>CmsContentScaffolding Shared Resources</Title>
     <Authors>Milos Rankovic</Authors>
     <Company>MDR Solutions DOO</Company>
@@ -31,6 +31,10 @@
     <EmbeddedResource Include="Images\HLD_Screenshot_BETA_entrance.png" />
     <EmbeddedResource Include="Texts\LoremIpsumHtml.txt" />
     <EmbeddedResource Include="Texts\LoremIpsum.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bogus" Version="34.0.2" />
   </ItemGroup>
 
 </Project>
