@@ -1,4 +1,5 @@
 ﻿using CmsContentScaffolding.Optimizely.Builders;
+using CmsContentScaffolding.Optimizely.Extensions;
 using CmsContentScaffolding.Optimizely.Interfaces;
 using CmsContentScaffolding.Optimizely.Models;
 using CmsContentScaffolding.Optimizely.Services;
@@ -8,7 +9,6 @@ using EPiServer.DataAbstraction;
 using EPiServer.DataAccess;
 using EPiServer.Security;
 using EPiServer.Shell.Security;
-using EPiServer.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -79,26 +79,22 @@ public static class StartupExtensions
     {
         var contentLoader = services.GetRequiredService<IContentLoader>();
         var languageBranchRepository = services.GetRequiredService<ILanguageBranchRepository>();
+        var site = PropertyHelpers.GetOrCreateSite();
 
-        if (options.BuildMode.Equals(BuildMode.OnlyIfEmptyInDefaultLanguage))
+        if (options.BuildMode == BuildMode.OnlyIfEmptyInDefaultLanguage)
         {
             if (languageBranchRepository.ListAll().Any(x => x.Culture.Equals(options.DefaultLanguage)))
             {
-                var siteDefinitionRepository = services.GetRequiredService<ISiteDefinitionRepository>();
-                var siteDefinition = siteDefinitionRepository
-                    .List()
-                    .Where(x => x.GetHosts(options.DefaultLanguage, false).Any())
-                    .SingleOrDefault();
-                var pages = contentLoader.GetChildren<IContentData>(options.RootPage, options.DefaultLanguage);
+                var pages = contentLoader.GetChildren<IContentData>(site.RootPage, options.DefaultLanguage);
 
-                return siteDefinition is null || pages is null || pages.Count() < 3;
+                return pages is null || pages.Count() < 3;
             }
 
             return true;
         }
         else if (options.BuildMode.Equals(BuildMode.OnlyIfEmptyRegardlessOfLanguage))
         {
-            var pages = contentLoader.GetChildren<IContentData>(options.RootPage);
+            var pages = contentLoader.GetChildren<IContentData>(site.RootPage);
 
             return pages is null || !pages.Any();
         }

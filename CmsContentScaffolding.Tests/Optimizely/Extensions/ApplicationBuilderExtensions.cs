@@ -26,7 +26,7 @@ internal static class ApplicationBuilderExtensions
                 o.EnabledLanguages.Add(new CultureInfo("sr"));
                 o.DefaultHost = Site1HostUrl;
                 o.DefaultLanguage = new CultureInfo("sr");
-                o.BuildMode = BuildMode.OnlyIfEmptyInDefaultLanguage;
+                o.BuildMode = BuildMode.Append;
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
                 o.BlocksLocation = BlocksLocation.CurrentContent;

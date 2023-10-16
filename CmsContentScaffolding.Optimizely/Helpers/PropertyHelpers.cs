@@ -8,9 +8,7 @@ using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Reflection;
 
 namespace CmsContentScaffolding.Optimizely.Extensions;
@@ -30,8 +28,8 @@ public static class PropertyHelpers
     public static ContentReference GetOrAddRandomImage<T>() where T : MediaData
     {
         var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var site = GetSiteDefinition(options.DefaultLanguage);
-        var mediaFolder = site != null ? site.GlobalAssetsRoot : ContentReference.GlobalBlockFolder;
+        var site = GetOrCreateSite();
+        var mediaFolder = ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot;
         var randomImage = ResourceHelpers.GetImage();
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var existingItems = contentRepository
@@ -227,15 +225,15 @@ public static class PropertyHelpers
         return contentArea;
     }
 
-    public static SiteDefinition? GetSiteDefinition(CultureInfo language)
-    {
-        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+    //public static SiteDefinition? GetSiteDefinition(CultureInfo language)
+    //{
+    //    var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
 
-        return siteDefinitionRepository
-            .List()
-            .Where(x => x.GetHosts(language, false).Any())
-            .SingleOrDefault();
-    }
+    //    return siteDefinitionRepository
+    //        .List()
+    //        .Where(x => x.GetHosts(language, false).Any())
+    //        .SingleOrDefault();
+    //}
 
     public static IEnumerable<ContentArea> InitContentAreas<T>(T content)
         where T : IContentData
@@ -275,23 +273,23 @@ public static class PropertyHelpers
         AssetOptions? assetOptions,
         ContentBuilderOptions options)
     {
-        var site = GetSiteDefinition(options.DefaultLanguage);
+        var site = GetOrCreateSite();
 
         if (assetOptions == null)
             return options.BlocksLocation switch
             {
-                BlocksLocation.CurrentContent => GetOrCreateTempFolder(options),
+                BlocksLocation.CurrentContent => GetOrCreateTempFolder(),
                 BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
-                BlocksLocation.SiteRoot => site != null ? site.SiteAssetsRoot : ContentReference.SiteBlockFolder,
+                BlocksLocation.SiteRoot => ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot,
                 _ => ContentReference.GlobalBlockFolder,
             };
 
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var blockLocation = assetOptions.BlocksLocation switch
         {
-            BlocksLocation.CurrentContent => GetOrCreateTempFolder(options),
+            BlocksLocation.CurrentContent => GetOrCreateTempFolder(),
             BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
-            BlocksLocation.SiteRoot => site != null ? site.SiteAssetsRoot : ContentReference.SiteBlockFolder,
+            BlocksLocation.SiteRoot => ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot,
             _ => ContentReference.GlobalBlockFolder,
         };
 
@@ -316,7 +314,7 @@ public static class PropertyHelpers
 
         if (ContentReference.IsNullOrEmpty(blockLocation))
         {
-            return GetOrCreateTempFolder(options);
+            return GetOrCreateTempFolder();
         }
 
         return blockLocation;
@@ -324,8 +322,9 @@ public static class PropertyHelpers
 
     private const string tempFolderName = "Temp";
 
-    public static ContentReference GetOrCreateTempFolder(ContentBuilderOptions options)
+    public static ContentReference GetOrCreateTempFolder()
     {
+        var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var existingFolder = contentRepository
             .GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, options.DefaultLanguage)
@@ -338,5 +337,40 @@ public static class PropertyHelpers
         folder.Name = tempFolderName;
 
         return contentRepository.Save(folder, SaveAction.Default, AccessLevel.NoAccess);
+    }
+
+    public static SiteDefinition GetOrCreateSite()
+    {
+        var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
+        var siteDefinitionRepository = ServiceLocator.Current.GetInstance<ISiteDefinitionRepository>();
+        var existingSite = siteDefinitionRepository
+            .List()
+            .Where(x => x.Name.Equals(options.SiteName))
+            .SingleOrDefault();
+
+        if (existingSite is not null)
+            return existingSite;
+
+        var siteUri = new Uri(options.DefaultHost);
+        var siteDefinition = new SiteDefinition
+        {
+            Name = options.SiteName,
+            StartPage = ContentReference.RootPage,
+            SiteUrl = siteUri,
+            Hosts = new List<HostDefinition>
+            {
+                new HostDefinition
+                {
+                    Name = siteUri.Authority,
+                    Language = options.DefaultLanguage,
+                    Type = HostDefinitionType.Primary,
+                    UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
+                }
+            }
+        };
+
+        siteDefinitionRepository.Save(siteDefinition);
+
+        return siteDefinition;
     }
 }

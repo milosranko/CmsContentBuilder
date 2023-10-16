@@ -6,9 +6,7 @@ using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.DataAnnotations;
 using EPiServer.Security;
-using EPiServer.ServiceLocation;
 using EPiServer.Web;
-using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 
 namespace CmsContentScaffolding.Optimizely.Builders;
@@ -16,14 +14,20 @@ namespace CmsContentScaffolding.Optimizely.Builders;
 public class ContentBuilder : IContentBuilder
 {
     private readonly PageData _parent;
+    private readonly ISiteDefinitionRepository _siteDefinitionRepository;
     private readonly IContentRepository _contentRepository;
     private readonly ContentBuilderOptions _options;
 
-    public ContentBuilder(IContentRepository contentRepository, PageData parent, ContentBuilderOptions options)
+    public ContentBuilder(
+        IContentRepository contentRepository,
+        PageData parent,
+        ContentBuilderOptions options,
+        ISiteDefinitionRepository siteDefinitionRepository)
     {
         _parent = parent;
         _contentRepository = contentRepository;
         _options = options;
+        _siteDefinitionRepository = siteDefinitionRepository;
     }
 
     public IContentBuilder WithPage<T>(Action<IContentBuilder> options) where T : PageData
@@ -53,7 +57,7 @@ public class ContentBuilder : IContentBuilder
                 SetAsStartPage(pageRef);
             }
 
-            var contentToMove = _contentRepository.GetChildren<IContent>(PropertyHelpers.GetOrCreateTempFolder(_options), _options.DefaultLanguage);
+            var contentToMove = _contentRepository.GetChildren<IContent>(PropertyHelpers.GetOrCreateTempFolder(), _options.DefaultLanguage);
             foreach (var item in contentToMove)
             {
                 _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
@@ -63,7 +67,7 @@ public class ContentBuilder : IContentBuilder
         if (options == null)
             return this;
 
-        var builder = new ContentBuilder(_contentRepository, page, _options);
+        var builder = new ContentBuilder(_contentRepository, page, _options, _siteDefinitionRepository);
         options?.Invoke(builder);
 
         return this;
@@ -97,7 +101,7 @@ public class ContentBuilder : IContentBuilder
             {
                 var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-                var contentToMove = _contentRepository.GetChildren<IContent>(PropertyHelpers.GetOrCreateTempFolder(_options), _options.DefaultLanguage);
+                var contentToMove = _contentRepository.GetChildren<IContent>(PropertyHelpers.GetOrCreateTempFolder(), _options.DefaultLanguage);
                 foreach (var item in contentToMove)
                 {
                     _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
@@ -130,32 +134,13 @@ public class ContentBuilder : IContentBuilder
 
     private void SetAsStartPage(ContentReference pageRef)
     {
-        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
-        var siteUri = new Uri(_options.DefaultHost);
+        var site = PropertyHelpers.GetOrCreateSite();
 
-        if (siteDefinitionRepository.List().Any(x => x.Name.Equals(_options.SiteName)))
-            return;
-
-        //if (PropertyHelpers.GetSiteDefinition(_options.DefaultLanguage) != null)
-        //    return;
-
-        var siteDefinition = new SiteDefinition
+        if (!ReferenceEquals(ContentReference.RootPage, site.StartPage))
         {
-            Name = _options.SiteName,
-            StartPage = pageRef,
-            SiteUrl = siteUri,
-            Hosts = new List<HostDefinition>
-            {
-                new HostDefinition
-                {
-                    Name = siteUri.Authority,
-                    Language = _options.DefaultLanguage,
-                    Type = HostDefinitionType.Primary,
-                    UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
-                }
-            }
-        };
-        //siteDefinition.SiteAssetsRoot = 
-        siteDefinitionRepository.Save(siteDefinition);
+            var updateSite = site.CreateWritableClone();
+            updateSite.StartPage = pageRef;
+            _siteDefinitionRepository.Save(updateSite);
+        }
     }
 }
