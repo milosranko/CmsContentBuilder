@@ -83,11 +83,11 @@ public static class StartupExtensions
 
         if (options.BuildMode == BuildMode.OnlyIfEmptyInDefaultLanguage)
         {
-            if (languageBranchRepository.ListAll().Any(x => x.Culture.Equals(options.DefaultLanguage)))
+            if (languageBranchRepository.ListAll().Any(x => x.Culture.Equals(options.DefaultLanguage)) && !(ContentReference.RootPage == site.StartPage))
             {
-                var pages = contentLoader.GetChildren<IContentData>(site.RootPage, options.DefaultLanguage);
+                var pages = contentLoader.GetChildren<IContentData>(site.StartPage, options.DefaultLanguage);
 
-                return pages is null || pages.Count() < 3;
+                return pages is null || pages.Count().Equals(0);
             }
 
             return true;

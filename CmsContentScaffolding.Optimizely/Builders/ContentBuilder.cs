@@ -136,7 +136,7 @@ public class ContentBuilder : IContentBuilder
     {
         var site = PropertyHelpers.GetOrCreateSite();
 
-        if (!ReferenceEquals(ContentReference.RootPage, site.StartPage))
+        if (ContentReference.RootPage == site.StartPage)
         {
             var updateSite = site.CreateWritableClone();
             updateSite.StartPage = pageRef;
