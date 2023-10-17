@@ -80,15 +80,33 @@ public static class PropertyHelpers
     public static ContentArea AddItem<T>(
         this ContentArea contentArea,
         Action<T> options,
-        AssetOptions? assetOptions = null) where T : IContentData
+        AssetOptions? assetOptions = default) where T : IContentData
     {
         return AddItem(contentArea, default, options, assetOptions);
+    }
+
+    public static ContentArea AddExistingItem<T>(
+        this ContentArea contentArea,
+        string name,
+        AssetOptions? assetOptions = default) where T : IContentData
+    {
+        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
+        var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
+        var folder = GetOrCreateBlockFolder(assetOptions, globalOptions);
+        var content = contentRepository
+            .GetChildren<T>(folder, globalOptions.DefaultLanguage)
+            .Cast<IContent>()
+            .FirstOrDefault(x => x.Name.Equals(name));
+
+        return content != null
+            ? AddItemToContentArea(contentArea, content.ContentLink)
+            : contentArea;
     }
 
     public static ContentArea AddItem<T>(
         this ContentArea contentArea,
         string? name = default,
-        Action<T>? options = null,
+        Action<T>? options = default,
         AssetOptions? assetOptions = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
@@ -158,7 +176,7 @@ public static class PropertyHelpers
     public static ContentArea AddItems<T>(
         this ContentArea contentArea,
         string? name = default,
-        Action<T>? options = null,
+        Action<T>? options = default,
         [Range(1, 10000)] int totalBlocks = 1,
         AssetOptions? assetOptions = default) where T : IContentData
     {

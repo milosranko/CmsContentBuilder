@@ -78,7 +78,8 @@ internal static class ApplicationBuilderExtensions
                         {
                             i.Name = "Test Image";
                             i.ContentLink = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                        });
+                        })
+                        .AddExistingItem<AccordionContainerBlock>("Accordion Container", new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = "Accordion" });
                     }, l2 =>
                     {
                         l2
