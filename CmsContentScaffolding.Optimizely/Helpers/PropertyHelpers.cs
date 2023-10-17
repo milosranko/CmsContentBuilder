@@ -25,7 +25,7 @@ public static class PropertyHelpers
         return new XhtmlString(ResourceHelpers.GetHtmlText());
     }
 
-    public static ContentReference GetOrAddRandomImage<T>() where T : MediaData
+    public static ContentReference GetOrAddRandomImage<T>(int width = 1200, int height = 800) where T : MediaData
     {
         var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var site = GetOrCreateSite();
@@ -37,9 +37,7 @@ public static class PropertyHelpers
             .Where(x => x.Name.Equals(randomImage.Name, StringComparison.InvariantCultureIgnoreCase));
 
         if (existingItems != null && existingItems.Any())
-        {
             return existingItems.ElementAt(0).ContentLink;
-        }
 
         var blobFactory = ServiceLocator.Current.GetInstance<IBlobFactory>();
         var image = contentRepository.GetDefault<T>(mediaFolder);
@@ -95,8 +93,8 @@ public static class PropertyHelpers
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var location = GetOrCreateBlockFolder(assetOptions, globalOptions);
-        var content = contentRepository.GetDefault<T>(location, globalOptions.DefaultLanguage);
+        var folder = GetOrCreateBlockFolder(assetOptions, globalOptions);
+        var content = contentRepository.GetDefault<T>(folder, globalOptions.DefaultLanguage);
         var contentAreas = InitContentAreas(content);
 
         options?.Invoke(content);
@@ -109,9 +107,7 @@ public static class PropertyHelpers
             iContent.Name = name;
 
         if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
-        {
             return AddItemToContentArea(contentArea, iContent.ContentLink);
-        }
 
         var contentRef = contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
         //var contentToMove = contentRepository.GetChildren<IContent>(GetOrCreateTempFolder(globalOptions), globalOptions.DefaultLanguage);
@@ -121,33 +117,6 @@ public static class PropertyHelpers
         //}
 
         return AddItemToContentArea(contentArea, iContent.ContentLink);
-    }
-
-    public static ContentReference GetOrCreateContent<T>(
-        Action<T>? options = null,
-        AssetOptions? assetOptions = default) where T : IContent
-    {
-        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var parent = GetOrCreateBlockFolder(assetOptions, globalOptions);
-        var content = contentRepository.GetDefault<T>(parent, globalOptions.DefaultLanguage);
-
-        options?.Invoke(content);
-
-        if (string.IsNullOrEmpty(content.Name))
-            content.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
-
-        var foundContent = contentRepository
-            .GetChildren<T>(content.ParentLink)
-            .FirstOrDefault(x => x.Name.Equals(content.Name, StringComparison.InvariantCultureIgnoreCase));
-
-        if (foundContent == null)
-        {
-            contentRepository.Save(content, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-            return content.ContentLink;
-        }
-
-        return foundContent.ContentLink;
     }
 
     public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData
@@ -224,16 +193,6 @@ public static class PropertyHelpers
 
         return contentArea;
     }
-
-    //public static SiteDefinition? GetSiteDefinition(CultureInfo language)
-    //{
-    //    var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
-
-    //    return siteDefinitionRepository
-    //        .List()
-    //        .Where(x => x.GetHosts(language, false).Any())
-    //        .SingleOrDefault();
-    //}
 
     public static IEnumerable<ContentArea> InitContentAreas<T>(T content)
         where T : IContentData
