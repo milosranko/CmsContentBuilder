@@ -2,6 +2,8 @@
 using CmsContentScaffolding.Shared.Resources;
 using EPiServer;
 using EPiServer.Core;
+using EPiServer.Core.Html.StringParsing;
+using EPiServer.Core.Internal;
 using EPiServer.DataAccess;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
@@ -113,7 +115,9 @@ public static class PropertyHelpers
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var folder = GetOrCreateBlockFolder(assetOptions, globalOptions);
         var content = contentRepository.GetDefault<T>(folder, globalOptions.DefaultLanguage);
-        var contentAreas = InitContentAreas(content);
+
+        InitContentAreas(content);
+        InitXHtmlStringProperties(content);
 
         options?.Invoke(content);
 
@@ -190,7 +194,10 @@ public static class PropertyHelpers
         for (int i = 0; i < totalBlocks; i++)
         {
             content = contentRepository.GetDefault<T>(parent, globalOptions.DefaultLanguage);
-            var totalContentAreas = InitContentAreas(content);
+
+            InitContentAreas(content);
+            InitXHtmlStringProperties(content);
+
             options?.Invoke(content);
 
             var iContent = (IContent)content;
@@ -210,6 +217,23 @@ public static class PropertyHelpers
         }
 
         return contentArea;
+    }
+
+    public static XhtmlString AddStringFragment(this XhtmlString xhtmlString, string text)
+    {
+        xhtmlString.Fragments.Add(new StaticFragment(text));
+
+        return xhtmlString;
+    }
+
+    public static XhtmlString AddContentFragment(this XhtmlString xhtmlString, ContentReference contentReference)
+    {
+        var contentFragmentFactory = ServiceLocator.Current.GetInstance<ContentFragmentFactory>();
+        var fragment = contentFragmentFactory.CreateContentFragment(contentReference, Guid.Empty, null);
+
+        xhtmlString.Fragments.Add(fragment);
+
+        return xhtmlString;
     }
 
     public static IEnumerable<ContentArea> InitContentAreas<T>(T content)
@@ -234,6 +258,23 @@ public static class PropertyHelpers
         contentAreaProperties = null;
 
         return contentAreas;
+    }
+
+    public static void InitXHtmlStringProperties<T>(T content)
+        where T : IContentData
+    {
+        var xhtmlStringProperties = content.GetType()
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .Where(x => x.PropertyType.Equals(typeof(XhtmlString)))
+            .ToArray();
+
+        if (xhtmlStringProperties.Length == 0)
+            return;
+
+        foreach (var xhtmlString in xhtmlStringProperties)
+        {
+            xhtmlString.SetValue(content, new XhtmlString());
+        }
     }
 
     private static ContentArea AddItemToContentArea(ContentArea contentArea, ContentReference contentReference)

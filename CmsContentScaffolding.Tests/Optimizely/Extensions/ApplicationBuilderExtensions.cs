@@ -61,7 +61,10 @@ internal static class ApplicationBuilderExtensions
                         p.Name = faker.Lorem.Slug(2);
                         p.Heading = faker.Lorem.Slug();
                         p.LeadText = faker.Lorem.Paragraph();
-                        p.MainContent = new XhtmlString(faker.Lorem.Paragraphs(5));
+                        p.MainContent
+                        .AddStringFragment(faker.Lorem.Paragraphs())
+                        .AddContentFragment(PropertyHelpers.GetOrAddRandomImage<ImageFile>())
+                        .AddStringFragment(faker.Lorem.Paragraphs());
                         p.TopImage = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                         p.MainContentArea
                         .AddItem<AccordionContainerBlock>("Accordion Container", b =>

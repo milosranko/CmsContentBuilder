@@ -41,7 +41,9 @@ public class ContentBuilder : IContentBuilder
             ? _parent.ContentLink
             : _options.RootPage;
         var page = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
-        var contentAreas = PropertyHelpers.InitContentAreas(page);
+
+        PropertyHelpers.InitContentAreas(page);
+        PropertyHelpers.InitXHtmlStringProperties(page);
 
         value?.Invoke(page);
 
@@ -91,7 +93,10 @@ public class ContentBuilder : IContentBuilder
         for (int i = 0; i < totalPages; i++)
         {
             page = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
-            var contentAreas = PropertyHelpers.InitContentAreas(page);
+
+            PropertyHelpers.InitContentAreas(page);
+            PropertyHelpers.InitXHtmlStringProperties(page);
+
             value?.Invoke(page);
 
             GetOrSetPageName<T>(page, i.ToString());
