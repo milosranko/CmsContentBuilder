@@ -16,18 +16,21 @@ public class ContentBuilder : IContentBuilder
     private readonly PageData _parent;
     private readonly ISiteDefinitionRepository _siteDefinitionRepository;
     private readonly IContentRepository _contentRepository;
+    private readonly IContentBuilderManager _contentBuilderManager;
     private readonly ContentBuilderOptions _options;
 
     public ContentBuilder(
         IContentRepository contentRepository,
         PageData parent,
         ContentBuilderOptions options,
-        ISiteDefinitionRepository siteDefinitionRepository)
+        ISiteDefinitionRepository siteDefinitionRepository,
+        IContentBuilderManager contentBuilderManager)
     {
         _parent = parent;
         _contentRepository = contentRepository;
         _options = options;
         _siteDefinitionRepository = siteDefinitionRepository;
+        _contentBuilderManager = contentBuilderManager;
     }
 
     public IContentBuilder WithPage<T>(Action<IContentBuilder> options) where T : PageData
@@ -56,10 +59,10 @@ public class ContentBuilder : IContentBuilder
 
             if (_options.StartPageType != null && _options.StartPageType.Equals(typeof(T)))
             {
-                SetAsStartPage(pageRef);
+                _contentBuilderManager.SetAsStartPage(pageRef);
             }
 
-            var contentToMove = _contentRepository.GetChildren<IContent>(PropertyHelpers.GetOrCreateTempFolder(), _options.DefaultLanguage);
+            var contentToMove = _contentRepository.GetChildren<IContent>(_contentBuilderManager.GetOrCreateTempFolder(), _options.DefaultLanguage);
             foreach (var item in contentToMove)
             {
                 _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
@@ -69,7 +72,7 @@ public class ContentBuilder : IContentBuilder
         if (options == null)
             return this;
 
-        var builder = new ContentBuilder(_contentRepository, page, _options, _siteDefinitionRepository);
+        var builder = new ContentBuilder(_contentRepository, page, _options, _siteDefinitionRepository, _contentBuilderManager);
         options?.Invoke(builder);
 
         return this;
@@ -106,7 +109,7 @@ public class ContentBuilder : IContentBuilder
             {
                 var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-                var contentToMove = _contentRepository.GetChildren<IContent>(PropertyHelpers.GetOrCreateTempFolder(), _options.DefaultLanguage);
+                var contentToMove = _contentRepository.GetChildren<IContent>(_contentBuilderManager.GetOrCreateTempFolder(), _options.DefaultLanguage);
                 foreach (var item in contentToMove)
                 {
                     _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
@@ -135,17 +138,5 @@ public class ContentBuilder : IContentBuilder
         }
 
         page.Name = $"{type.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
-    }
-
-    private void SetAsStartPage(ContentReference pageRef)
-    {
-        var site = PropertyHelpers.GetOrCreateSite();
-
-        if (ContentReference.RootPage == site.StartPage)
-        {
-            var updateSite = site.CreateWritableClone();
-            updateSite.StartPage = pageRef;
-            _siteDefinitionRepository.Save(updateSite);
-        }
     }
 }

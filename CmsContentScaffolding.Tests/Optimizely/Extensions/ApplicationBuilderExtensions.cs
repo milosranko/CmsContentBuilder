@@ -52,7 +52,9 @@ internal static class ApplicationBuilderExtensions
                         b.Heading = faker.Lorem.Slug();
                         b.LeadText = faker.Lorem.Paragraph();
                         b.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                    }, 3, new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
+                    },
+                    3,
+                    new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
                 }, l1 =>
                 {
                     l1

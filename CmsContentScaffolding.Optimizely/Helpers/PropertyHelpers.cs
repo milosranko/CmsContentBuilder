@@ -1,4 +1,5 @@
-﻿using CmsContentScaffolding.Optimizely.Models;
+﻿using CmsContentScaffolding.Optimizely.Interfaces;
+using CmsContentScaffolding.Optimizely.Models;
 using CmsContentScaffolding.Shared.Resources;
 using EPiServer;
 using EPiServer.Core;
@@ -8,7 +9,6 @@ using EPiServer.DataAccess;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
-using EPiServer.Web;
 using Microsoft.CodeAnalysis;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -30,7 +30,8 @@ public static class PropertyHelpers
     public static ContentReference GetOrAddRandomImage<T>(int width = 1200, int height = 800) where T : MediaData
     {
         var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var site = GetOrCreateSite();
+        var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
+        var site = contentBuilderManager.GetOrCreateSite();
         var mediaFolder = ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot;
         var randomImage = ResourceHelpers.GetImage();
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
@@ -90,11 +91,13 @@ public static class PropertyHelpers
     public static ContentArea AddExistingItem<T>(
         this ContentArea contentArea,
         string name,
-        AssetOptions? assetOptions = default) where T : IContentData
+        AssetOptions? assetOptions = default,
+        IEnumerable<string>? allowedRoles = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var folder = GetOrCreateBlockFolder(assetOptions, globalOptions);
+        var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
+        var folder = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
         var content = contentRepository
             .GetChildren<T>(folder, globalOptions.DefaultLanguage)
             .Cast<IContent>()
@@ -109,11 +112,13 @@ public static class PropertyHelpers
         this ContentArea contentArea,
         string? name = default,
         Action<T>? options = default,
-        AssetOptions? assetOptions = default) where T : IContentData
+        AssetOptions? assetOptions = default,
+        IEnumerable<string>? allowedRoles = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var folder = GetOrCreateBlockFolder(assetOptions, globalOptions);
+        var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
+        var folder = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
         var content = contentRepository.GetDefault<T>(folder, globalOptions.DefaultLanguage);
 
         InitContentAreas(content);
@@ -148,50 +153,61 @@ public static class PropertyHelpers
 
     public static ContentArea AddItems<T>(
         this ContentArea contentArea,
-        string name) where T : IContentData
-    {
-        return AddItems<T>(contentArea, name, default, default, default);
-    }
-
-    public static ContentArea AddItems<T>(
-        this ContentArea contentArea,
         string name,
-        Action<T> options) where T : IContentData
+        [Range(1, 10000)] int total) where T : IContentData
     {
-        return AddItems(contentArea, name, options, default, default);
-    }
-
-    public static ContentArea AddItems<T>(
-        this ContentArea contentArea,
-        [Range(1, 10000)] int totalBlocks) where T : IContentData
-    {
-        return AddItems<T>(contentArea, default, default, totalBlocks, default);
+        return AddItems<T>(contentArea, name, default, total, default);
     }
 
     public static ContentArea AddItems<T>(
         this ContentArea contentArea,
         Action<T> options,
-        [Range(1, 10000)] int totalBlocks,
+        [Range(1, 10000)] int total) where T : IContentData
+    {
+        return AddItems(contentArea, default, options, total, default);
+    }
+
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        string name,
+        Action<T> options,
+        [Range(1, 10000)] int total) where T : IContentData
+    {
+        return AddItems(contentArea, name, options, total, default);
+    }
+
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        [Range(1, 10000)] int total) where T : IContentData
+    {
+        return AddItems<T>(contentArea, default, default, total, default);
+    }
+
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        Action<T> options,
+        [Range(1, 10000)] int total,
         AssetOptions assetOptions) where T : IContentData
     {
-        return AddItems(contentArea, default, options, totalBlocks, assetOptions);
+        return AddItems(contentArea, default, options, total, assetOptions);
     }
 
     public static ContentArea AddItems<T>(
         this ContentArea contentArea,
         string? name = default,
         Action<T>? options = default,
-        [Range(1, 10000)] int totalBlocks = 1,
+        [Range(1, 10000)] int total = 1,
         AssetOptions? assetOptions = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var parent = GetOrCreateBlockFolder(assetOptions, globalOptions);
+        var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
+        var parent = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
 
         T content;
         var typeName = typeof(T).Name;
 
-        for (int i = 0; i < totalBlocks; i++)
+        for (int i = 0; i < total; i++)
         {
             content = contentRepository.GetDefault<T>(parent, globalOptions.DefaultLanguage);
 
@@ -285,110 +301,5 @@ public static class PropertyHelpers
         });
 
         return contentArea;
-    }
-
-    private static ContentReference GetOrCreateBlockFolder(
-        AssetOptions? assetOptions,
-        ContentBuilderOptions options)
-    {
-        var site = GetOrCreateSite();
-
-        if (assetOptions == null)
-            return options.BlocksLocation switch
-            {
-                BlocksLocation.CurrentContent => GetOrCreateTempFolder(),
-                BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
-                BlocksLocation.SiteRoot => ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot,
-                _ => ContentReference.GlobalBlockFolder,
-            };
-
-        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var blockLocation = assetOptions.BlocksLocation switch
-        {
-            BlocksLocation.CurrentContent => GetOrCreateTempFolder(),
-            BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
-            BlocksLocation.SiteRoot => ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot,
-            _ => ContentReference.GlobalBlockFolder,
-        };
-
-        if (!string.IsNullOrEmpty(assetOptions.FolderName) && blockLocation != ContentReference.EmptyReference)
-        {
-            var existingFolder = contentRepository
-                .GetChildren<ContentFolder>(blockLocation)
-                .FirstOrDefault(x => x.Name.Equals(assetOptions.FolderName, StringComparison.InvariantCultureIgnoreCase));
-
-            if (existingFolder == null)
-            {
-                var folder = contentRepository.GetDefault<ContentFolder>(blockLocation, options.DefaultLanguage);
-                folder.Name = assetOptions.FolderName;
-                contentRepository.Save(folder, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-                blockLocation = folder.ContentLink;
-            }
-            else
-            {
-                blockLocation = existingFolder.ContentLink;
-            }
-        }
-
-        if (ContentReference.IsNullOrEmpty(blockLocation))
-        {
-            return GetOrCreateTempFolder();
-        }
-
-        return blockLocation;
-    }
-
-    private const string tempFolderName = "Temp";
-
-    public static ContentReference GetOrCreateTempFolder()
-    {
-        var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-        var existingFolder = contentRepository
-            .GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, options.DefaultLanguage)
-            .FirstOrDefault(x => x.Name.Equals(tempFolderName));
-
-        if (existingFolder != null)
-            return existingFolder.ContentLink;
-
-        var folder = contentRepository.GetDefault<ContentFolder>(ContentReference.GlobalBlockFolder, options.DefaultLanguage);
-        folder.Name = tempFolderName;
-
-        return contentRepository.Save(folder, SaveAction.Default, AccessLevel.NoAccess);
-    }
-
-    public static SiteDefinition GetOrCreateSite()
-    {
-        var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-        var siteDefinitionRepository = ServiceLocator.Current.GetInstance<ISiteDefinitionRepository>();
-        var existingSite = siteDefinitionRepository
-            .List()
-            .Where(x => x.Name.Equals(options.SiteName))
-            .SingleOrDefault();
-
-        if (existingSite is not null)
-            return existingSite;
-
-        var siteUri = new Uri(options.DefaultHost);
-        var siteDefinition = new SiteDefinition
-        {
-            Name = options.SiteName,
-            StartPage = ContentReference.RootPage,
-            SiteUrl = siteUri,
-            Hosts = new List<HostDefinition>
-            {
-                new HostDefinition
-                {
-                    Name = siteUri.Authority,
-                    Language = options.DefaultLanguage,
-                    Type = HostDefinitionType.Primary,
-                    UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
-                }
-            }
-        };
-
-        siteDefinitionRepository.Save(siteDefinition);
-
-        return siteDefinition;
     }
 }
