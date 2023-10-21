@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using CmsContentScaffolding.Optimizely.Extensions;
+using CmsContentScaffolding.Optimizely.Helpers;
 using CmsContentScaffolding.Optimizely.Models;
 using CmsContentScaffolding.Optimizely.Startup;
 using EPiServer;

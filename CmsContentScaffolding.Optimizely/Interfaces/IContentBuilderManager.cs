@@ -9,7 +9,6 @@ public interface IContentBuilderManager
     SiteDefinition GetOrCreateSite();
     ContentReference GetOrCreateTempFolder();
     ContentReference GetOrCreateBlockFolder(AssetOptions? assetOptions);
-    ContentReference GetOrAddRandomImage<T>(int width = 1200, int height = 800) where T : MediaData;
     void SetAsStartPage(ContentReference pageRef);
     bool IsInstallationEmpty();
     void ApplyDefaultLanguage();

@@ -1,4 +1,4 @@
-﻿using CmsContentScaffolding.Optimizely.Extensions;
+﻿using CmsContentScaffolding.Optimizely.Helpers;
 using CmsContentScaffolding.Optimizely.Interfaces;
 using CmsContentScaffolding.Optimizely.Models;
 using EPiServer;

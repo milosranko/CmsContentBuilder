@@ -1,11 +1,9 @@
 ﻿using CmsContentScaffolding.Optimizely.Interfaces;
 using CmsContentScaffolding.Optimizely.Models;
-using CmsContentScaffolding.Shared.Resources;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAccess;
-using EPiServer.Framework.Blobs;
 using EPiServer.Security;
 using EPiServer.Shell.Security;
 using EPiServer.Web;
@@ -16,7 +14,6 @@ internal class ContentBuilderManager : IContentBuilderManager
 {
     private readonly ISiteDefinitionRepository _siteDefinitionRepository;
     private readonly IContentRepository _contentRepository;
-    private readonly IBlobFactory _blobFactory;
     private readonly IContentLoader _contentLoader;
     private readonly ILanguageBranchRepository _languageBranchRepository;
     private readonly UIRoleProvider _uIRoleProvider;
@@ -28,7 +25,6 @@ internal class ContentBuilderManager : IContentBuilderManager
         ISiteDefinitionRepository siteDefinitionRepository,
         IContentRepository contentRepository,
         ContentBuilderOptions options,
-        IBlobFactory blobFactory,
         IContentLoader contentLoader,
         ILanguageBranchRepository languageBranchRepository,
         UIRoleProvider uIRoleProvider,
@@ -37,7 +33,6 @@ internal class ContentBuilderManager : IContentBuilderManager
         _siteDefinitionRepository = siteDefinitionRepository;
         _contentRepository = contentRepository;
         _options = options;
-        _blobFactory = blobFactory;
         _contentLoader = contentLoader;
         _languageBranchRepository = languageBranchRepository;
         _uIRoleProvider = uIRoleProvider;
@@ -150,28 +145,6 @@ internal class ContentBuilderManager : IContentBuilderManager
             updateSite.StartPage = pageRef;
             _siteDefinitionRepository.Save(updateSite);
         }
-    }
-
-    public ContentReference GetOrAddRandomImage<T>(int width = 1200, int height = 800) where T : MediaData
-    {
-        var site = GetOrCreateSite();
-        var mediaFolder = ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot;
-        var randomImage = ResourceHelpers.GetImage();
-        var existingItems = _contentRepository
-            .GetChildren<T>(mediaFolder)
-            .Where(x => x.Name.Equals(randomImage.Name, StringComparison.InvariantCultureIgnoreCase));
-
-        if (existingItems != null && existingItems.Any())
-            return existingItems.ElementAt(0).ContentLink;
-
-        var image = _contentRepository.GetDefault<T>(mediaFolder);
-        var blob = _blobFactory.CreateBlob(image.BinaryDataContainer, ".png");
-
-        blob.WriteAllBytes(randomImage.Bytes);
-        image.BinaryData = blob;
-        image.Name = randomImage.Name;
-
-        return _contentRepository.Save(image, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
     }
 
     public bool IsInstallationEmpty()

@@ -2,7 +2,6 @@
 using CmsContentScaffolding.Optimizely.Interfaces;
 using CmsContentScaffolding.Optimizely.Managers;
 using CmsContentScaffolding.Optimizely.Models;
-using CmsContentScaffolding.Optimizely.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +14,6 @@ public static class StartupExtensions
     {
         services.AddTransient<IContentBuilderManager, ContentBuilderManager>();
         services.AddTransient<IContentBuilder, ContentBuilder>();
-        services.AddTransient<IUsersService, UsersService>();
         services.AddScoped(x => new ContentBuilderOptions());
 
         return services;
