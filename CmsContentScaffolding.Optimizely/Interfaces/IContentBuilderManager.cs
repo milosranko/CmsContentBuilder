@@ -8,6 +8,7 @@ public interface IContentBuilderManager
 {
     SiteDefinition GetOrCreateSite();
     ContentReference GetOrCreateTempFolder();
+    void DeleteTempFolder();
     ContentReference GetOrCreateBlockFolder(AssetOptions? assetOptions);
     void SetAsStartPage(ContentReference pageRef);
     bool IsInstallationEmpty();

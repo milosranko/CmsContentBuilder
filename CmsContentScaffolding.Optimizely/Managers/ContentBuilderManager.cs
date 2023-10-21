@@ -20,6 +20,7 @@ internal class ContentBuilderManager : IContentBuilderManager
     private readonly UIUserProvider _uIUserProvider;
     private readonly ContentBuilderOptions _options;
     private const string TempFolderName = "Temp";
+    private const string TempFolderGuid = "F2EDE111-2E2E-4D0E-A2B9-DE4BB87984BA";
 
     public ContentBuilderManager(
         ISiteDefinitionRepository siteDefinitionRepository,
@@ -131,8 +132,15 @@ internal class ContentBuilderManager : IContentBuilderManager
 
         var folder = _contentRepository.GetDefault<ContentFolder>(ContentReference.GlobalBlockFolder, _options.DefaultLanguage);
         folder.Name = TempFolderName;
+        folder.ContentGuid = new Guid(TempFolderGuid);
 
         return _contentRepository.Save(folder, SaveAction.Default, AccessLevel.NoAccess);
+    }
+
+    public void DeleteTempFolder()
+    {
+        var tempFolder = GetOrCreateTempFolder();
+        _contentRepository.Delete(tempFolder, false, AccessLevel.NoAccess);
     }
 
     public void SetAsStartPage(ContentReference pageRef)

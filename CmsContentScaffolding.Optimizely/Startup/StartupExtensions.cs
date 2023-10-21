@@ -34,7 +34,7 @@ public static class StartupExtensions
             var appBuilder = app.ApplicationServices.GetRequiredService<IContentBuilder>();
             builder.Invoke(appBuilder);
 
-            //TODO Delete Temp assets folder
+            contentBuilderManager.DeleteTempFolder();
         }
     }
 
