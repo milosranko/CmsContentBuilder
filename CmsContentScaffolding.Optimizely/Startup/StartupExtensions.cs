@@ -2,6 +2,8 @@
 using CmsContentScaffolding.Optimizely.Interfaces;
 using CmsContentScaffolding.Optimizely.Managers;
 using CmsContentScaffolding.Optimizely.Models;
+using EPiServer.Authorization;
+using EPiServer.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -64,6 +66,14 @@ public static class StartupExtensions
             return false;
 
         contentBuilderManager.ApplyDefaultLanguage();
+
+        if (options.CreateDefaultRoles)
+            contentBuilderManager.CreateDefaultRoles(new Dictionary<string, AccessLevel>
+            {
+                { Roles.WebEditors, AccessLevel.Read | AccessLevel.Create | AccessLevel.Edit | AccessLevel.Delete | AccessLevel.Publish },
+                { Roles.WebAdmins, AccessLevel.FullAccess }
+            });
+
         contentBuilderManager.CreateRoles(options.Roles);
         contentBuilderManager.CreateUsers(options.Users);
 

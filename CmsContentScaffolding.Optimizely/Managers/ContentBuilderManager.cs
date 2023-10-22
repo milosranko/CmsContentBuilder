@@ -235,31 +235,46 @@ internal class ContentBuilderManager : IContentBuilderManager
         }
     }
 
-    public void CreateRoles(IDictionary<string, AccessLevel> roles)
+    public void CreateDefaultRoles(IDictionary<string, AccessLevel> roles)
     {
-        if (!roles.Any()) return;
+        if (!roles.Any())
+            return;
+
+        var rootPageSecurity = _contentSecurityRepository.Get(ContentReference.RootPage).CreateWritableClone() as IContentSecurityDescriptor;
 
         foreach (var role in roles)
         {
-            if (!_uIRoleProvider.RoleExistsAsync(role.Key).GetAwaiter().GetResult())
-            {
-                _uIRoleProvider.CreateRoleAsync(role.Key).GetAwaiter().GetResult();
+            if (_uIRoleProvider.RoleExistsAsync(role.Key).GetAwaiter().GetResult())
+                continue;
 
-                if (_contentSecurityRepository.Get(ContentReference.RootPage).CreateWritableClone() is IContentSecurityDescriptor rootPageSecurity)
-                {
-                    if (rootPageSecurity.Entries.Any(x => x.Name.Equals(role.Key)))
-                        continue;
+            _uIRoleProvider.CreateRoleAsync(role.Key).GetAwaiter().GetResult();
 
-                    rootPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
-                    _contentSecurityRepository.Save(rootPageSecurity.ContentLink, rootPageSecurity, SecuritySaveType.Replace);
-                }
-            }
+            if (rootPageSecurity == null || rootPageSecurity.Entries.Any(x => x.Name.Equals(role.Key)))
+                continue;
+
+            rootPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
+            _contentSecurityRepository.Save(rootPageSecurity.ContentLink, rootPageSecurity, SecuritySaveType.Replace);
+        }
+    }
+
+    public void CreateRoles(IDictionary<string, AccessLevel> roles)
+    {
+        if (!roles.Any())
+            return;
+
+        foreach (var role in roles)
+        {
+            if (_uIRoleProvider.RoleExistsAsync(role.Key).GetAwaiter().GetResult())
+                continue;
+
+            _uIRoleProvider.CreateRoleAsync(role.Key).GetAwaiter().GetResult();
         }
     }
 
     public void CreateUsers(IEnumerable<UserModel> users)
     {
-        if (!users.Any()) return;
+        if (!users.Any())
+            return;
 
         IUIUser? uiUser;
 

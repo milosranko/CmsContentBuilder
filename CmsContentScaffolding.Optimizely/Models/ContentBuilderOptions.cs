@@ -18,11 +18,7 @@ public class ContentBuilderOptions
     public bool PublishContent { get; set; } = false;
     public BlocksLocation BlocksLocation { get; set; } = BlocksLocation.GlobalRoot;
     public Type? StartPageType { get; set; }
-    public IDictionary<string, AccessLevel> Roles { get; set; } =
-        new Dictionary<string, AccessLevel>
-        {
-            { EPiServer.Authorization.Roles.WebEditors, AccessLevel.Publish },
-            { EPiServer.Authorization.Roles.WebAdmins, AccessLevel.FullAccess }
-        };
+    public bool CreateDefaultRoles { get; set; } = true;
+    public IDictionary<string, AccessLevel> Roles { get; set; } = new Dictionary<string, AccessLevel>();
     public IList<UserModel> Users { get; set; } = new List<UserModel>();
 }

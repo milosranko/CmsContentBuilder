@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.15</Version>
+    <Version>1.1.17</Version>
     <Title>CmsContentScaffolding for Optimizely CMS</Title>
     <Company>MDR Solutions</Company>
     <Authors>Milos Rankovic</Authors>
@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/milosranko/CmsContentScaffolding</RepositoryUrl>
     <Copyright>MDR Solutions DOO</Copyright>
     <PackageProjectUrl>https://github.com/milosranko/CmsContentScaffolding</PackageProjectUrl>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,13 @@
       <Private>True</Private>
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
