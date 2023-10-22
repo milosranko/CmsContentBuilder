@@ -25,7 +25,7 @@ public static class StartupExtensions
         Action<ContentBuilderOptions>? builderOptions = null)
     {
         var options = app.ApplicationServices.GetRequiredService<ContentBuilderOptions>();
-        var contentBuilderManager = app.ApplicationServices.GetService<IContentBuilderManager>();
+        var contentBuilderManager = app.ApplicationServices.GetService<IContentBuilderManager>() ?? throw new Exception($"{nameof(IContentBuilderManager)} instance not found!");
 
         builderOptions?.Invoke(options);
 

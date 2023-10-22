@@ -4,6 +4,7 @@ using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAccess;
+using EPiServer.DataAnnotations;
 using EPiServer.Security;
 using EPiServer.Shell.Security;
 using EPiServer.Web;
@@ -14,6 +15,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 {
     private readonly ISiteDefinitionRepository _siteDefinitionRepository;
     private readonly IContentRepository _contentRepository;
+    private readonly IContentSecurityRepository _contentSecurityRepository;
     private readonly IContentLoader _contentLoader;
     private readonly ILanguageBranchRepository _languageBranchRepository;
     private readonly UIRoleProvider _uIRoleProvider;
@@ -29,7 +31,8 @@ internal class ContentBuilderManager : IContentBuilderManager
         IContentLoader contentLoader,
         ILanguageBranchRepository languageBranchRepository,
         UIRoleProvider uIRoleProvider,
-        UIUserProvider uIUserProvider)
+        UIUserProvider uIUserProvider,
+        IContentSecurityRepository contentSecurityRepository)
     {
         _siteDefinitionRepository = siteDefinitionRepository;
         _contentRepository = contentRepository;
@@ -38,6 +41,7 @@ internal class ContentBuilderManager : IContentBuilderManager
         _languageBranchRepository = languageBranchRepository;
         _uIRoleProvider = uIRoleProvider;
         _uIUserProvider = uIUserProvider;
+        _contentSecurityRepository = contentSecurityRepository;
     }
 
     public ContentReference GetOrCreateBlockFolder(AssetOptions? assetOptions)
@@ -147,11 +151,27 @@ internal class ContentBuilderManager : IContentBuilderManager
     {
         var site = GetOrCreateSite();
 
-        if (ContentReference.RootPage == site.StartPage)
+        if (ContentReference.RootPage != site.StartPage)
+            return;
+
+        var updateSite = site.CreateWritableClone();
+        updateSite.StartPage = pageRef;
+        _siteDefinitionRepository.Save(updateSite);
+
+        if (!_options.Roles.Any())
+            return;
+
+        if (_contentSecurityRepository.Get(updateSite.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
         {
-            var updateSite = site.CreateWritableClone();
-            updateSite.StartPage = pageRef;
-            _siteDefinitionRepository.Save(updateSite);
+            if (startPageSecurity.IsInherited)
+                startPageSecurity.ToLocal();
+
+            foreach (var role in _options.Roles)
+            {
+                startPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
+            }
+
+            _contentSecurityRepository.Save(startPageSecurity.ContentLink, startPageSecurity, SecuritySaveType.Replace);
         }
     }
 
@@ -215,14 +235,25 @@ internal class ContentBuilderManager : IContentBuilderManager
         }
     }
 
-    public void CreateRoles(IEnumerable<string> roles)
+    public void CreateRoles(IDictionary<string, AccessLevel> roles)
     {
         if (!roles.Any()) return;
 
         foreach (var role in roles)
         {
-            if (!_uIRoleProvider.RoleExistsAsync(role).GetAwaiter().GetResult())
-                _uIRoleProvider.CreateRoleAsync(role).GetAwaiter().GetResult();
+            if (!_uIRoleProvider.RoleExistsAsync(role.Key).GetAwaiter().GetResult())
+            {
+                _uIRoleProvider.CreateRoleAsync(role.Key).GetAwaiter().GetResult();
+
+                if (_contentSecurityRepository.Get(ContentReference.RootPage).CreateWritableClone() is IContentSecurityDescriptor rootPageSecurity)
+                {
+                    if (rootPageSecurity.Entries.Any(x => x.Name.Equals(role.Key)))
+                        continue;
+
+                    rootPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
+                    _contentSecurityRepository.Save(rootPageSecurity.ContentLink, rootPageSecurity, SecuritySaveType.Replace);
+                }
+            }
         }
     }
 
@@ -246,5 +277,37 @@ internal class ContentBuilderManager : IContentBuilderManager
                 _uIRoleProvider.AddUserToRolesAsync(user.UserName, user.Roles).GetAwaiter().GetResult();
             }
         }
+    }
+
+    public void GetOrSetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData
+    {
+        if (!string.IsNullOrEmpty(content.Name))
+            return;
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            if (!string.IsNullOrEmpty(nameSuffix))
+            {
+                content.Name = $"{name} {nameSuffix}";
+                return;
+            }
+
+            content.Name = name;
+            return;
+        }
+
+        var type = typeof(T);
+        var displayName = type
+            .GetCustomAttributes(typeof(ContentTypeAttribute), false)
+            .Cast<ContentTypeAttribute>()
+            .FirstOrDefault()?.DisplayName;
+
+        if (!string.IsNullOrEmpty(displayName))
+        {
+            content.Name = $"{displayName} {nameSuffix ?? Guid.NewGuid().ToString()}";
+            return;
+        }
+
+        content.Name = $"{type.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
     }
 }

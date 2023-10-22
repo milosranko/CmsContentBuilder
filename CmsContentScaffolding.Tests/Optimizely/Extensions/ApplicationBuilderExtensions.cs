@@ -5,6 +5,7 @@ using CmsContentScaffolding.Optimizely.Models;
 using CmsContentScaffolding.Optimizely.Startup;
 using EPiServer;
 using EPiServer.Core;
+using EPiServer.Security;
 using Microsoft.AspNetCore.Builder;
 using Optimizely.Demo.PublicWeb.Models.Blocks;
 using Optimizely.Demo.PublicWeb.Models.Media;
@@ -31,11 +32,11 @@ internal static class ApplicationBuilderExtensions
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
                 o.BlocksLocation = BlocksLocation.CurrentContent;
-                o.Roles.Add(Site1EditorsRole);
+                o.Roles.Add(Site1EditorsRole, AccessLevel.Edit);
                 o.Users.Add(new UserModel
                 {
                     UserName = "Site1User",
-                    Email = "email@test1.com",
+                    Email = "Site1User@test1.com",
                     Password = TestUserPassword,
                     Roles = new[] { Site1EditorsRole }
                 });
@@ -155,11 +156,11 @@ internal static class ApplicationBuilderExtensions
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
                 o.BlocksLocation = BlocksLocation.CurrentContent;
-                o.Roles.Add(Site2EditorsRole);
+                o.Roles.Add(Site2EditorsRole, AccessLevel.Edit);
                 o.Users.Add(new UserModel
                 {
                     UserName = "Site2User",
-                    Email = "email@test2.com",
+                    Email = "Site2User@test2.com",
                     Password = TestUserPassword,
                     Roles = new[] { Site2EditorsRole }
                 });

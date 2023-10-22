@@ -4,7 +4,6 @@ using CmsContentScaffolding.Optimizely.Models;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
-using EPiServer.DataAnnotations;
 using EPiServer.Security;
 using EPiServer.Web;
 using System.ComponentModel.DataAnnotations;
@@ -50,7 +49,7 @@ public class ContentBuilder : IContentBuilder
 
         value?.Invoke(page);
 
-        GetOrSetPageName<T>(page);
+        _contentBuilderManager.GetOrSetContentName<T>(page);
 
         var existingPage = _contentRepository.GetChildren<T>(parent).SingleOrDefault(x => x.Name.Equals(page.Name));
         if (existingPage is null)
@@ -102,7 +101,7 @@ public class ContentBuilder : IContentBuilder
 
             value?.Invoke(page);
 
-            GetOrSetPageName<T>(page, i.ToString());
+            _contentBuilderManager.GetOrSetContentName<T>(page, i.ToString());
 
             var existingPage = _contentRepository.GetChildren<T>(parent).SingleOrDefault(x => x.Name.Equals(page.Name));
             if (existingPage is null)
@@ -118,25 +117,5 @@ public class ContentBuilder : IContentBuilder
         }
 
         return this;
-    }
-
-    private void GetOrSetPageName<T>(PageData page, string? nameSuffix = default) where T : PageData
-    {
-        if (!string.IsNullOrEmpty(page.Name))
-            return;
-
-        var type = typeof(T);
-        var displayName = type
-            .GetCustomAttributes(typeof(ContentTypeAttribute), false)
-            .Cast<ContentTypeAttribute>()
-            .FirstOrDefault()?.DisplayName;
-
-        if (!string.IsNullOrEmpty(displayName))
-        {
-            page.Name = $"{displayName} {nameSuffix ?? Guid.NewGuid().ToString()}";
-            return;
-        }
-
-        page.Name = $"{type.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
     }
 }

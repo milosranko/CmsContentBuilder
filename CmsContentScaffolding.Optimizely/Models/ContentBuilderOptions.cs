@@ -1,4 +1,5 @@
 ﻿using EPiServer.Core;
+using EPiServer.Security;
 using System.Globalization;
 
 namespace CmsContentScaffolding.Optimizely.Models;
@@ -17,6 +18,11 @@ public class ContentBuilderOptions
     public bool PublishContent { get; set; } = false;
     public BlocksLocation BlocksLocation { get; set; } = BlocksLocation.GlobalRoot;
     public Type? StartPageType { get; set; }
-    public IList<string> Roles { get; set; } = new List<string> { EPiServer.Authorization.Roles.WebEditors, EPiServer.Authorization.Roles.WebAdmins };
+    public IDictionary<string, AccessLevel> Roles { get; set; } =
+        new Dictionary<string, AccessLevel>
+        {
+            { EPiServer.Authorization.Roles.WebEditors, AccessLevel.Publish },
+            { EPiServer.Authorization.Roles.WebAdmins, AccessLevel.FullAccess }
+        };
     public IList<UserModel> Users { get; set; } = new List<UserModel>();
 }

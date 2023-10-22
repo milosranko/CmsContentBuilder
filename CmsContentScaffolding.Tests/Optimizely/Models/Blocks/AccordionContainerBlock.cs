@@ -5,13 +5,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Optimizely.Demo.PublicWeb.Models.Blocks;
 
-[ContentType(GUID = "{2AB06B13-1082-4FB2-A9E0-BAE99983BEBF}")]
+[ContentType(DisplayName = "Accordion Container Block", GUID = "{2AB06B13-1082-4FB2-A9E0-BAE99983BEBF}")]
 public class AccordionContainerBlock : BlockBase
 {
     #region Content tab
 
     [CultureSpecific]
     [Display(
+        Name = "Heading",
         GroupName = "Heading",
         Order = 100)]
     public virtual string Heading { get; set; }

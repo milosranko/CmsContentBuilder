@@ -1,5 +1,6 @@
 ﻿using CmsContentScaffolding.Optimizely.Models;
 using EPiServer.Core;
+using EPiServer.Security;
 using EPiServer.Web;
 
 namespace CmsContentScaffolding.Optimizely.Interfaces;
@@ -13,6 +14,7 @@ public interface IContentBuilderManager
     void SetAsStartPage(ContentReference pageRef);
     bool IsInstallationEmpty();
     void ApplyDefaultLanguage();
-    void CreateRoles(IEnumerable<string> roles);
+    void CreateRoles(IDictionary<string, AccessLevel> roles);
     void CreateUsers(IEnumerable<UserModel> users);
+    void GetOrSetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData;
 }

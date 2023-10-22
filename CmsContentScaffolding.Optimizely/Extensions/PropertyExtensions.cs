@@ -73,8 +73,7 @@ public static class PropertyExtensions
         this ContentArea contentArea,
         string? name = default,
         Action<T>? options = default,
-        AssetOptions? assetOptions = default,
-        IEnumerable<string>? allowedRoles = default) where T : IContentData
+        AssetOptions? assetOptions = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
@@ -88,11 +87,7 @@ public static class PropertyExtensions
         options?.Invoke(content);
 
         var iContent = (IContent)content;
-
-        if (string.IsNullOrEmpty(iContent.Name) && string.IsNullOrEmpty(name))
-            iContent.Name = $"{typeof(T).Name}_{Guid.NewGuid()}";
-        else if (string.IsNullOrEmpty(iContent.Name))
-            iContent.Name = name;
+        contentBuilderManager.GetOrSetContentName<T>(iContent, name);
 
         if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
             return AddItemToContentArea(contentArea, iContent.ContentLink);
@@ -178,10 +173,7 @@ public static class PropertyExtensions
             options?.Invoke(content);
 
             var iContent = (IContent)content;
-            if (string.IsNullOrEmpty(iContent.Name) && string.IsNullOrEmpty(name))
-                iContent.Name = $"{typeName}_{i}";
-            else
-                iContent.Name = string.IsNullOrEmpty(name) ? $"{typeName}_{i}" : $"{name}_{i}";
+            contentBuilderManager.GetOrSetContentName<T>(iContent, name, i.ToString());
 
             if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
             {
