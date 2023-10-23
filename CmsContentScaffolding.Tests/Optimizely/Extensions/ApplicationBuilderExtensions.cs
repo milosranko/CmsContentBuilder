@@ -31,7 +31,7 @@ internal static class ApplicationBuilderExtensions
                 o.BuildMode = BuildMode.Append;
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
-                o.BlocksLocation = BlocksLocation.CurrentContent;
+                o.BlocksLocation = BlocksLocation.SiteRoot;
                 o.Roles = new Dictionary<string, AccessLevel>
                 {
                     { Site1EditorsRole, AccessLevel.Edit }
@@ -138,7 +138,7 @@ internal static class ApplicationBuilderExtensions
                         block.Heading = faker.Lorem.Slug();
                         block.LeadText = faker.Lorem.Paragraph();
                         block.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                    }, 10, new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
+                    }, 10);
                 }, 10)
                 .WithPages<ArticlePage>(p =>
                 {
@@ -148,7 +148,7 @@ internal static class ApplicationBuilderExtensions
                         block.Heading = faker.Lorem.Slug();
                         block.LeadText = faker.Lorem.Paragraph();
                         block.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                    }, 2, new AssetOptions { FolderName = TeaserBlocksFolderName });
+                    }, 2, new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = TeaserBlocksFolderName });
                 }, 2);
             });
 
@@ -161,7 +161,7 @@ internal static class ApplicationBuilderExtensions
                 o.BuildMode = BuildMode.OnlyIfEmptyInDefaultLanguage;
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
-                o.BlocksLocation = BlocksLocation.CurrentContent;
+                o.BlocksLocation = BlocksLocation.SiteRoot;
                 o.Roles = new Dictionary<string, AccessLevel>
                 {
                     { Site2EditorsRole, AccessLevel.Edit }

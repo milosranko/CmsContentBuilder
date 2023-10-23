@@ -53,7 +53,7 @@ internal class ContentBuilderManager : IContentBuilderManager
             {
                 BlocksLocation.CurrentContent => GetOrCreateTempFolder(),
                 BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
-                BlocksLocation.SiteRoot => ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot,
+                BlocksLocation.SiteRoot => GetOrCreateSiteAssetsRoot(site),
                 _ => ContentReference.GlobalBlockFolder,
             };
 
@@ -61,7 +61,7 @@ internal class ContentBuilderManager : IContentBuilderManager
         {
             BlocksLocation.CurrentContent => GetOrCreateTempFolder(),
             BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
-            BlocksLocation.SiteRoot => ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot,
+            BlocksLocation.SiteRoot => GetOrCreateSiteAssetsRoot(site),
             _ => ContentReference.GlobalBlockFolder,
         };
 
@@ -119,6 +119,8 @@ internal class ContentBuilderManager : IContentBuilderManager
                 }
             }
         };
+
+        siteDefinition.SiteAssetsRoot = GetOrCreateSiteAssetsRoot(siteDefinition);
 
         _siteDefinitionRepository.Save(siteDefinition);
 
@@ -324,5 +326,16 @@ internal class ContentBuilderManager : IContentBuilderManager
         }
 
         content.Name = $"{type.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
+    }
+
+    private ContentReference GetOrCreateSiteAssetsRoot(SiteDefinition site)
+    {
+        if (!site.SiteAssetsRoot.Equals(site.GlobalAssetsRoot))
+            return site.SiteAssetsRoot;
+
+        var siteRoot = _contentRepository.GetDefault<ContentFolder>(site.SiteAssetsRoot);
+        siteRoot.Name = site.Name;
+
+        return _contentRepository.Save(siteRoot, SaveAction.Publish, AccessLevel.NoAccess);
     }
 }
