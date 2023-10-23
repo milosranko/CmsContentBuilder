@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EPiServer.CMS" Version="12.16.0" />
+    <PackageReference Include="EPiServer.CMS" Version="12.17.1" />
   </ItemGroup>
 
   <ItemGroup>
