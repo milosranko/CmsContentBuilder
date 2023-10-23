@@ -19,6 +19,6 @@ public class ContentBuilderOptions
     public BlocksLocation BlocksLocation { get; set; } = BlocksLocation.GlobalRoot;
     public Type? StartPageType { get; set; }
     public bool CreateDefaultRoles { get; set; } = true;
-    public IDictionary<string, AccessLevel> Roles { get; set; } = new Dictionary<string, AccessLevel>();
-    public IList<UserModel> Users { get; set; } = new List<UserModel>();
+    public IDictionary<string, AccessLevel>? Roles { get; set; }
+    public IList<UserModel>? Users { get; set; }
 }

@@ -158,7 +158,7 @@ internal class ContentBuilderManager : IContentBuilderManager
         updateSite.StartPage = pageRef;
         _siteDefinitionRepository.Save(updateSite);
 
-        if (!_options.Roles.Any())
+        if (_options.Roles is null || !_options.Roles.Any())
             return;
 
         if (_contentSecurityRepository.Get(updateSite.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
@@ -257,9 +257,9 @@ internal class ContentBuilderManager : IContentBuilderManager
         }
     }
 
-    public void CreateRoles(IDictionary<string, AccessLevel> roles)
+    public void CreateRoles(IDictionary<string, AccessLevel>? roles)
     {
-        if (!roles.Any())
+        if (roles is null || !roles.Any())
             return;
 
         foreach (var role in roles)
@@ -271,9 +271,9 @@ internal class ContentBuilderManager : IContentBuilderManager
         }
     }
 
-    public void CreateUsers(IEnumerable<UserModel> users)
+    public void CreateUsers(IEnumerable<UserModel>? users)
     {
-        if (!users.Any())
+        if (users is null || !users.Any())
             return;
 
         IUIUser? uiUser;

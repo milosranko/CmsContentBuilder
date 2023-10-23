@@ -32,14 +32,20 @@ internal static class ApplicationBuilderExtensions
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
                 o.BlocksLocation = BlocksLocation.CurrentContent;
-                o.Roles.Add(Site1EditorsRole, AccessLevel.Edit);
-                o.Users.Add(new UserModel
+                o.Roles = new Dictionary<string, AccessLevel>
                 {
-                    UserName = "Site1User",
-                    Email = "Site1User@test1.com",
-                    Password = TestUserPassword,
-                    Roles = new[] { Site1EditorsRole }
-                });
+                    { Site1EditorsRole, AccessLevel.Edit }
+                };
+                o.Users = new List<UserModel>
+                {
+                    new UserModel
+                    {
+                        UserName = "Site1User",
+                        Email = "Site1User@test.com",
+                        Password = TestUserPassword,
+                        Roles = new[] { Site1EditorsRole }
+                    }
+                };
             },
             builder: b =>
             {
@@ -156,14 +162,20 @@ internal static class ApplicationBuilderExtensions
                 o.StartPageType = typeof(StartPage);
                 o.PublishContent = true;
                 o.BlocksLocation = BlocksLocation.CurrentContent;
-                o.Roles.Add(Site2EditorsRole, AccessLevel.Edit);
-                o.Users.Add(new UserModel
+                o.Roles = new Dictionary<string, AccessLevel>
                 {
-                    UserName = "Site2User",
-                    Email = "Site2User@test2.com",
-                    Password = TestUserPassword,
-                    Roles = new[] { Site2EditorsRole }
-                });
+                    { Site2EditorsRole, AccessLevel.Edit }
+                };
+                o.Users = new List<UserModel>
+                {
+                    new UserModel
+                    {
+                        UserName = "Site2User",
+                        Email = "Site2User@test.com",
+                        Password = TestUserPassword,
+                        Roles = new[] { Site2EditorsRole }
+                    }
+                };
             },
             builder: b =>
             {

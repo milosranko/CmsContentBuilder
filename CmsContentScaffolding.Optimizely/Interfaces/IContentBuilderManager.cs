@@ -15,7 +15,7 @@ public interface IContentBuilderManager
     bool IsInstallationEmpty();
     void ApplyDefaultLanguage();
     void CreateDefaultRoles(IDictionary<string, AccessLevel> roles);
-    void CreateRoles(IDictionary<string, AccessLevel> roles);
-    void CreateUsers(IEnumerable<UserModel> users);
+    void CreateRoles(IDictionary<string, AccessLevel>? roles);
+    void CreateUsers(IEnumerable<UserModel>? users);
     void GetOrSetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData;
 }

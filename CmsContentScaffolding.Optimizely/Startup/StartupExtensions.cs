@@ -14,8 +14,8 @@ public static class StartupExtensions
     public static IServiceCollection AddCmsContentScaffolding(
         this IServiceCollection services)
     {
-        services.AddTransient<IContentBuilderManager, ContentBuilderManager>();
         services.AddTransient<IContentBuilder, ContentBuilder>();
+        services.AddScoped<IContentBuilderManager, ContentBuilderManager>();
         services.AddScoped(x => new ContentBuilderOptions());
 
         return services;
