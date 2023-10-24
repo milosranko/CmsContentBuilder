@@ -51,8 +51,7 @@ public class ContentBuilder : IContentBuilder
 
         _contentBuilderManager.GetOrSetContentName<T>(page);
 
-        var existingPage = _contentRepository.GetChildren<T>(parent).SingleOrDefault(x => x.Name.Equals(page.Name));
-        if (existingPage is null)
+        if (!_contentRepository.GetChildren<T>(parent).Any(x => x.Name.Equals(page.Name)))
         {
             var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
@@ -62,6 +61,7 @@ public class ContentBuilder : IContentBuilder
             }
 
             var contentToMove = _contentRepository.GetChildren<IContent>(_contentBuilderManager.GetOrCreateTempFolder(), _options.DefaultLanguage);
+
             foreach (var item in contentToMove)
             {
                 _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
@@ -103,16 +103,15 @@ public class ContentBuilder : IContentBuilder
 
             _contentBuilderManager.GetOrSetContentName<T>(page, i.ToString());
 
-            var existingPage = _contentRepository.GetChildren<T>(parent).SingleOrDefault(x => x.Name.Equals(page.Name));
-            if (existingPage is null)
-            {
-                var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+            if (_contentRepository.GetChildren<T>(parent).Any(x => x.Name.Equals(page.Name)))
+                continue;
 
-                var contentToMove = _contentRepository.GetChildren<IContent>(_contentBuilderManager.GetOrCreateTempFolder(), _options.DefaultLanguage);
-                foreach (var item in contentToMove)
-                {
-                    _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
-                }
+            var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+            var contentToMove = _contentRepository.GetChildren<IContent>(_contentBuilderManager.GetOrCreateTempFolder(), _options.DefaultLanguage);
+
+            foreach (var item in contentToMove)
+            {
+                _contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
             }
         }
 
