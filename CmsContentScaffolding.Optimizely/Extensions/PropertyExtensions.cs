@@ -52,8 +52,7 @@ public static class PropertyExtensions
     public static ContentArea AddExistingItem<T>(
         this ContentArea contentArea,
         string name,
-        AssetOptions? assetOptions = default,
-        IEnumerable<string>? allowedRoles = default) where T : IContentData
+        AssetOptions? assetOptions = default) where T : IContentData
     {
         var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
