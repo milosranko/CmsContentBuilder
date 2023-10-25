@@ -101,7 +101,7 @@ public class ContentBuilder : IContentBuilder
 
             value?.Invoke(page);
 
-            _contentBuilderManager.GetOrSetContentName<T>(page, i.ToString());
+            _contentBuilderManager.GetOrSetContentName<T>(page, default, i.ToString());
 
             if (_contentRepository.GetChildren<T>(parent).Any(x => x.Name.Equals(page.Name)))
                 continue;
