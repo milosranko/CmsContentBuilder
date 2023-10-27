@@ -153,7 +153,7 @@ internal class ContentBuilderManager : IContentBuilderManager
     {
         var site = GetOrCreateSite();
 
-        if (ContentReference.RootPage != site.StartPage)
+        if (!ContentReference.RootPage.CompareToIgnoreWorkID(site.StartPage))
             return;
 
         var updateSite = site.CreateWritableClone();
@@ -183,11 +183,10 @@ internal class ContentBuilderManager : IContentBuilderManager
 
         if (_options.BuildMode == BuildMode.OnlyIfEmptyInDefaultLanguage)
         {
-            if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.DefaultLanguage)) && !(ContentReference.RootPage == site.StartPage))
+            if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.DefaultLanguage)) && !ContentReference.RootPage.CompareToIgnoreWorkID(site.StartPage))
             {
                 var pages = _contentLoader.GetChildren<IContentData>(site.StartPage, _options.DefaultLanguage);
-
-                return pages is null || pages.Count().Equals(0);
+                return pages is null || !pages.Any();
             }
 
             return true;
@@ -195,7 +194,6 @@ internal class ContentBuilderManager : IContentBuilderManager
         else if (_options.BuildMode.Equals(BuildMode.OnlyIfEmptyRegardlessOfLanguage))
         {
             var pages = _contentLoader.GetChildren<IContentData>(site.RootPage);
-
             return pages is null || !pages.Any();
         }
         return false;
@@ -330,7 +328,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 
     private ContentReference GetOrCreateSiteAssetsRoot(SiteDefinition site)
     {
-        if (!site.SiteAssetsRoot.Equals(site.GlobalAssetsRoot))
+        if (!site.SiteAssetsRoot.CompareToIgnoreWorkID(site.GlobalAssetsRoot))
             return site.SiteAssetsRoot;
 
         var siteRoot = _contentRepository.GetDefault<ContentFolder>(site.SiteAssetsRoot);

@@ -193,57 +193,7 @@ internal static class ApplicationBuilderExtensions
                     }, 3, new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
                 }, l1 =>
                 {
-                    l1
-                    .WithPage<ArticlePage>(p =>
-                    {
-                        p.Name = "Article1_1";
-                        p.Heading = PropertyHelpers.AddRandomText();
-                        p.LeadText = PropertyHelpers.AddRandomText(150);
-                        p.MainContent = PropertyHelpers.AddRandomHtml();
-                        p.TopImage = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                        p.MainContentArea
-                        .AddItem<AccordionContainerBlock>("Accordion Container", b =>
-                        {
-                            b.Heading = PropertyHelpers.AddRandomText();
-                            b.Items.AddItems<AccordionItemBlock>("Accordion Item", b1 =>
-                            {
-                                b1.Heading = PropertyHelpers.AddRandomText();
-                                b1.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                                b1.LeadText = PropertyHelpers.AddRandomText(105);
-                            }, 5);
-                        }, new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = "Accordion" })
-                        .AddItem<ImageFile>(options: i =>
-                        {
-                            i.Name = "Test Image";
-                            i.ContentLink = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                        });
-                    }, l2 =>
-                    {
-                        l2
-                        .WithPage<ArticlePage>(p =>
-                        {
-                            p.Name = "Article2_1";
-                            p.Heading = PropertyHelpers.AddRandomText();
-                            p.LeadText = PropertyHelpers.AddRandomText(150);
-                            p.MainContent = PropertyHelpers.AddRandomHtml();
-                        })
-                        .WithPage<ArticlePage>(l3 =>
-                        {
-                            l3.WithPages<ArticlePage>(p =>
-                            {
-                                p.Heading = PropertyHelpers.AddRandomText();
-                                p.LeadText = PropertyHelpers.AddRandomText(150);
-                                p.MainContent = PropertyHelpers.AddRandomHtml();
-                            }, 20);
-                        });
-                    })
-                    .WithPages<ArticlePage>(p =>
-                    {
-                        p.Heading = PropertyHelpers.AddRandomText();
-                        p.LeadText = PropertyHelpers.AddRandomText(150);
-                        p.MainContent = PropertyHelpers.AddRandomHtml();
-                        p.MainContentArea.AddItem<TeaserBlock>(p.Name);
-                    }, 100);
+                    l1.WithPage<ArticlePage>();
                 })
                 .WithPage<NotFoundPage>(p =>
                 {
