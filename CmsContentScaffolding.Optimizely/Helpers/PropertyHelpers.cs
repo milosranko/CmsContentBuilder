@@ -14,80 +14,50 @@ namespace CmsContentScaffolding.Optimizely.Helpers;
 
 public static class PropertyHelpers
 {
-    public static string AddRandomText(int maxLength = 50)
-    {
-        return ResourceHelpers.GetText().Substring(0, maxLength);
-    }
+    public static IDictionary<Type, PropertyInfo[]> TypeProperties = new Dictionary<Type, PropertyInfo[]>();
 
-    public static XhtmlString AddRandomHtml()
-    {
-        return new XhtmlString(ResourceHelpers.GetHtmlText());
-    }
-
-    public static ContentReference GetOrAddRandomImage<T>(int width = 1200, int height = 800) where T : MediaData
+    public static ContentReference GetOrAddRandomImage<TMedia>(int width = 1200, int height = 800) where TMedia : MediaData
     {
         var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
+        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var site = contentBuilderManager.GetOrCreateSite();
         var mediaFolder = ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot;
         var randomImage = ResourceHelpers.GetImage();
-        var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
         var existingItems = contentRepository
-            .GetChildren<T>(mediaFolder)
+            .GetChildren<TMedia>(mediaFolder)
             .Where(x => x.Name.Equals(randomImage.Name, StringComparison.InvariantCultureIgnoreCase));
 
         if (existingItems != null && existingItems.Any())
             return existingItems.ElementAt(0).ContentLink;
 
         var blobFactory = ServiceLocator.Current.GetInstance<IBlobFactory>();
-        var image = contentRepository.GetDefault<T>(mediaFolder);
+        var image = contentRepository.GetDefault<TMedia>(mediaFolder);
         var blob = blobFactory.CreateBlob(image.BinaryDataContainer, ".png");
 
-        blob.WriteAllBytes(randomImage.Bytes);
+        blob.Write(randomImage.Stream);
         image.BinaryData = blob;
         image.Name = randomImage.Name;
 
-        return contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        var contentRef = contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+
+        blob = null;
+        image = null;
+        //randomImage.Bytes = null;
+        return contentRef;
     }
 
-    public static IEnumerable<ContentArea> InitContentAreas<T>(T content)
-        where T : IContentData
+    public static void InitProperties<T>(T content) where T : IContentData
     {
-        var contentAreaProperties = content.GetType()
-            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(x => x.PropertyType.Equals(typeof(ContentArea)))
-            .ToArray();
+        var type = typeof(T);
 
-        if (contentAreaProperties.Length == 0)
-            return Enumerable.Empty<ContentArea>();
+        if (!TypeProperties.ContainsKey(type))
+            TypeProperties.Add(type, type
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => x.PropertyType.Name.Equals(nameof(ContentArea)) || x.PropertyType.Name.Equals(nameof(XhtmlString)))
+                .ToArray());
 
-        var contentAreas = new List<ContentArea>(contentAreaProperties.Length);
-
-        foreach (var contentArea in contentAreaProperties)
-        {
-            contentArea.SetValue(content, new ContentArea());
-            contentAreas.Add((ContentArea)contentArea.GetValue(content));
-        }
-
-        contentAreaProperties = null;
-
-        return contentAreas;
-    }
-
-    public static void InitXHtmlStringProperties<T>(T content)
-        where T : IContentData
-    {
-        var xhtmlStringProperties = content.GetType()
-            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(x => x.PropertyType.Equals(typeof(XhtmlString)))
-            .ToArray();
-
-        if (xhtmlStringProperties.Length == 0)
-            return;
-
-        foreach (var xhtmlString in xhtmlStringProperties)
-        {
-            xhtmlString.SetValue(content, new XhtmlString());
-        }
+        for (int i = 0; i < TypeProperties[type].Length; i++)
+            TypeProperties[type][i].SetValue(content, TypeProperties[type][i].PropertyType.Name.Equals(nameof(ContentArea)) ? new ContentArea() : new XhtmlString());
     }
 }

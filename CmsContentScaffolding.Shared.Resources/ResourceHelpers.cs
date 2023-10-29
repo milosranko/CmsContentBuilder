@@ -1,12 +1,19 @@
-﻿using CmsContentScaffolding.Shared.Resources.Extensions;
+﻿using Bogus;
+using CmsContentScaffolding.Shared.Resources.Extensions;
+using System.Reflection;
 
 namespace CmsContentScaffolding.Shared.Resources;
 
 public static class ResourceHelpers
 {
+    private static Lazy<Faker> _faker = new Lazy<Faker>(new Faker());
+    private static Lazy<Assembly> _assembly = new Lazy<Assembly>(typeof(ResourceHelpers).Assembly);
+
+    public static Faker Faker => _faker.Value;
+
     public static string GetText()
     {
-        using var stream = typeof(ResourceHelpers).Assembly.GetManifestResourceStream("CmsContentScaffolding.Shared.Resources.Texts.LoremIpsum.txt");
+        using var stream = _assembly.Value.GetManifestResourceStream("CmsContentScaffolding.Shared.Resources.Texts.LoremIpsum.txt");
         using var reader = new StreamReader(stream);
 
         return reader.ReadToEnd();
@@ -14,23 +21,23 @@ public static class ResourceHelpers
 
     public static string GetHtmlText()
     {
-        using var stream = typeof(ResourceHelpers).Assembly.GetManifestResourceStream("CmsContentScaffolding.Shared.Resources.Texts.LoremIpsumHtml.txt");
+        using var stream = _assembly.Value.GetManifestResourceStream("CmsContentScaffolding.Shared.Resources.Texts.LoremIpsumHtml.txt");
         using var reader = new StreamReader(stream);
 
         return reader.ReadToEnd();
     }
 
-    public static (string Name, byte[] Bytes) GetImage()
+    public static (string Name, Stream Stream) GetImage()
     {
-        var image = typeof(ResourceHelpers).Assembly.GetManifestResourceNames()
+        var image = _assembly.Value.GetManifestResourceNames()
             .Where(x => x.EndsWith(".png"))
             .Random();
 
-        using var stream = typeof(ResourceHelpers).Assembly.GetManifestResourceStream(image);
+        var stream = _assembly.Value.GetManifestResourceStream(image);
 
-        var buffer = new byte[stream.Length];
-        stream.Read(buffer, 0, buffer.Length);
+        //var buffer = new byte[stream.Length];
+        //stream.Read(buffer, 0, buffer.Length);
 
-        return (image, buffer);
+        return (image, stream);
     }
 }

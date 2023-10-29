@@ -5,7 +5,7 @@ using EPiServer.Web;
 
 namespace CmsContentScaffolding.Optimizely.Interfaces;
 
-public interface IContentBuilderManager
+internal interface IContentBuilderManager
 {
     SiteDefinition GetOrCreateSite();
     ContentReference GetOrCreateTempFolder();

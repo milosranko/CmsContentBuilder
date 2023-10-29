@@ -80,9 +80,7 @@ public static class PropertyExtensions
         var folder = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
         var content = contentRepository.GetDefault<T>(folder, globalOptions.DefaultLanguage);
 
-        PropertyHelpers.InitContentAreas(content);
-        PropertyHelpers.InitXHtmlStringProperties(content);
-
+        PropertyHelpers.InitProperties(content);
         options?.Invoke(content);
 
         var iContent = (IContent)content;
@@ -166,9 +164,7 @@ public static class PropertyExtensions
         {
             content = contentRepository.GetDefault<T>(parent, globalOptions.DefaultLanguage);
 
-            PropertyHelpers.InitContentAreas(content);
-            PropertyHelpers.InitXHtmlStringProperties(content);
-
+            PropertyHelpers.InitProperties(content);
             options?.Invoke(content);
 
             var iContent = (IContent)content;

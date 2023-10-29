@@ -1,8 +1,11 @@
 ﻿using CmsContentScaffolding.Optimizely.Builders;
+using CmsContentScaffolding.Optimizely.Helpers;
 using CmsContentScaffolding.Optimizely.Interfaces;
 using CmsContentScaffolding.Optimizely.Managers;
 using CmsContentScaffolding.Optimizely.Models;
+using EPiServer;
 using EPiServer.Authorization;
+using EPiServer.Core;
 using EPiServer.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +17,6 @@ public static class StartupExtensions
     public static IServiceCollection AddCmsContentScaffolding(
         this IServiceCollection services)
     {
-        services.AddTransient<IContentBuilder, ContentBuilder>();
         services.AddScoped<IContentBuilderManager, ContentBuilderManager>();
         services.AddScoped(x => new ContentBuilderOptions());
 
@@ -26,6 +28,7 @@ public static class StartupExtensions
         Action<IContentBuilder> builder,
         Action<ContentBuilderOptions>? builderOptions = null)
     {
+        var contentRepository = app.ApplicationServices.GetRequiredService<IContentRepository>();
         var options = app.ApplicationServices.GetRequiredService<ContentBuilderOptions>();
         var contentBuilderManager = app.ApplicationServices.GetService<IContentBuilderManager>() ?? throw new Exception($"{nameof(IContentBuilderManager)} instance not found!");
 
@@ -33,10 +36,12 @@ public static class StartupExtensions
 
         if (ApplyOptions(contentBuilderManager, options))
         {
-            var appBuilder = app.ApplicationServices.GetRequiredService<IContentBuilder>();
+            var appBuilder = new ContentBuilder(contentRepository, ContentReference.EmptyReference, options, contentBuilderManager);
             builder.Invoke(appBuilder);
 
+            //Cleanup resources
             contentBuilderManager.DeleteTempFolder();
+            PropertyHelpers.TypeProperties.Clear();
         }
     }
 

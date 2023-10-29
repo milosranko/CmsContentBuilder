@@ -22,12 +22,15 @@ public static class PropertyHelpers
     {
         var imageId = Guid.NewGuid();
         var image = ResourceHelpers.GetImage();
+        var buffer = new byte[image.Stream.Length];
+
+        image.Stream.Read(buffer, 0, buffer.Length);
 
         api.Media.SaveAsync(new BinaryMediaContent
         {
             Id = imageId,
             Filename = image.Name,
-            Data = image.Bytes
+            Data = buffer
         }).GetAwaiter().GetResult();
 
         return new ImageField { Id = imageId };

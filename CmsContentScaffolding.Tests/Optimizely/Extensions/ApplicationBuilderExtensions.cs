@@ -1,8 +1,8 @@
-﻿using Bogus;
-using CmsContentScaffolding.Optimizely.Extensions;
+﻿using CmsContentScaffolding.Optimizely.Extensions;
 using CmsContentScaffolding.Optimizely.Helpers;
 using CmsContentScaffolding.Optimizely.Models;
 using CmsContentScaffolding.Optimizely.Startup;
+using CmsContentScaffolding.Shared.Resources;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.Security;
@@ -19,8 +19,6 @@ internal static class ApplicationBuilderExtensions
 {
     public static IApplicationBuilder UseCmsContentScaffolding(this IApplicationBuilder app)
     {
-        var faker = new Faker();
-
         app.UseCmsContentScaffolding(
             builderOptions: o =>
             {
@@ -57,8 +55,8 @@ internal static class ApplicationBuilderExtensions
                     p.MainContentArea
                     .AddItems<TeaserBlock>("Teaser Test", b =>
                     {
-                        b.Heading = faker.Lorem.Slug();
-                        b.LeadText = faker.Lorem.Paragraph();
+                        b.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                        b.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                         b.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     },
                     3,
@@ -68,23 +66,23 @@ internal static class ApplicationBuilderExtensions
                     l1
                     .WithPage<ArticlePage>(p =>
                     {
-                        p.Name = faker.Lorem.Slug(2);
-                        p.Heading = faker.Lorem.Slug();
-                        p.LeadText = faker.Lorem.Paragraph();
+                        p.Name = ResourceHelpers.Faker.Lorem.Slug();
+                        p.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                        p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                         p.MainContent
-                        .AddStringFragment(faker.Lorem.Paragraphs())
+                        .AddStringFragment(ResourceHelpers.Faker.Lorem.Paragraphs())
                         .AddContentFragment(PropertyHelpers.GetOrAddRandomImage<ImageFile>())
-                        .AddStringFragment(faker.Lorem.Paragraphs());
+                        .AddStringFragment(ResourceHelpers.Faker.Lorem.Paragraphs());
                         p.TopImage = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                         p.MainContentArea
                         .AddItem<AccordionContainerBlock>("Accordion Container", b =>
                         {
-                            b.Heading = faker.Lorem.Slug();
+                            b.Heading = ResourceHelpers.Faker.Lorem.Slug();
                             b.Items.AddItems<AccordionItemBlock>("Accordion Item", b1 =>
                             {
-                                b1.Heading = faker.Lorem.Slug();
+                                b1.Heading = ResourceHelpers.Faker.Lorem.Slug();
                                 b1.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                                b1.LeadText = faker.Lorem.Paragraph();
+                                b1.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                             }, 5);
                         }, new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = "Accordion" })
                         .AddItem<ImageFile>(options: i =>
@@ -99,54 +97,54 @@ internal static class ApplicationBuilderExtensions
                         .WithPage<ArticlePage>(p =>
                         {
                             p.Name = "Article2_1";
-                            p.Heading = faker.Lorem.Slug();
-                            p.LeadText = faker.Lorem.Paragraph();
-                            p.MainContent = new XhtmlString(faker.Lorem.Paragraphs(5));
+                            p.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                            p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
+                            p.MainContent = new XhtmlString(ResourceHelpers.Faker.Lorem.Paragraphs());
                         })
                         .WithPage<ArticlePage>(l3 =>
                         {
                             l3.WithPages<ArticlePage>(p =>
                             {
-                                p.Heading = faker.Lorem.Slug();
-                                p.LeadText = faker.Lorem.Paragraph();
-                                p.MainContent = new XhtmlString(faker.Lorem.Paragraphs(7));
+                                p.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                                p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
+                                p.MainContent = new XhtmlString(ResourceHelpers.Faker.Lorem.Paragraphs());
                             }, 20);
                         });
                     })
                     .WithPages<ArticlePage>(p =>
                     {
-                        p.Heading = faker.Lorem.Slug();
-                        p.LeadText = faker.Lorem.Paragraph();
-                        p.MainContent = new XhtmlString(faker.Lorem.Paragraphs(10));
+                        p.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                        p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
+                        p.MainContent = new XhtmlString(ResourceHelpers.Faker.Lorem.Paragraphs(10));
                         p.MainContentArea.AddItem<TeaserBlock>(p.Name);
                     }, 100);
                 })
                 .WithPage<NotFoundPage>(p =>
                 {
                     p.Name = "Not Found Page";
-                    p.Teaser.Heading = faker.Lorem.Slug(3);
+                    p.Teaser.Heading = ResourceHelpers.Faker.Lorem.Slug(3);
                     p.Teaser.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                    p.Teaser.LeadText = faker.Lorem.Paragraph(2);
-                    p.Teaser.LinkButton.LinkText = faker.Internet.DomainName();
-                    p.Teaser.LinkButton.LinkUrl = new Url(faker.Internet.Url());
+                    p.Teaser.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
+                    p.Teaser.LinkButton.LinkText = ResourceHelpers.Faker.Internet.DomainName();
+                    p.Teaser.LinkButton.LinkUrl = new Url(ResourceHelpers.Faker.Internet.Url());
                 })
                 .WithPages<ArticlePage>(p =>
                 {
-                    p.Name = faker.Lorem.Slug(2);
+                    p.Name = ResourceHelpers.Faker.Lorem.Slug(2);
                     p.MainContentArea.AddItems<TeaserBlock>(block =>
                     {
-                        block.Heading = faker.Lorem.Slug();
-                        block.LeadText = faker.Lorem.Paragraph();
+                        block.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                        block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                         block.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     }, 10);
                 }, 10)
                 .WithPages<ArticlePage>(p =>
                 {
-                    p.Name = faker.Lorem.Slug(3);
+                    p.Name = ResourceHelpers.Faker.Lorem.Slug(3);
                     p.MainContentArea.AddItems<TeaserBlock>(block =>
                     {
-                        block.Heading = faker.Lorem.Slug();
-                        block.LeadText = faker.Lorem.Paragraph();
+                        block.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                        block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                         block.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     }, 2, new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = TeaserBlocksFolderName });
                 }, 2);
@@ -187,8 +185,8 @@ internal static class ApplicationBuilderExtensions
                     p.MainContentArea
                     .AddItems<TeaserBlock>("Teaser Test", b =>
                     {
-                        b.Heading = PropertyHelpers.AddRandomText();
-                        b.LeadText = PropertyHelpers.AddRandomText(150);
+                        b.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                        b.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                         b.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     }, 3, new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
                 }, l1 =>
@@ -198,19 +196,19 @@ internal static class ApplicationBuilderExtensions
                 .WithPage<NotFoundPage>(p =>
                 {
                     p.Name = "NotFoundPage";
-                    p.Teaser.Heading = PropertyHelpers.AddRandomText(20);
+                    p.Teaser.Heading = ResourceHelpers.Faker.Lorem.Slug();
                     p.Teaser.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
-                    p.Teaser.LeadText = PropertyHelpers.AddRandomText(50);
-                    p.Teaser.LinkButton.LinkText = PropertyHelpers.AddRandomText(15);
-                    p.Teaser.LinkButton.LinkUrl = new Url("https://google.com");
+                    p.Teaser.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
+                    p.Teaser.LinkButton.LinkText = ResourceHelpers.Faker.Internet.DomainName();
+                    p.Teaser.LinkButton.LinkUrl = new Url(ResourceHelpers.Faker.Internet.Url());
                 })
                 .WithPages<ArticlePage>(p =>
                 {
                     p.Name = "Article2";
                     p.MainContentArea.AddItems<TeaserBlock>(block =>
                     {
-                        block.Heading = PropertyHelpers.AddRandomText();
-                        block.LeadText = PropertyHelpers.AddRandomText(150);
+                        block.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                        block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                         block.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     }, 10, new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
                 }, 10)
@@ -219,8 +217,8 @@ internal static class ApplicationBuilderExtensions
                     p.Name = "Articles4";
                     p.MainContentArea.AddItems<TeaserBlock>(block =>
                     {
-                        block.Heading = PropertyHelpers.AddRandomText();
-                        block.LeadText = PropertyHelpers.AddRandomText(150);
+                        block.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                        block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                         block.Image = PropertyHelpers.GetOrAddRandomImage<ImageFile>();
                     }, 2, new AssetOptions { FolderName = TeaserBlocksFolderName });
                 }, 2);
