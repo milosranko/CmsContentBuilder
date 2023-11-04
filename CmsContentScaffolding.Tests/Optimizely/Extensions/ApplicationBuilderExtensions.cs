@@ -50,8 +50,12 @@ internal static class ApplicationBuilderExtensions
 				b.UseAssets()
 				.WithFolder("Folder 1", l1 =>
 				{
-					l1.WithFolder("Folder 1_1");
-					l1.WithBlock<TeaserBlock>("Teaser Name", x => x.Heading = "Test");
+					l1
+					.WithFolder("Folder 1_1", l2 =>
+					{
+						l2.WithBlock<TeaserBlock>("Teaser 2 Name", x => x.Heading = "Test");
+					})
+					.WithBlock<TeaserBlock>("Teaser Name", x => x.Heading = "Test");
 				})
 				.WithContent<ContentFolder>(x => x.Name = "Folder1")
 				.WithContent<ImageFile>(x => x.Name = "Image 1")
