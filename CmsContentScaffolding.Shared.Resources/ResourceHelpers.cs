@@ -27,18 +27,13 @@ public static class ResourceHelpers
 		return reader.ReadToEnd();
 	}
 
-	public static (string Name, Stream Stream) GetImage()
+	public static Stream GetImage()
 	{
 		var image = _assembly.Value.GetManifestResourceNames()
 			.Where(x => x.EndsWith(".png"))
 			.Random();
 
-		var stream = _assembly.Value.GetManifestResourceStream(image);
-
-		//var buffer = new byte[stream.Length];
-		//stream.Read(buffer, 0, buffer.Length);
-
-		return (image, stream);
+		return _assembly.Value.GetManifestResourceStream(image);
 	}
 
 	public static Stream GetVideo()
