@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.2.5</Version>
+    <Version>1.3.0-beta</Version>
     <Title>CmsContentScaffolding for Optimizely CMS</Title>
     <Company>MDR Solutions</Company>
     <Authors>Milos Rankovic</Authors>
@@ -18,13 +18,6 @@
 
   <ItemGroup>
     <PackageReference Include="EPiServer.CMS" Version="12.17.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CmsContentScaffolding.Shared.Resources\CmsContentScaffolding.Shared.Resources.csproj">
-      <Private>True</Private>
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
