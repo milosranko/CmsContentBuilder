@@ -55,6 +55,7 @@ internal static class ApplicationBuilderExtensions
 					{
 						l2.WithBlock<TeaserBlock>("Teaser 2 Name", x => x.Heading = "Test");
 					})
+					.WithMedia<VideoData>(x => x.Name = "Test video", ResourceHelpers.GetVideo(), ".mp4")
 					.WithBlock<TeaserBlock>("Teaser Name", x => x.Heading = "Test");
 				})
 				.WithContent<ContentFolder>(x => x.Name = "Folder1")

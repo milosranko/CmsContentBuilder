@@ -22,6 +22,7 @@
     <None Remove="Images\HLD_Screenshot_BETA_entrance.png" />
     <None Remove="Texts\LoremIpsum.txt" />
     <None Remove="Texts\LoremIpsumHtml.txt" />
+    <None Remove="Videos\file_example_MP4_640_3MG.mp4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
     <EmbeddedResource Include="Images\HLD_Screenshot_BETA_entrance.png" />
     <EmbeddedResource Include="Texts\LoremIpsumHtml.txt" />
     <EmbeddedResource Include="Texts\LoremIpsum.txt" />
+    <EmbeddedResource Include="Videos\file_example_MP4_640_3MG.mp4" />
   </ItemGroup>
 
   <ItemGroup>

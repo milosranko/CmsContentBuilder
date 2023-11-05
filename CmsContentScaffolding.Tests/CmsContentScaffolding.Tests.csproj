@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CmsContentScaffolding.Piranha\CmsContentScaffolding.Piranha.csproj" />
     <ProjectReference Include="..\CmsContentScaffolding.Optimizely\CmsContentScaffolding.Optimizely.csproj" />
+    <ProjectReference Include="..\CmsContentScaffolding.Shared.Resources\CmsContentScaffolding.Shared.Resources.csproj" />
   </ItemGroup>
 
 </Project>
