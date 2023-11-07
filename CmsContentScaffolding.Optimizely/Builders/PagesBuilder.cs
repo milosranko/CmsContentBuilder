@@ -22,7 +22,9 @@ internal class PagesBuilder : IPagesBuilder
 		IContentBuilderManager contentBuilderManager,
 		ContentBuilderOptions options)
 	{
-		_parent = parent;
+		_parent = ContentReference.IsNullOrEmpty(parent)
+			? ContentReference.RootPage
+			: parent;
 		_contentRepository = contentRepository;
 		_options = options;
 		_contentBuilderManager = contentBuilderManager;
@@ -35,17 +37,14 @@ internal class PagesBuilder : IPagesBuilder
 
 	public IPagesBuilder WithPage<T>(Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : IContent
 	{
-		var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
-			? _parent
-			: _options.RootPage;
-		var page = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
+		var page = _contentRepository.GetDefault<T>(_parent, _options.DefaultLanguage);
 
 		PropertyHelpers.InitProperties(page);
 		value?.Invoke(page);
 
 		_contentBuilderManager.GetOrSetContentName<T>(page);
 
-		if (!_contentRepository.GetChildren<T>(parent).Any(x => x.Name.Equals(page.Name)))
+		if (!_contentRepository.GetChildren<T>(_parent).Any(x => x.Name.Equals(page.Name)))
 		{
 			var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
@@ -84,20 +83,17 @@ internal class PagesBuilder : IPagesBuilder
 			throw new ArgumentOutOfRangeException(nameof(totalPages));
 
 		T page;
-		var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
-			? _parent
-			: _options.RootPage;
 
 		for (int i = 0; i < totalPages; i++)
 		{
-			page = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
+			page = _contentRepository.GetDefault<T>(_parent, _options.DefaultLanguage);
 
 			PropertyHelpers.InitProperties(page);
 			value?.Invoke(page);
 
 			_contentBuilderManager.GetOrSetContentName<T>(page, default, i.ToString());
 
-			if (_contentRepository.GetChildren<T>(parent).Any(x => x.Name.Equals(page.Name)))
+			if (_contentRepository.GetChildren<T>(_parent).Any(x => x.Name.Equals(page.Name)))
 				continue;
 
 			var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);

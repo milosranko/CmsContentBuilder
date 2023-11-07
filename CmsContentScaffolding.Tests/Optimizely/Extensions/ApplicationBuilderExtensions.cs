@@ -47,7 +47,7 @@ internal static class ApplicationBuilderExtensions
 			},
 			builder: b =>
 			{
-				b.UseAssets()
+				b.UseAssets(ContentReference.GlobalBlockFolder)
 				.WithFolder("Folder 1", l1 =>
 				{
 					l1
@@ -62,7 +62,7 @@ internal static class ApplicationBuilderExtensions
 				.WithContent<ImageFile>(x => x.Name = "Image 1")
 				.WithBlock<TeaserBlock>("Teaser 1", x => x.Heading = "Test");
 
-				b.UsePages()
+				b.UsePages(ContentReference.RootPage)
 				.WithPage<StartPage>(p =>
 				{
 					p.Name = "Home Page";
