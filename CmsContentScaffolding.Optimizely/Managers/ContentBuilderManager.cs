@@ -145,8 +145,14 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 	public void DeleteTempFolder()
 	{
-		var tempFolder = GetOrCreateTempFolder();
-		_contentRepository.Delete(tempFolder, false, AccessLevel.NoAccess);
+		var folder = _contentRepository
+			.GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, _options.DefaultLanguage)
+			.SingleOrDefault(x => x.Name.Equals(TempFolderName));
+
+		if (folder is null)
+			return;
+
+		_contentRepository.Delete(folder.ContentLink, false, AccessLevel.NoAccess);
 	}
 
 	public void SetAsStartPage(ContentReference pageRef)
