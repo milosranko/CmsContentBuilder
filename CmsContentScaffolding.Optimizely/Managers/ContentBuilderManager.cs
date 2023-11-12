@@ -73,7 +73,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 			if (existingFolder == null)
 			{
-				var folder = _contentRepository.GetDefault<ContentFolder>(blockLocation, _options.DefaultLanguage);
+				var folder = _contentRepository.GetDefault<ContentFolder>(blockLocation, _options.Language);
 				folder.Name = assetOptions.FolderName;
 				_contentRepository.Save(folder, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 				blockLocation = folder.ContentLink;
@@ -113,7 +113,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 				new HostDefinition
 				{
 					Name = siteUri.Authority,
-					Language = _options.DefaultLanguage,
+					Language = _options.Language,
 					Type = HostDefinitionType.Primary,
 					UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
 				}
@@ -130,13 +130,13 @@ internal class ContentBuilderManager : IContentBuilderManager
 	public ContentReference GetOrCreateTempFolder()
 	{
 		var existingFolder = _contentRepository
-			.GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, _options.DefaultLanguage)
+			.GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, _options.Language)
 			.FirstOrDefault(x => x.Name.Equals(TempFolderName));
 
 		if (existingFolder != null)
 			return existingFolder.ContentLink;
 
-		var folder = _contentRepository.GetDefault<ContentFolder>(ContentReference.GlobalBlockFolder, _options.DefaultLanguage);
+		var folder = _contentRepository.GetDefault<ContentFolder>(ContentReference.GlobalBlockFolder, _options.Language);
 		folder.Name = TempFolderName;
 		folder.ContentGuid = new Guid(TempFolderGuid);
 
@@ -146,7 +146,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 	public void DeleteTempFolder()
 	{
 		var folder = _contentRepository
-			.GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, _options.DefaultLanguage)
+			.GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, _options.Language)
 			.SingleOrDefault(x => x.Name.Equals(TempFolderName));
 
 		if (folder is null)
@@ -189,9 +189,9 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 		if (_options.BuildMode == BuildMode.OnlyIfEmptyInDefaultLanguage)
 		{
-			if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.DefaultLanguage)) && !ContentReference.RootPage.CompareToIgnoreWorkID(site.StartPage))
+			if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.Language)) && !ContentReference.RootPage.CompareToIgnoreWorkID(site.StartPage))
 			{
-				var pages = _contentLoader.GetChildren<IContentData>(site.StartPage, _options.DefaultLanguage);
+				var pages = _contentLoader.GetChildren<IContentData>(site.StartPage, _options.Language);
 				return pages is null || !pages.Any();
 			}
 
@@ -210,33 +210,30 @@ internal class ContentBuilderManager : IContentBuilderManager
 		var availableLanguages = _languageBranchRepository.ListAll();
 		var svLang = availableLanguages.SingleOrDefault(x => x.LanguageID.Equals("sv"));
 
-		if (svLang != null)
+		if (svLang != null && !_options.Language.TwoLetterISOLanguageName.Equals("sv"))
 		{
 			_languageBranchRepository.Disable(svLang.Culture);
 		}
 
-		foreach (var lang in _options.EnabledLanguages)
+		if (availableLanguages.Any(x => x.Culture.Equals(_options.Language)))
 		{
-			if (availableLanguages.Any(x => x.Culture.Equals(lang)))
-			{
-				var existingLanguage = availableLanguages.Single(x => x.Culture.Equals(lang));
+			var existingLanguage = availableLanguages.Single(x => x.Culture.Equals(_options.Language));
 
-				if (!existingLanguage.Enabled)
-					_languageBranchRepository.Enable(existingLanguage.Culture);
-			}
-			else
-			{
-				var newLanguageBranch = new LanguageBranch(lang);
-				_languageBranchRepository.Save(newLanguageBranch);
-				_languageBranchRepository.Enable(newLanguageBranch.Culture);
-			}
+			if (!existingLanguage.Enabled)
+				_languageBranchRepository.Enable(existingLanguage.Culture);
+		}
+		else
+		{
+			var newLanguageBranch = new LanguageBranch(_options.Language);
+			_languageBranchRepository.Save(newLanguageBranch);
+			_languageBranchRepository.Enable(newLanguageBranch.Culture);
 		}
 
 		var rootPage = _contentLoader.Get<PageData>(ContentReference.RootPage);
-		if (!rootPage.ExistingLanguages.Any(x => x.Equals(_options.DefaultLanguage)))
+		if (!rootPage.ExistingLanguages.Any(x => x.Equals(_options.Language)))
 		{
 			var rootPageClone = rootPage.CreateWritableClone();
-			rootPageClone.ExistingLanguages.Append(_options.DefaultLanguage);
+			rootPageClone.ExistingLanguages.Append(_options.Language);
 			_contentRepository.Save(rootPageClone, SaveAction.Default, AccessLevel.NoAccess);
 		}
 	}

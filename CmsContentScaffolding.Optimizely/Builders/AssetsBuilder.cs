@@ -44,7 +44,7 @@ internal class AssetsBuilder : IAssetsBuilder
 		if (existingBlock is not null)
 			return this;
 
-		var block = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
+		var block = _contentRepository.GetDefault<T>(parent, _options.Language);
 
 		PropertyHelpers.InitProperties(block);
 		value?.Invoke(block);
@@ -63,7 +63,7 @@ internal class AssetsBuilder : IAssetsBuilder
 		var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
 			: site.SiteAssetsRoot;
-		var content = _contentRepository.GetDefault<T>(parent, _options.DefaultLanguage);
+		var content = _contentRepository.GetDefault<T>(parent, _options.Language);
 
 		PropertyHelpers.InitProperties(content);
 		value?.Invoke(content);
@@ -103,7 +103,7 @@ internal class AssetsBuilder : IAssetsBuilder
 
 		if (existingContent is null)
 		{
-			var content = _contentRepository.GetDefault<ContentFolder>(parent, _options.DefaultLanguage);
+			var content = _contentRepository.GetDefault<ContentFolder>(parent, _options.Language);
 			content.Name = name;
 
 			parent = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);

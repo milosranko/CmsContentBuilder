@@ -37,7 +37,7 @@ internal class PagesBuilder : IPagesBuilder
 
 	public IPagesBuilder WithPage<T>(Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : IContent
 	{
-		var page = _contentRepository.GetDefault<T>(_parent, _options.DefaultLanguage);
+		var page = _contentRepository.GetDefault<T>(_parent, _options.Language);
 
 		PropertyHelpers.InitProperties(page);
 		value?.Invoke(page);
@@ -54,7 +54,7 @@ internal class PagesBuilder : IPagesBuilder
 			}
 
 			var contentToMove = _contentRepository
-				.GetChildren<IContentData>(_contentBuilderManager.GetOrCreateTempFolder(), _options.DefaultLanguage)
+				.GetChildren<IContentData>(_contentBuilderManager.GetOrCreateTempFolder(), _options.Language)
 				.Cast<IContent>();
 
 			foreach (var item in contentToMove)
@@ -86,7 +86,7 @@ internal class PagesBuilder : IPagesBuilder
 
 		for (int i = 0; i < totalPages; i++)
 		{
-			page = _contentRepository.GetDefault<T>(_parent, _options.DefaultLanguage);
+			page = _contentRepository.GetDefault<T>(_parent, _options.Language);
 
 			PropertyHelpers.InitProperties(page);
 			value?.Invoke(page);
@@ -98,7 +98,7 @@ internal class PagesBuilder : IPagesBuilder
 
 			var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 			var contentToMove = _contentRepository
-				.GetChildren<IContentData>(_contentBuilderManager.GetOrCreateTempFolder(), _options.DefaultLanguage)
+				.GetChildren<IContentData>(_contentBuilderManager.GetOrCreateTempFolder(), _options.Language)
 				.Cast<IContent>();
 
 			foreach (var item in contentToMove)

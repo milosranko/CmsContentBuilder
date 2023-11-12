@@ -5,11 +5,7 @@ namespace CmsContentScaffolding.Optimizely.Models;
 
 public class ContentBuilderOptions
 {
-	public IList<CultureInfo> EnabledLanguages { get; set; } = new List<CultureInfo>
-	{
-		new CultureInfo("en")
-	};
-	public CultureInfo DefaultLanguage { get; set; } = new CultureInfo("en");
+	public CultureInfo Language { get; set; } = new CultureInfo("en");
 	public string DefaultHost { get; set; } = "http://localhost";
 	public string SiteName { get; set; } = "Demo";
 	public BuildMode BuildMode { get; set; } = BuildMode.Append;

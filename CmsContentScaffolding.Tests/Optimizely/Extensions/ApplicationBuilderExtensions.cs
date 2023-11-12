@@ -23,9 +23,8 @@ internal static class ApplicationBuilderExtensions
 			builderOptions: o =>
 			{
 				o.SiteName = "Site 1";
-				o.EnabledLanguages.Add(new CultureInfo("sr"));
 				o.DefaultHost = Site1HostUrl;
-				o.DefaultLanguage = new CultureInfo("sr");
+				o.Language = new CultureInfo("sr");
 				o.BuildMode = BuildMode.Append;
 				o.StartPageType = typeof(StartPage);
 				o.PublishContent = true;
@@ -170,7 +169,7 @@ internal static class ApplicationBuilderExtensions
 			{
 				o.SiteName = "Site 2";
 				o.DefaultHost = "https://localhost:5001";
-				o.DefaultLanguage = new CultureInfo("en");
+				o.Language = new CultureInfo("en");
 				o.BuildMode = BuildMode.OnlyIfEmptyInDefaultLanguage;
 				o.StartPageType = typeof(StartPage);
 				o.PublishContent = true;

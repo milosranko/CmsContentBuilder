@@ -59,7 +59,7 @@ public static class PropertyExtensions
         var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
         var folder = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
         var content = contentRepository
-            .GetChildren<T>(folder, globalOptions.DefaultLanguage)
+            .GetChildren<T>(folder, globalOptions.Language)
             .Cast<IContent>()
             .FirstOrDefault(x => x.Name.Equals(name));
 
@@ -78,7 +78,7 @@ public static class PropertyExtensions
         var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
         var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
         var folder = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
-        var content = contentRepository.GetDefault<T>(folder, globalOptions.DefaultLanguage);
+        var content = contentRepository.GetDefault<T>(folder, globalOptions.Language);
 
         PropertyHelpers.InitProperties(content);
         options?.Invoke(content);
@@ -162,7 +162,7 @@ public static class PropertyExtensions
 
         for (int i = 0; i < total; i++)
         {
-            content = contentRepository.GetDefault<T>(parent, globalOptions.DefaultLanguage);
+            content = contentRepository.GetDefault<T>(parent, globalOptions.Language);
 
             PropertyHelpers.InitProperties(content);
             options?.Invoke(content);
