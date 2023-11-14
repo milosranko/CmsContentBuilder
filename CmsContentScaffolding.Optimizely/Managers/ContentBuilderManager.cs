@@ -4,7 +4,6 @@ using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAccess;
-using EPiServer.DataAnnotations;
 using EPiServer.Security;
 using EPiServer.Shell.Security;
 using EPiServer.Web;
@@ -18,6 +17,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 	private readonly IContentSecurityRepository _contentSecurityRepository;
 	private readonly IContentLoader _contentLoader;
 	private readonly ILanguageBranchRepository _languageBranchRepository;
+	private readonly IContentTypeRepository _contentTypeRepository;
 	private readonly UIRoleProvider _uIRoleProvider;
 	private readonly UIUserProvider _uIUserProvider;
 	private readonly ContentBuilderOptions _options;
@@ -32,7 +32,8 @@ internal class ContentBuilderManager : IContentBuilderManager
 		ILanguageBranchRepository languageBranchRepository,
 		UIRoleProvider uIRoleProvider,
 		UIUserProvider uIUserProvider,
-		IContentSecurityRepository contentSecurityRepository)
+		IContentSecurityRepository contentSecurityRepository,
+		IContentTypeRepository contentTypeRepository)
 	{
 		_siteDefinitionRepository = siteDefinitionRepository;
 		_contentRepository = contentRepository;
@@ -42,6 +43,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 		_uIRoleProvider = uIRoleProvider;
 		_uIUserProvider = uIUserProvider;
 		_contentSecurityRepository = contentSecurityRepository;
+		_contentTypeRepository = contentTypeRepository;
 	}
 
 	public ContentReference GetOrCreateBlockFolder(AssetOptions? assetOptions)
@@ -314,19 +316,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 			return;
 		}
 
-		var type = typeof(T);
-		var displayName = type
-			.GetCustomAttributes(typeof(ContentTypeAttribute), false)
-			.Cast<ContentTypeAttribute>()
-			.FirstOrDefault()?.DisplayName;
-
-		if (!string.IsNullOrEmpty(displayName))
-		{
-			content.Name = $"{displayName} {nameSuffix ?? Guid.NewGuid().ToString()}";
-			return;
-		}
-
-		content.Name = $"{type.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
+		content.Name = $"{_contentTypeRepository.Load(content.ContentTypeID).Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
 	}
 
 	private ContentReference GetOrCreateSiteAssetsRoot(SiteDefinition site)
