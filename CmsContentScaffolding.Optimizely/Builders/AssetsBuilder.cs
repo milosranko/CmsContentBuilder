@@ -33,6 +33,11 @@ internal class AssetsBuilder : IAssetsBuilder
 
 	public IAssetsBuilder WithBlock<T>(string name, Action<T>? value = null) where T : IContentData
 	{
+		return WithBlock(name, out var contentReference, value);
+	}
+
+	public IAssetsBuilder WithBlock<T>(string name, out ContentReference contentReference, Action<T>? value = null) where T : IContentData
+	{
 		var site = _contentBuilderManager.GetOrCreateSite();
 		var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
@@ -42,7 +47,10 @@ internal class AssetsBuilder : IAssetsBuilder
 			.SingleOrDefault(x => ((IContent)x).Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 
 		if (existingBlock is not null)
+		{
+			contentReference = ((IContent)existingBlock).ContentLink;
 			return this;
+		}
 
 		var block = _contentRepository.GetDefault<T>(parent, _options.Language);
 
@@ -52,12 +60,17 @@ internal class AssetsBuilder : IAssetsBuilder
 		var iContent = (IContent)block;
 
 		_contentBuilderManager.GetOrSetContentName<T>(iContent, name);
-		_contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+		contentReference = _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
 		return this;
 	}
 
 	public IAssetsBuilder WithContent<T>(Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
+	{
+		return WithContent(out var contentReference, value, options);
+	}
+
+	public IAssetsBuilder WithContent<T>(out ContentReference contentReference, Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
 	{
 		var site = _contentBuilderManager.GetOrCreateSite();
 		var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
@@ -75,17 +88,17 @@ internal class AssetsBuilder : IAssetsBuilder
 		if (existingContent is null)
 		{
 			_contentBuilderManager.GetOrSetContentName<T>(content);
-			parent = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+			contentReference = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 		}
 		else
 		{
-			parent = existingContent.ContentLink;
+			contentReference = existingContent.ContentLink;
 		}
 
 		if (options == null)
 			return this;
 
-		var builder = new AssetsBuilder(parent, _contentRepository, _contentBuilderManager, _options, _blobFactory);
+		var builder = new AssetsBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _blobFactory);
 		options?.Invoke(builder);
 
 		return this;
@@ -124,6 +137,11 @@ internal class AssetsBuilder : IAssetsBuilder
 
 	public IAssetsBuilder WithMedia<T>(Action<T>? value = null, Stream? stream = null, string? extension = null) where T : MediaData
 	{
+		return WithMedia(out var contentReference, value, stream, extension);
+	}
+
+	public IAssetsBuilder WithMedia<T>(out ContentReference contentReference, Action<T>? value = null, Stream? stream = null, string? extension = null) where T : MediaData
+	{
 		var site = _contentBuilderManager.GetOrCreateSite();
 		var parent = _parent is not null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
@@ -134,10 +152,13 @@ internal class AssetsBuilder : IAssetsBuilder
 
 		var existingItem = _contentRepository
 			.GetChildren<T>(parent)
-			.Any(x => x.Name.Equals(media.Name, StringComparison.InvariantCultureIgnoreCase));
+			.FirstOrDefault(x => x.Name.Equals(media.Name, StringComparison.InvariantCultureIgnoreCase));
 
-		if (existingItem)
+		if (existingItem != null)
+		{
+			contentReference = existingItem.ContentLink;
 			return this;
+		}
 
 		if (stream is not null && !string.IsNullOrEmpty(extension))
 		{
@@ -147,7 +168,7 @@ internal class AssetsBuilder : IAssetsBuilder
 			media.BinaryData = blob;
 		}
 
-		var contentRef = _contentRepository.Save(media, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+		contentReference = _contentRepository.Save(media, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
 		return this;
 	}

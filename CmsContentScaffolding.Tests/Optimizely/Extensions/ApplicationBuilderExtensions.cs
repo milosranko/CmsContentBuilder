@@ -35,8 +35,7 @@ internal static class ApplicationBuilderExtensions
 				};
 				o.Users = new List<UserModel>
 				{
-					new UserModel
-					{
+					new() {
 						UserName = "Site1User",
 						Email = "Site1User@test.com",
 						Password = TestUserPassword,
@@ -46,16 +45,19 @@ internal static class ApplicationBuilderExtensions
 			},
 			builder: b =>
 			{
+				var teaser2 = ContentReference.EmptyReference;
+				var teaser3 = ContentReference.EmptyReference;
+
 				b.UseAssets(ContentReference.GlobalBlockFolder)
 				.WithFolder("Folder 1", l1 =>
 				{
 					l1
 					.WithFolder("Folder 1_1", l2 =>
 					{
-						l2.WithBlock<TeaserBlock>("Teaser 2 Name", x => x.Heading = "Test");
+						l2.WithBlock<TeaserBlock>("Teaser 2", out teaser2, x => x.Heading = "Test");
 					})
 					.WithMedia<VideoFile>(x => x.Name = "Test video", ResourceHelpers.GetVideo(), ".mp4")
-					.WithBlock<TeaserBlock>("Teaser Name", x => x.Heading = "Test");
+					.WithBlock<TeaserBlock>("Teaser 3", out teaser3, x => x.Heading = "Test");
 				})
 				.WithContent<ContentFolder>(x => x.Name = "Folder1")
 				.WithContent<ImageFile>(x => x.Name = "Image 1")
@@ -67,6 +69,8 @@ internal static class ApplicationBuilderExtensions
 					p.Name = "Home Page";
 					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 					p.MainContentArea
+					.AddExistingItem<TeaserBlock>(teaser2)
+					.AddExistingItem<TeaserBlock>(teaser3)
 					.AddItems<TeaserBlock>("Teaser Test", b =>
 					{
 						b.Heading = ResourceHelpers.Faker.Lorem.Slug();
@@ -180,8 +184,7 @@ internal static class ApplicationBuilderExtensions
 				};
 				o.Users = new List<UserModel>
 				{
-					new UserModel
-					{
+					new() {
 						UserName = "Site2User",
 						Email = "Site2User@test.com",
 						Password = TestUserPassword,
