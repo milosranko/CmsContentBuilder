@@ -39,11 +39,11 @@ internal class AssetsBuilder : IAssetsBuilder
 	public IAssetsBuilder WithBlock<T>(string name, out ContentReference contentReference, Action<T>? value = null) where T : IContentData
 	{
 		var site = _contentBuilderManager.GetOrCreateSite();
-		var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
+		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
 			: site.SiteAssetsRoot;
 		var existingBlock = _contentRepository
-			.GetChildren<T>(parent)
+			.GetChildren<T>(contentReference, _options.Language)
 			.SingleOrDefault(x => ((IContent)x).Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 
 		if (existingBlock is not null)
@@ -52,7 +52,7 @@ internal class AssetsBuilder : IAssetsBuilder
 			return this;
 		}
 
-		var block = _contentRepository.GetDefault<T>(parent, _options.Language);
+		var block = _contentRepository.GetDefault<T>(contentReference, _options.Language);
 
 		PropertyHelpers.InitProperties(block);
 		value?.Invoke(block);
@@ -73,16 +73,16 @@ internal class AssetsBuilder : IAssetsBuilder
 	public IAssetsBuilder WithContent<T>(out ContentReference contentReference, Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
 	{
 		var site = _contentBuilderManager.GetOrCreateSite();
-		var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
+		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
 			: site.SiteAssetsRoot;
-		var content = _contentRepository.GetDefault<T>(parent, _options.Language);
+		var content = _contentRepository.GetDefault<T>(contentReference, _options.Language);
 
 		PropertyHelpers.InitProperties(content);
 		value?.Invoke(content);
 
 		var existingContent = _contentRepository
-			.GetChildren<T>(parent)
+			.GetChildren<T>(contentReference, _options.Language)
 			.SingleOrDefault(x => ((IContent)x).Name.Equals(content.Name, StringComparison.InvariantCultureIgnoreCase));
 
 		if (existingContent is null)
@@ -106,30 +106,35 @@ internal class AssetsBuilder : IAssetsBuilder
 
 	public IAssetsBuilder WithFolder(string name, Action<IAssetsBuilder>? options = null)
 	{
+		return WithFolder(name, out var contentReference, options);
+	}
+
+	public IAssetsBuilder WithFolder(string name, out ContentReference contentReference, Action<IAssetsBuilder>? options = null)
+	{
 		var site = _contentBuilderManager.GetOrCreateSite();
-		var parent = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
+		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
 			: site.SiteAssetsRoot;
 		var existingContent = _contentRepository
-			.GetChildren<ContentFolder>(parent)
+			.GetChildren<ContentFolder>(contentReference, _options.Language)
 			.SingleOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 
 		if (existingContent is null)
 		{
-			var content = _contentRepository.GetDefault<ContentFolder>(parent, _options.Language);
+			var content = _contentRepository.GetDefault<ContentFolder>(contentReference, _options.Language);
 			content.Name = name;
 
-			parent = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+			contentReference = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 		}
 		else
 		{
-			parent = existingContent.ContentLink;
+			contentReference = existingContent.ContentLink;
 		}
 
 		if (options == null)
 			return this;
 
-		var builder = new AssetsBuilder(parent, _contentRepository, _contentBuilderManager, _options, _blobFactory);
+		var builder = new AssetsBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _blobFactory);
 		options?.Invoke(builder);
 
 		return this;
@@ -143,15 +148,15 @@ internal class AssetsBuilder : IAssetsBuilder
 	public IAssetsBuilder WithMedia<T>(out ContentReference contentReference, Action<T>? value = null, Stream? stream = null, string? extension = null) where T : MediaData
 	{
 		var site = _contentBuilderManager.GetOrCreateSite();
-		var parent = _parent is not null && !ContentReference.IsNullOrEmpty(_parent)
+		contentReference = _parent is not null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
 			: site.SiteAssetsRoot;
 
-		var media = _contentRepository.GetDefault<T>(parent);
+		var media = _contentRepository.GetDefault<T>(contentReference, _options.Language);
 		value?.Invoke(media);
 
 		var existingItem = _contentRepository
-			.GetChildren<T>(parent)
+			.GetChildren<T>(contentReference, _options.Language)
 			.FirstOrDefault(x => x.Name.Equals(media.Name, StringComparison.InvariantCultureIgnoreCase));
 
 		if (existingItem != null)

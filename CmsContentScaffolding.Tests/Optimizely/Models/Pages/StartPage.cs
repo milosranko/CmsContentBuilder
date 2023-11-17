@@ -10,60 +10,72 @@ using System.ComponentModel.DataAnnotations;
 namespace Optimizely.Demo.PublicWeb.Models.Pages;
 
 [ContentType(
-    GUID = "{E6F693A7-1436-49CC-B7F0-D7555D530DD6}",
-    GroupName = "MetaData")]
+	GUID = "{E6F693A7-1436-49CC-B7F0-D7555D530DD6}",
+	GroupName = "MetaData")]
 [AvailableContentTypes(
-    Availability.Specific,
-    Include = new[]
-    {
-        typeof(NotFoundPage),
-        typeof(ArticlePage)
-    })]
+	Availability.Specific,
+	Include = new[]
+	{
+		typeof(NotFoundPage),
+		typeof(ArticlePage)
+	})]
 public class StartPage : PageBaseSeo
 {
-    #region Settings tab
+	#region Settings tab
 
-    [Display(
-        GroupName = SystemTabNames.Settings,
-        Order = 100)]
-    public virtual string SiteName { get; set; }
+	[Display(
+		GroupName = SystemTabNames.Settings,
+		Order = 100)]
+	public virtual string SiteName { get; set; }
 
-    #endregion
+	[Display(
+		GroupName = SystemTabNames.Settings,
+		Order = 110)]
+	[AllowedTypes(typeof(ArticlePage))]
+	public virtual ContentReference MainArticlePageReference { get; set; }
 
-    #region Content tab
+	[Display(
+		GroupName = SystemTabNames.Settings,
+		Order = 120)]
+	[AllowedTypes(typeof(NotFoundPage))]
+	public virtual ContentReference NotFoundPageReference { get; set; }
 
-    [CultureSpecific]
-    [Display(
-            GroupName = SystemTabNames.Content,
-            Order = 100)]
-    public virtual string Heading { get; set; }
+	#endregion
 
-    [CultureSpecific]
-    [Display(
-        GroupName = SystemTabNames.Content,
-        Order = 110)]
-    [UIHint(UIHint.Textarea, PresentationLayer.Edit)]
-    public virtual string LeadText { get; set; }
+	#region Content tab
 
-    [CultureSpecific]
-    [Display(
-            GroupName = SystemTabNames.Content,
-            Order = 120)]
-    [AllowedTypes(new[] {
-            typeof(TeaserBlock)
-        })]
-    public virtual ContentArea MainContentArea { get; set; }
+	[CultureSpecific]
+	[Display(
+			GroupName = SystemTabNames.Content,
+			Order = 100)]
+	public virtual string Heading { get; set; }
 
-    #endregion
+	[CultureSpecific]
+	[Display(
+		GroupName = SystemTabNames.Content,
+		Order = 110)]
+	[UIHint(UIHint.Textarea, PresentationLayer.Edit)]
+	public virtual string LeadText { get; set; }
 
-    #region Public properties
+	[CultureSpecific]
+	[Display(
+			GroupName = SystemTabNames.Content,
+			Order = 120)]
+	[AllowedTypes(new[] {
+			typeof(TeaserBlock)
+		})]
+	public virtual ContentArea MainContentArea { get; set; }
 
-    public override void SetDefaultValues(ContentType contentType)
-    {
-        base.SetDefaultValues(contentType);
+	#endregion
 
-        SiteName = "DEMO";
-    }
+	#region Public properties
 
-    #endregion
+	public override void SetDefaultValues(ContentType contentType)
+	{
+		base.SetDefaultValues(contentType);
+
+		SiteName = "DEMO";
+	}
+
+	#endregion
 }

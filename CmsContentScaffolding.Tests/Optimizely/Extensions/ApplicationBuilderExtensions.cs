@@ -47,6 +47,7 @@ internal static class ApplicationBuilderExtensions
 			{
 				var teaser2 = ContentReference.EmptyReference;
 				var teaser3 = ContentReference.EmptyReference;
+				var articlePageRef = ContentReference.EmptyReference;
 
 				b.UseAssets(ContentReference.GlobalBlockFolder)
 				.WithFolder("Folder 1", l1 =>
@@ -82,7 +83,7 @@ internal static class ApplicationBuilderExtensions
 				}, l1 =>
 				{
 					l1
-					.WithPage<ArticlePage>(p =>
+					.WithPage<ArticlePage>(out articlePageRef, p =>
 					{
 						p.Name = ResourceHelpers.Faker.Lorem.Slug();
 						p.Heading = ResourceHelpers.Faker.Lorem.Slug();
@@ -137,7 +138,7 @@ internal static class ApplicationBuilderExtensions
 						p.MainContentArea.AddItem<TeaserBlock>(p.Name);
 					}, 100);
 				})
-				.WithPage<NotFoundPage>(p =>
+				.WithPage<NotFoundPage>(out var notFoundPageRef, p =>
 				{
 					p.Name = "Not Found Page";
 					p.Teaser.Heading = ResourceHelpers.Faker.Lorem.Slug(3);
@@ -165,7 +166,13 @@ internal static class ApplicationBuilderExtensions
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 						block.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 					}, 2, new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = TeaserBlocksFolderName });
-				}, 2);
+				}, 2)
+				.WithPage<StartPage>(p =>
+				{
+					p.Name = "Home Page";
+					p.MainArticlePageReference = articlePageRef;
+					p.NotFoundPageReference = notFoundPageRef;
+				});
 			});
 
 		app.UseCmsContentScaffolding(
