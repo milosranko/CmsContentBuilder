@@ -26,7 +26,6 @@ internal static class ApplicationBuilderExtensions
 				o.DefaultHost = Site1HostUrl;
 				o.Language = new CultureInfo("sr");
 				o.BuildMode = BuildMode.Append;
-				o.StartPageType = typeof(StartPage);
 				o.PublishContent = true;
 				o.BlocksLocation = BlocksLocation.SiteRoot;
 				o.Roles = new Dictionary<string, AccessLevel>
@@ -65,7 +64,7 @@ internal static class ApplicationBuilderExtensions
 				.WithBlock<TeaserBlock>("Teaser 1", x => x.Heading = "Test");
 
 				b.UsePages(ContentReference.RootPage)
-				.WithPage<StartPage>(p =>
+				.WithStartPage<StartPage>(p =>
 				{
 					p.Name = "Home Page";
 					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
@@ -182,7 +181,6 @@ internal static class ApplicationBuilderExtensions
 				o.DefaultHost = "https://localhost:5001";
 				o.Language = new CultureInfo("en");
 				o.BuildMode = BuildMode.OnlyIfEmptyInDefaultLanguage;
-				o.StartPageType = typeof(StartPage);
 				o.PublishContent = true;
 				o.BlocksLocation = BlocksLocation.SiteRoot;
 				o.Roles = new Dictionary<string, AccessLevel>
@@ -202,7 +200,7 @@ internal static class ApplicationBuilderExtensions
 			builder: b =>
 			{
 				b.UsePages()
-				.WithPage<StartPage>(p =>
+				.WithStartPage<StartPage>(p =>
 				{
 					p.Name = "Home Page";
 					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());

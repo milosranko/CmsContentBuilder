@@ -33,10 +33,6 @@ public class ContentBuilderOptions
 	/// </summary>
 	public BlocksLocation BlocksLocation { get; set; } = BlocksLocation.GlobalRoot;
 	/// <summary>
-	/// Set type of the site home page
-	/// </summary>
-	public Type? StartPageType { get; set; }
-	/// <summary>
 	/// Set to False if you don't want WebAdmins and WebEditors roles to be created
 	/// </summary>
 	public bool CreateDefaultRoles { get; set; } = true;

@@ -9,6 +9,30 @@ namespace CmsContentScaffolding.Optimizely.Interfaces;
 public interface IPagesBuilder
 {
 	/// <summary>
+	/// Create or update page and set it as Start page for the current host
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	IPagesBuilder WithStartPage<T>(Action<IPagesBuilder> options) where T : PageData;
+	/// <summary>
+	/// Create or update page and set it as Start page for the current host
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="value"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	IPagesBuilder WithStartPage<T>(Action<T> value, Action<IPagesBuilder>? options = null) where T : PageData;
+	/// <summary>
+	/// Create or update page and set it as Start page for the current host
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="contentReference"></param>
+	/// <param name="value"></param>
+	/// <param name="options"></param>
+	/// <returns></returns>
+	IPagesBuilder WithStartPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData;
+	/// <summary>
 	/// Create or update page in the site tree
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
@@ -23,7 +47,7 @@ public interface IPagesBuilder
 	/// <param name="value">Page properties</param>
 	/// <param name="options"></param>
 	/// <returns>IPagesBuilder</returns>
-	IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData;
+	IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null, bool SetAsStartPage = false) where T : PageData;
 	/// <summary>
 	/// Create or update page in the site tree
 	/// </summary>

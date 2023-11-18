@@ -30,6 +30,21 @@ internal class PagesBuilder : IPagesBuilder
 		_contentBuilderManager = contentBuilderManager;
 	}
 
+	public IPagesBuilder WithStartPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData
+	{
+		return WithPage(out contentReference, value, options, true);
+	}
+
+	public IPagesBuilder WithStartPage<T>(Action<T> value, Action<IPagesBuilder>? options = null) where T : PageData
+	{
+		return WithPage(out var contentReference, value, options, true);
+	}
+
+	public IPagesBuilder WithStartPage<T>(Action<IPagesBuilder> options) where T : PageData
+	{
+		return WithPage<T>(out var contentReference, default, options, true);
+	}
+
 	public IPagesBuilder WithPage<T>(Action<IPagesBuilder> options) where T : PageData
 	{
 		return WithPage<T>(out var contentReference, default, options);
@@ -40,7 +55,7 @@ internal class PagesBuilder : IPagesBuilder
 		return WithPage(out var contentReference, value, options);
 	}
 
-	public IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData
+	public IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null, bool setAsStartPage = false) where T : PageData
 	{
 		contentReference = ContentReference.EmptyReference;
 		var page = _contentRepository.GetDefault<T>(_parent, _options.Language);
@@ -56,7 +71,7 @@ internal class PagesBuilder : IPagesBuilder
 		{
 			contentReference = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-			if (_options.StartPageType != null && _options.StartPageType.Equals(typeof(T)))
+			if (setAsStartPage)
 				_contentBuilderManager.SetAsStartPage(contentReference);
 
 			var contentToMove = _contentRepository
