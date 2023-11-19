@@ -5,7 +5,7 @@ namespace CmsContentScaffolding.Optimizely.Interfaces;
 /// <summary>
 /// Content builder options for creating assets or pages
 /// </summary>
-public interface IContentBuilder
+public interface IContentBuilder : IDisposable
 {
 	/// <summary>
 	/// Use assets

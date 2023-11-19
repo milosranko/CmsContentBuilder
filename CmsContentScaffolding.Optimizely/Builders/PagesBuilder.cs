@@ -15,6 +15,9 @@ internal class PagesBuilder : IPagesBuilder
 	private readonly IContentRepository _contentRepository;
 	private readonly IContentBuilderManager _contentBuilderManager;
 	private readonly ContentBuilderOptions _options;
+	private readonly bool _stop = false;
+
+	public PagesBuilder() => _stop = true;
 
 	public PagesBuilder(
 		ContentReference parent,
@@ -29,6 +32,8 @@ internal class PagesBuilder : IPagesBuilder
 		_options = options;
 		_contentBuilderManager = contentBuilderManager;
 	}
+
+	public static IPagesBuilder Empty => new PagesBuilder();
 
 	public IPagesBuilder WithStartPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData
 	{
@@ -58,8 +63,10 @@ internal class PagesBuilder : IPagesBuilder
 	public IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null, bool setAsStartPage = false) where T : PageData
 	{
 		contentReference = ContentReference.EmptyReference;
-		var page = _contentRepository.GetDefault<T>(_parent, _options.Language);
 
+		if (_stop) return Empty;
+
+		var page = _contentRepository.GetDefault<T>(_parent, _options.Language);
 		PropertyHelpers.InitProperties(page);
 		value?.Invoke(page);
 
@@ -104,6 +111,8 @@ internal class PagesBuilder : IPagesBuilder
 
 	public IPagesBuilder WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
 	{
+		if (_stop) return Empty;
+
 		if (totalPages < 1 || totalPages > 10000)
 			throw new ArgumentOutOfRangeException(nameof(totalPages));
 

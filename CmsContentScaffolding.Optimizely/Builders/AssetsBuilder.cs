@@ -16,6 +16,11 @@ internal class AssetsBuilder : IAssetsBuilder
 	private readonly IContentBuilderManager _contentBuilderManager;
 	private readonly IBlobFactory _blobFactory;
 	private readonly ContentBuilderOptions _options;
+	private readonly bool _stop = false;
+
+	public static AssetsBuilder Empty => new();
+
+	public AssetsBuilder() => _stop = true;
 
 	public AssetsBuilder(
 		ContentReference parent,
@@ -38,6 +43,9 @@ internal class AssetsBuilder : IAssetsBuilder
 
 	public IAssetsBuilder WithBlock<T>(string name, out ContentReference contentReference, Action<T>? value = null) where T : IContentData
 	{
+		contentReference = ContentReference.EmptyReference;
+		if (_stop) return Empty;
+
 		var site = _contentBuilderManager.GetOrCreateSite();
 		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
@@ -72,6 +80,9 @@ internal class AssetsBuilder : IAssetsBuilder
 
 	public IAssetsBuilder WithContent<T>(out ContentReference contentReference, Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
 	{
+		contentReference = ContentReference.EmptyReference;
+		if (_stop) return Empty;
+
 		var site = _contentBuilderManager.GetOrCreateSite();
 		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
@@ -111,6 +122,9 @@ internal class AssetsBuilder : IAssetsBuilder
 
 	public IAssetsBuilder WithFolder(string name, out ContentReference contentReference, Action<IAssetsBuilder>? options = null)
 	{
+		contentReference = ContentReference.EmptyReference;
+		if (_stop) return Empty;
+
 		var site = _contentBuilderManager.GetOrCreateSite();
 		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
@@ -147,6 +161,9 @@ internal class AssetsBuilder : IAssetsBuilder
 
 	public IAssetsBuilder WithMedia<T>(out ContentReference contentReference, Action<T>? value = null, Stream? stream = null, string? extension = null) where T : MediaData
 	{
+		contentReference = ContentReference.EmptyReference;
+		if (_stop) return Empty;
+
 		var site = _contentBuilderManager.GetOrCreateSite();
 		contentReference = _parent is not null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
