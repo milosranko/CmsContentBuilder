@@ -17,7 +17,8 @@ namespace Optimizely.Demo.PublicWeb.Models.Pages;
 	Include = new[]
 	{
 		typeof(NotFoundPage),
-		typeof(ArticlePage)
+		typeof(ArticlePage),
+		typeof(ContentFolder)
 	})]
 public class StartPage : PageBaseSeo
 {

@@ -14,6 +14,7 @@ internal class ContentBuilder : IContentBuilder
 	private readonly IContentRepository _contentRepository;
 	private readonly IContentBuilderManager _contentBuilderManager;
 	private readonly IBlobFactory _blobFactory;
+	private readonly ContentAssetHelper _contentAssetHelper;
 	private readonly ContentBuilderOptions _contentBuilderOptions;
 	private readonly bool _buildContent;
 	private bool disposedValue;
@@ -22,13 +23,15 @@ internal class ContentBuilder : IContentBuilder
 		IContentRepository contentRepository,
 		IContentBuilderManager contentBuilderManager,
 		ContentBuilderOptions contentBuilderOptions,
-		IBlobFactory blobFactory)
+		IBlobFactory blobFactory,
+		ContentAssetHelper contentAssetHelper)
 	{
 		_contentRepository = contentRepository;
 		_contentBuilderManager = contentBuilderManager;
 		_contentBuilderOptions = contentBuilderOptions;
 		_blobFactory = blobFactory;
 		_buildContent = ApplyOptions();
+		_contentAssetHelper = contentAssetHelper;
 	}
 
 	public IAssetsBuilder UseAssets(ContentReference? root = null)
@@ -42,7 +45,7 @@ internal class ContentBuilder : IContentBuilder
 	public IPagesBuilder UsePages(ContentReference? root = null)
 	{
 		if (_buildContent)
-			return new PagesBuilder(root ?? ContentReference.RootPage, _contentRepository, _contentBuilderManager, _contentBuilderOptions);
+			return new PagesBuilder(root ?? ContentReference.RootPage, _contentRepository, _contentBuilderManager, _contentBuilderOptions, _contentAssetHelper);
 
 		return PagesBuilder.Empty;
 	}
@@ -93,7 +96,6 @@ internal class ContentBuilder : IContentBuilder
 		{
 			if (disposing)
 			{
-				_contentBuilderManager.DeleteTempFolder();
 				PropertyHelpers.TypeProperties.Clear();
 			}
 			// TODO: free unmanaged resources (unmanaged objects) and override finalizer

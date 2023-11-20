@@ -37,12 +37,7 @@ public static class PropertyHelpers
 		image.BinaryData = blob;
 		image.Name = name;
 
-		var contentRef = contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-
-		blob = null;
-		image = null;
-
-		return contentRef;
+		return contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 	}
 
 	public static void InitProperties<T>(T content) where T : IContentData

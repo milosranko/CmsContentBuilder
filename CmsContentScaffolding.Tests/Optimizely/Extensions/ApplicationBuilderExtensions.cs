@@ -48,7 +48,7 @@ internal static class ApplicationBuilderExtensions
 				var teaser3 = ContentReference.EmptyReference;
 				var articlePageRef = ContentReference.EmptyReference;
 
-				b.UseAssets(ContentReference.GlobalBlockFolder)
+				b.UseAssets(ContentReference.SiteBlockFolder)
 				.WithFolder("Folder 1", l1 =>
 				{
 					l1
@@ -69,16 +69,14 @@ internal static class ApplicationBuilderExtensions
 					p.Name = "Home Page";
 					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 					p.MainContentArea
-					.AddExistingItem<TeaserBlock>(teaser2)
-					.AddExistingItem<TeaserBlock>(teaser3)
-					.AddItems<TeaserBlock>("Teaser Test", b =>
+					.AddExistingItem(teaser2)
+					.AddExistingItem(teaser3)
+					.AddItem<TeaserBlock>("Teaser Test", b =>
 					{
 						b.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						b.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 						b.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 2", ResourceHelpers.GetImage());
-					},
-					3,
-					new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
+					});
 				}, l1 =>
 				{
 					l1
@@ -102,13 +100,13 @@ internal static class ApplicationBuilderExtensions
 								b1.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 								b1.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 							}, 5);
-						}, new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = "Accordion" })
+						})
 						.AddItem<ImageFile>(options: i =>
 						{
 							i.Name = "Test Image";
 							i.ContentLink = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 						})
-						.AddExistingItem<AccordionContainerBlock>("Accordion Container", new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = "Accordion" });
+						.AddExistingItem(teaser3);
 					}, l2 =>
 					{
 						l2
@@ -149,7 +147,8 @@ internal static class ApplicationBuilderExtensions
 				.WithPages<ArticlePage>(p =>
 				{
 					p.Name = ResourceHelpers.Faker.Lorem.Slug(2);
-					p.MainContentArea.AddItems<TeaserBlock>(block =>
+					p.MainContentArea
+					.AddItems<TeaserBlock>(block =>
 					{
 						block.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
@@ -159,12 +158,13 @@ internal static class ApplicationBuilderExtensions
 				.WithPages<ArticlePage>(p =>
 				{
 					p.Name = ResourceHelpers.Faker.Lorem.Slug(3);
-					p.MainContentArea.AddItems<TeaserBlock>(block =>
+					p.MainContentArea
+					.AddItems<TeaserBlock>(block =>
 					{
 						block.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 						block.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
-					}, 2, new AssetOptions { BlocksLocation = BlocksLocation.GlobalRoot, FolderName = TeaserBlocksFolderName });
+					}, 2);
 				}, 2)
 				.WithPage<StartPage>(p =>
 				{
@@ -210,7 +210,7 @@ internal static class ApplicationBuilderExtensions
 						b.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						b.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 						b.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
-					}, 3, new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
+					}, 3);
 				}, l1 =>
 				{
 					l1.WithPage<ArticlePage>();
@@ -227,22 +227,24 @@ internal static class ApplicationBuilderExtensions
 				.WithPages<ArticlePage>(p =>
 				{
 					p.Name = "Article2";
-					p.MainContentArea.AddItems<TeaserBlock>(block =>
+					p.MainContentArea
+					.AddItems<TeaserBlock>(block =>
 					{
 						block.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 						block.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
-					}, 10, new AssetOptions { BlocksLocation = BlocksLocation.CurrentContent });
+					}, 10);
 				}, 10)
 				.WithPages<ArticlePage>(p =>
 				{
 					p.Name = "Articles4";
-					p.MainContentArea.AddItems<TeaserBlock>(block =>
+					p.MainContentArea
+					.AddItems<TeaserBlock>(block =>
 					{
 						block.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 						block.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
-					}, 2, new AssetOptions { FolderName = TeaserBlocksFolderName });
+					}, 2);
 				}, 2);
 			});
 

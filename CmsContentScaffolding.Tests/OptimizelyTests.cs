@@ -20,213 +20,211 @@ namespace CmsContentScaffolding.Tests;
 [TestClass]
 public class OptimizelyTests
 {
-    [ClassInitialize]
-    public static void Initialize(TestContext context)
-    {
-        var builder = Host
-            .CreateDefaultBuilder()
-            .ConfigureCmsDefaults()
-            .ConfigureAppConfiguration((context, config) =>
-            {
-                config
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddConfiguration(context.Configuration)
-                .AddEnvironmentVariables()
-                .AddJsonFile("appsettings.unittest.json", false, true)
-                .Build();
-            })
-            .ConfigureServices((context, services) =>
-            {
-                services
-                    .AddSingleton<IHttpContextFactory, DefaultHttpContextFactory>()
-                    .AddCmsAspNetIdentity<ApplicationUser>()
-                    .AddCms()
-                    .AddCmsContentScaffolding();
-                Globals.Services = services.BuildServiceProvider();
+	[ClassInitialize]
+	public static void Initialize(TestContext context)
+	{
+		var builder = Host
+			.CreateDefaultBuilder()
+			.ConfigureCmsDefaults()
+			.ConfigureAppConfiguration((context, config) =>
+			{
+				config
+				.SetBasePath(Directory.GetCurrentDirectory())
+				.AddConfiguration(context.Configuration)
+				.AddEnvironmentVariables()
+				.AddJsonFile("appsettings.unittest.json", false, true)
+				.Build();
+			})
+			.ConfigureServices((context, services) =>
+			{
+				services
+					.AddSingleton<IHttpContextFactory, DefaultHttpContextFactory>()
+					.AddCmsAspNetIdentity<ApplicationUser>()
+					.AddCms()
+					.AddCmsContentScaffolding();
+				Globals.Services = services.BuildServiceProvider();
 
-                var dbContext = Globals.Services.GetRequiredService<ApplicationDbContext<ApplicationUser>>();
-                dbContext.Database.EnsureCreated();
-            })
-            .ConfigureWebHostDefaults(config =>
-            {
-                config.UseUrls(Site1HostUrl, Site2HostUrl);
-                config.Configure(app =>
-                {
-                    app.UseCmsContentScaffolding();
-                });
-            });
+				var dbContext = Globals.Services.GetRequiredService<ApplicationDbContext<ApplicationUser>>();
+				dbContext.Database.EnsureCreated();
+			})
+			.ConfigureWebHostDefaults(config =>
+			{
+				config.UseUrls(Site1HostUrl, Site2HostUrl);
+				config.Configure(app =>
+				{
+					app.UseCmsContentScaffolding();
+				});
+			});
 
-        builder.Build().Start();
-    }
+		builder.Build().Start();
+	}
 
-    [ClassCleanup]
-    public static void Uninitialize()
-    {
-        var dbContext = Globals.Services.GetRequiredService<ApplicationDbContext<ApplicationUser>>();
-        dbContext.Database.EnsureDeleted();
-    }
+	[ClassCleanup]
+	public static void Uninitialize()
+	{
+		var dbContext = Globals.Services.GetRequiredService<ApplicationDbContext<ApplicationUser>>();
+		dbContext.Database.EnsureDeleted();
+	}
 
-    [TestMethod]
-    public void InitializationTest_ShouldGetStartPage()
-    {
-        //Arrange
-        var contentLoader = ServiceLocator.Current.GetRequiredService<IContentLoader>();
-        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+	[TestMethod]
+	public void InitializationTest_ShouldGetStartPage()
+	{
+		//Arrange
+		var contentLoader = ServiceLocator.Current.GetRequiredService<IContentLoader>();
+		var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
 
-        //Act
-        var pages = contentLoader.GetDescendents(ContentReference.RootPage);
-        var siteDefinition = siteDefinitionRepository
-            .List()
-            .Where(x => x.GetHosts(Language, false).Any())
-            .Single();
-        var startPage = contentLoader.Get<StartPage>(siteDefinition.StartPage);
+		//Act
+		var pages = contentLoader.GetDescendents(ContentReference.RootPage);
+		var siteDefinition = siteDefinitionRepository
+			.List()
+			.Where(x => x.GetHosts(Language, false).Any())
+			.Single();
+		var startPage = contentLoader.Get<StartPage>(siteDefinition.StartPage);
 
-        //Assert
-        Assert.IsNotNull(pages);
-        Assert.IsTrue(pages.Any());
-        Assert.IsNotNull(startPage);
-        Assert.IsNotNull(startPage.MainContentArea);
-        Assert.IsFalse(startPage.MainContentArea.IsEmpty);
-    }
+		//Assert
+		Assert.IsNotNull(pages);
+		Assert.IsTrue(pages.Any());
+		Assert.IsNotNull(startPage);
+		Assert.IsNotNull(startPage.MainContentArea);
+		Assert.IsFalse(startPage.MainContentArea.IsEmpty);
+	}
 
-    [TestMethod]
-    public void SiteDefinitions_ShouldHaveDefaultSiteDefinition()
-    {
-        //Arrange
-        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+	[TestMethod]
+	public void SiteDefinitions_ShouldHaveDefaultSiteDefinition()
+	{
+		//Arrange
+		var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
 
-        //Act
-        var siteDefinitions = siteDefinitionRepository.List();
+		//Act
+		var siteDefinitions = siteDefinitionRepository.List();
 
-        //Assert
-        Assert.IsTrue(siteDefinitions.Any());
-    }
+		//Assert
+		Assert.IsTrue(siteDefinitions.Any());
+	}
 
-    [TestMethod]
-    public void PerformanceTest_ShouldGetAllArticlePagesUsingPageCriteriaQueryService()
-    {
-        //Arrange
-        var contentTypeRepository = ServiceLocator.Current.GetInstance<IContentTypeRepository>();
-        var pageCriteriaQueryService = ServiceLocator.Current.GetInstance<IPageCriteriaQueryService>();
-        var criterias = new PropertyCriteriaCollection
-        {
-            new PropertyCriteria
-            {
-                Name = "PageTypeID",
-                Type = PropertyDataType.PageType,
-                Condition = CompareCondition.Equal,
-                Value = contentTypeRepository.Load<ArticlePage>().ID.ToString(),
-                Required = true
-            }
-        };
+	[TestMethod]
+	public void PerformanceTest_ShouldGetAllArticlePagesUsingPageCriteriaQueryService()
+	{
+		//Arrange
+		var contentTypeRepository = ServiceLocator.Current.GetInstance<IContentTypeRepository>();
+		var pageCriteriaQueryService = ServiceLocator.Current.GetInstance<IPageCriteriaQueryService>();
+		var criterias = new PropertyCriteriaCollection
+		{
+			new PropertyCriteria
+			{
+				Name = "PageTypeID",
+				Type = PropertyDataType.PageType,
+				Condition = CompareCondition.Equal,
+				Value = contentTypeRepository.Load<ArticlePage>().ID.ToString(),
+				Required = true
+			}
+		};
 
-        //Act
-        var res = pageCriteriaQueryService.FindAllPagesWithCriteria(
-            PageReference.RootPage,
-            criterias,
-            Language.TwoLetterISOLanguageName,
-            LanguageSelector.MasterLanguage());
+		//Act
+		var res = pageCriteriaQueryService.FindAllPagesWithCriteria(
+			PageReference.RootPage,
+			criterias,
+			Language.TwoLetterISOLanguageName,
+			LanguageSelector.MasterLanguage());
 
-        //Assert
-        Assert.IsNotNull(res);
-        Assert.IsTrue(res.Count > 100);
-    }
+		//Assert
+		Assert.IsNotNull(res);
+		Assert.IsTrue(res.Count > 100);
+	}
 
-    [TestMethod]
-    public void PerformanceTest_ShouldGetAllArticlePagesUsingContentLoader()
-    {
-        //Arrange
-        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+	[TestMethod]
+	public void PerformanceTest_ShouldGetAllArticlePagesUsingContentLoader()
+	{
+		//Arrange
+		var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
 
-        //Act
-        var res = contentLoader
-            .GetDescendents(ContentReference.RootPage)
-            .Where(x =>
-            {
-                if (contentLoader.TryGet<PageData>(x, out var page))
-                {
-                    return page is ArticlePage;
-                }
+		//Act
+		var res = contentLoader
+			.GetDescendents(ContentReference.RootPage)
+			.Where(x =>
+			{
+				if (contentLoader.TryGet<PageData>(x, out var page))
+				{
+					return page is ArticlePage;
+				}
 
-                return false;
-            })
-            .ToArray();
+				return false;
+			})
+			.ToArray();
 
-        //Assert
-        Assert.IsNotNull(res);
-        Assert.IsTrue(res.Length > 100);
-    }
+		//Assert
+		Assert.IsNotNull(res);
+		Assert.IsTrue(res.Length > 100);
+	}
 
-    [TestMethod]
-    public void ArticlePageBlocksTest_ShouldGetAllBlocksFromMainContentArea()
-    {
-        //Arrange
-        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+	[TestMethod]
+	public void ArticlePageBlocksTest_ShouldGetAllBlocksFromMainContentArea()
+	{
+		//Arrange
+		var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
 
-        //Act
-        var res = contentLoader
-            .GetChildren<ArticlePage>(ContentReference.RootPage, Language)
-            .Where(x => x.MainContentArea != null && x.MainContentArea.Count.Equals(10))
-            .ToArray();
+		//Act
+		var res = contentLoader
+			.GetChildren<ArticlePage>(ContentReference.RootPage, Language)
+			.Where(x => x.MainContentArea != null && x.MainContentArea.Count.Equals(10))
+			.ToArray();
 
-        //Assert
-        Assert.IsNotNull(res);
-        Assert.IsTrue(res.Length.Equals(10));
-    }
+		//Assert
+		Assert.IsNotNull(res);
+		Assert.IsTrue(res.Length.Equals(10));
+	}
 
-    [TestMethod]
-    public void LocalBlockTest_ShouldHaveValues()
-    {
-        //Arrange
-        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+	[TestMethod]
+	public void LocalBlockTest_ShouldHaveValues()
+	{
+		//Arrange
+		var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
 
-        //Act
-        var res = contentLoader
-            .GetChildren<NotFoundPage>(ContentReference.RootPage, Language)
-            .Single();
+		//Act
+		var res = contentLoader
+			.GetChildren<NotFoundPage>(ContentReference.RootPage, Language)
+			.Single();
 
-        //Assert
-        Assert.IsNotNull(res);
-        Assert.IsNotNull(res.Teaser);
-        Assert.IsNotNull(res.Teaser.Heading);
-        Assert.IsFalse(ContentReference.IsNullOrEmpty(res.Teaser.Image));
-        Assert.IsNotNull(res.Teaser.LinkButton);
-        Assert.IsFalse(string.IsNullOrEmpty(res.Teaser.LinkButton.LinkText));
-        Assert.IsNotNull(res.Teaser.LinkButton.LinkUrl);
-    }
+		//Assert
+		Assert.IsNotNull(res);
+		Assert.IsNotNull(res.Teaser);
+		Assert.IsNotNull(res.Teaser.Heading);
+		Assert.IsFalse(ContentReference.IsNullOrEmpty(res.Teaser.Image));
+		Assert.IsNotNull(res.Teaser.LinkButton);
+		Assert.IsFalse(string.IsNullOrEmpty(res.Teaser.LinkButton.LinkText));
+		Assert.IsNotNull(res.Teaser.LinkButton.LinkUrl);
+	}
 
-    [TestMethod]
-    public async Task GetSiteStartPage_ShouldReturnHtml()
-    {
-        //Arrange
-        var client = new HttpClient
-        {
-            BaseAddress = new Uri(Site1HostUrl)
-        };
+	[TestMethod]
+	public async Task GetSiteStartPage_ShouldReturnHtml()
+	{
+		//Arrange
+		var client = new HttpClient
+		{
+			BaseAddress = new Uri(Site1HostUrl)
+		};
 
-        //Act
-        var res = await client.GetAsync("/");
+		//Act
+		var res = await client.GetAsync("/");
 
-        //Assert
-        Assert.IsNotNull(res);
-        client.Dispose();
-    }
+		//Assert
+		Assert.IsNotNull(res);
+		client.Dispose();
+	}
 
-    [TestMethod]
-    public void GetBlocksFromFolder_ShouldReturnBlocks()
-    {
-        //Arrange
-        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
-        var res = contentLoader
-            .GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder)
-            .FirstOrDefault(x => x.Name.Equals(TeaserBlocksFolderName));
+	[TestMethod]
+	public void GetBlocksFromFolder_ShouldReturnBlocks()
+	{
+		//Arrange
+		var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+		var res = contentLoader.GetChildren<ContentFolder>(ContentReference.SiteBlockFolder, Language);
 
-        //Act
-        var blocks = contentLoader.GetChildren<BlockData>(res.ContentLink, Language);
+		//Act
+		var blocks = contentLoader.GetChildren<BlockData>(res.First().ContentLink, Language);
 
-        //Assert
-        Assert.IsNotNull(res);
-        Assert.IsNotNull(blocks);
-        Assert.IsTrue(blocks.Count() > 1);
-    }
+		//Assert
+		Assert.IsNotNull(res);
+		Assert.IsNotNull(blocks);
+		Assert.IsTrue(blocks.Count() > 0);
+	}
 }

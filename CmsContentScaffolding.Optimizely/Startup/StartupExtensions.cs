@@ -13,7 +13,7 @@ public static class StartupExtensions
 	{
 		services.AddScoped<IContentBuilderManager, ContentBuilderManager>();
 		services.AddScoped(x => new ContentBuilderOptions());
-		services.AddScoped<IContentBuilder, ContentBuilder>();
+		services.AddTransient<IContentBuilder, ContentBuilder>();
 
 		return services;
 	}

@@ -14,6 +14,7 @@ internal class PagesBuilder : IPagesBuilder
 	private readonly ContentReference _parent;
 	private readonly IContentRepository _contentRepository;
 	private readonly IContentBuilderManager _contentBuilderManager;
+	private readonly ContentAssetHelper _contentAssetHelper;
 	private readonly ContentBuilderOptions _options;
 	private readonly bool _stop = false;
 
@@ -23,7 +24,8 @@ internal class PagesBuilder : IPagesBuilder
 		ContentReference parent,
 		IContentRepository contentRepository,
 		IContentBuilderManager contentBuilderManager,
-		ContentBuilderOptions options)
+		ContentBuilderOptions options,
+		ContentAssetHelper contentAssetHelper)
 	{
 		_parent = ContentReference.IsNullOrEmpty(parent)
 			? ContentReference.RootPage
@@ -31,6 +33,7 @@ internal class PagesBuilder : IPagesBuilder
 		_contentRepository = contentRepository;
 		_options = options;
 		_contentBuilderManager = contentBuilderManager;
+		_contentAssetHelper = contentAssetHelper;
 	}
 
 	public static IPagesBuilder Empty => new PagesBuilder();
@@ -68,6 +71,12 @@ internal class PagesBuilder : IPagesBuilder
 
 		var page = _contentRepository.GetDefault<T>(_parent, _options.Language);
 		PropertyHelpers.InitProperties(page);
+		page.Name = Constants.TempPageName;
+		//Save draft
+		contentReference = _contentRepository.Save(page, SaveAction.Default, AccessLevel.NoAccess);
+		var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(contentReference);
+		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+		page.ContentAssetsID = assetsFolder.ContentGuid;
 		value?.Invoke(page);
 
 		_contentBuilderManager.GetOrSetContentName<T>(page);
@@ -76,20 +85,17 @@ internal class PagesBuilder : IPagesBuilder
 
 		if (existingPage is null)
 		{
+			//Save final
 			contentReference = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
 			if (setAsStartPage)
-				_contentBuilderManager.SetAsStartPage(contentReference);
-
-			var contentToMove = _contentRepository
-				.GetChildren<IContentData>(_contentBuilderManager.GetOrCreateTempFolder(), _options.Language)
-				.Cast<IContent>();
-
-			foreach (var item in contentToMove)
-				_contentRepository.Move(item.ContentLink, contentReference, AccessLevel.NoAccess, AccessLevel.NoAccess);
+				_contentBuilderManager.SetAsStartPage(page.ContentLink);
 		}
 		else
 		{
+			//Delete temporary page
+			_contentRepository.Delete(contentReference, true, AccessLevel.NoAccess);
+			//Update existing one
 			var existingPageWritable = (T)existingPage.CreateWritableClone();
 			value?.Invoke(existingPageWritable);
 			contentReference = _contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
@@ -98,7 +104,7 @@ internal class PagesBuilder : IPagesBuilder
 		if (options == null)
 			return this;
 
-		var builder = new PagesBuilder(contentReference, _contentRepository, _contentBuilderManager, _options);
+		var builder = new PagesBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _contentAssetHelper);
 		options?.Invoke(builder);
 
 		return this;
@@ -123,20 +129,22 @@ internal class PagesBuilder : IPagesBuilder
 			page = _contentRepository.GetDefault<T>(_parent, _options.Language);
 
 			PropertyHelpers.InitProperties(page);
+			page.Name = Constants.TempPageName;
+			//Save draft
+			var contentReference = _contentRepository.Save(page, SaveAction.Default, AccessLevel.NoAccess);
+			var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(contentReference);
+			_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+
 			value?.Invoke(page);
 
 			_contentBuilderManager.GetOrSetContentName<T>(page, default, i.ToString());
 
-			if (_contentRepository.GetChildren<T>(_parent, _options.Language).Any(x => x.Name.Equals(page.Name)))
+			//Skip if page with same name already exists
+			if (_contentRepository.GetChildren<T>(_parent, _options.Language).Any(x => x.Name.Equals(page.Name, StringComparison.InvariantCultureIgnoreCase)))
 				continue;
 
-			var pageRef = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-			var contentToMove = _contentRepository
-				.GetChildren<IContentData>(_contentBuilderManager.GetOrCreateTempFolder(), _options.Language)
-				.Cast<IContent>();
-
-			foreach (var item in contentToMove)
-				_contentRepository.Move(item.ContentLink, pageRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
+			//Save final
+			_contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 		}
 
 		return this;

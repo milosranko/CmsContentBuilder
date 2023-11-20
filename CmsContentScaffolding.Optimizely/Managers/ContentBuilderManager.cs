@@ -18,11 +18,11 @@ internal class ContentBuilderManager : IContentBuilderManager
 	private readonly IContentLoader _contentLoader;
 	private readonly ILanguageBranchRepository _languageBranchRepository;
 	private readonly IContentTypeRepository _contentTypeRepository;
+	private readonly ContentAssetHelper _contentAssetHelper;
 	private readonly UIRoleProvider _uIRoleProvider;
 	private readonly UIUserProvider _uIUserProvider;
 	private readonly ContentBuilderOptions _options;
-	private const string TempFolderName = "Temp";
-	private const string TempFolderGuid = "F2EDE111-2E2E-4D0E-A2B9-DE4BB87984BA";
+	public ContentReference CurrentReference { get; set; }
 
 	public ContentBuilderManager(
 		ISiteDefinitionRepository siteDefinitionRepository,
@@ -33,7 +33,8 @@ internal class ContentBuilderManager : IContentBuilderManager
 		UIRoleProvider uIRoleProvider,
 		UIUserProvider uIUserProvider,
 		IContentSecurityRepository contentSecurityRepository,
-		IContentTypeRepository contentTypeRepository)
+		IContentTypeRepository contentTypeRepository,
+		ContentAssetHelper contentAssetHelper)
 	{
 		_siteDefinitionRepository = siteDefinitionRepository;
 		_contentRepository = contentRepository;
@@ -44,54 +45,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 		_uIUserProvider = uIUserProvider;
 		_contentSecurityRepository = contentSecurityRepository;
 		_contentTypeRepository = contentTypeRepository;
-	}
-
-	public ContentReference GetOrCreateBlockFolder(AssetOptions? assetOptions)
-	{
-		var site = GetOrCreateSite();
-
-		if (assetOptions == null)
-			return _options.BlocksLocation switch
-			{
-				BlocksLocation.CurrentContent => GetOrCreateTempFolder(),
-				BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
-				BlocksLocation.SiteRoot => GetOrCreateSiteAssetsRoot(site),
-				_ => ContentReference.GlobalBlockFolder,
-			};
-
-		var blockLocation = assetOptions.BlocksLocation switch
-		{
-			BlocksLocation.CurrentContent => GetOrCreateTempFolder(),
-			BlocksLocation.GlobalRoot => ContentReference.GlobalBlockFolder,
-			BlocksLocation.SiteRoot => GetOrCreateSiteAssetsRoot(site),
-			_ => ContentReference.GlobalBlockFolder,
-		};
-
-		if (!string.IsNullOrEmpty(assetOptions.FolderName) && blockLocation != ContentReference.EmptyReference)
-		{
-			var existingFolder = _contentRepository
-				.GetChildren<ContentFolder>(blockLocation)
-				.FirstOrDefault(x => x.Name.Equals(assetOptions.FolderName, StringComparison.InvariantCultureIgnoreCase));
-
-			if (existingFolder == null)
-			{
-				var folder = _contentRepository.GetDefault<ContentFolder>(blockLocation, _options.Language);
-				folder.Name = assetOptions.FolderName;
-				_contentRepository.Save(folder, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-				blockLocation = folder.ContentLink;
-			}
-			else
-			{
-				blockLocation = existingFolder.ContentLink;
-			}
-		}
-
-		if (ContentReference.IsNullOrEmpty(blockLocation))
-		{
-			return GetOrCreateTempFolder();
-		}
-
-		return blockLocation;
+		_contentAssetHelper = contentAssetHelper;
 	}
 
 	public SiteDefinition GetOrCreateSite()
@@ -112,7 +66,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 			SiteUrl = siteUri,
 			Hosts = new List<HostDefinition>
 			{
-				new HostDefinition
+				new()
 				{
 					Name = siteUri.Authority,
 					Language = _options.Language,
@@ -122,56 +76,27 @@ internal class ContentBuilderManager : IContentBuilderManager
 			}
 		};
 
-		siteDefinition.SiteAssetsRoot = GetOrCreateSiteAssetsRoot(siteDefinition);
-
 		_siteDefinitionRepository.Save(siteDefinition);
 
 		return siteDefinition;
-	}
-
-	public ContentReference GetOrCreateTempFolder()
-	{
-		var existingFolder = _contentRepository
-			.GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, _options.Language)
-			.FirstOrDefault(x => x.Name.Equals(TempFolderName));
-
-		if (existingFolder != null)
-			return existingFolder.ContentLink;
-
-		var folder = _contentRepository.GetDefault<ContentFolder>(ContentReference.GlobalBlockFolder, _options.Language);
-		folder.Name = TempFolderName;
-		folder.ContentGuid = new Guid(TempFolderGuid);
-
-		return _contentRepository.Save(folder, SaveAction.Default, AccessLevel.NoAccess);
-	}
-
-	public void DeleteTempFolder()
-	{
-		var folder = _contentRepository
-			.GetChildren<ContentFolder>(ContentReference.GlobalBlockFolder, _options.Language)
-			.SingleOrDefault(x => x.Name.Equals(TempFolderName));
-
-		if (folder is null)
-			return;
-
-		_contentRepository.Delete(folder.ContentLink, false, AccessLevel.NoAccess);
 	}
 
 	public void SetAsStartPage(ContentReference pageRef)
 	{
 		var site = GetOrCreateSite();
 
-		if (!ContentReference.RootPage.CompareToIgnoreWorkID(site.StartPage))
+		if (!ContentReference.RootPage.CompareToIgnoreWorkID(site.StartPage) || site.StartPage.CompareToIgnoreWorkID(pageRef))
 			return;
 
-		var updateSite = site.CreateWritableClone();
-		updateSite.StartPage = pageRef;
-		_siteDefinitionRepository.Save(updateSite);
+		var siteWritable = site.CreateWritableClone();
+		siteWritable.StartPage = pageRef;
+		siteWritable.SiteAssetsRoot = GetOrCreateSiteAssetsRoot(siteWritable);
+		_siteDefinitionRepository.Save(siteWritable);
 
 		if (_options.Roles is null || !_options.Roles.Any())
 			return;
 
-		if (_contentSecurityRepository.Get(updateSite.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
+		if (_contentSecurityRepository.Get(siteWritable.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
 		{
 			if (startPageSecurity.IsInherited)
 				startPageSecurity.ToLocal();
@@ -301,7 +226,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 	public void GetOrSetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData
 	{
-		if (!string.IsNullOrEmpty(content.Name))
+		if (!string.IsNullOrEmpty(content.Name) && !content.Name.Equals(Constants.TempPageName, StringComparison.InvariantCultureIgnoreCase))
 			return;
 
 		if (!string.IsNullOrEmpty(name))
@@ -316,7 +241,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 			return;
 		}
 
-		content.Name = $"{_contentTypeRepository.Load(content.ContentTypeID).Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
+		content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
 	}
 
 	private ContentReference GetOrCreateSiteAssetsRoot(SiteDefinition site)
@@ -324,7 +249,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 		if (!site.SiteAssetsRoot.CompareToIgnoreWorkID(site.GlobalAssetsRoot))
 			return site.SiteAssetsRoot;
 
-		var siteRoot = _contentRepository.GetDefault<ContentFolder>(site.SiteAssetsRoot);
+		var siteRoot = _contentRepository.GetDefault<ContentFolder>(site.StartPage);
 		siteRoot.Name = site.Name;
 
 		return _contentRepository.Save(siteRoot, SaveAction.Publish, AccessLevel.NoAccess);

@@ -14,44 +14,28 @@ namespace CmsContentScaffolding.Optimizely.Extensions;
 
 public static class PropertyExtensions
 {
-	public static ContentArea AddItem<T>(this ContentArea contentArea) where T : IContentData
+	public static ContentArea AddItem<T>(this ContentArea contentArea) where T : IContentData, new()
 	{
-		return AddItem<T>(contentArea, default, default, default);
+		return AddItem<T>(contentArea, default, default);
 	}
 
 	public static ContentArea AddItem<T>(
 		this ContentArea contentArea,
-		string name) where T : IContentData
+		string name) where T : IContentData, new()
 	{
-		return AddItem<T>(contentArea, name, default, default);
+		return AddItem<T>(contentArea, name, default);
 	}
 
 	public static ContentArea AddItem<T>(
 		this ContentArea contentArea,
-		Action<T> options) where T : IContentData
+		Action<T> options) where T : IContentData, new()
 	{
-		return AddItem(contentArea, default, options, default);
+		return AddItem(contentArea, default, options);
 	}
 
-	public static ContentArea AddItem<T>(
+	public static ContentArea AddExistingItem(
 		this ContentArea contentArea,
-		string name,
-		Action<T> options) where T : IContentData
-	{
-		return AddItem(contentArea, name, options, default);
-	}
-
-	public static ContentArea AddItem<T>(
-		this ContentArea contentArea,
-		Action<T> options,
-		AssetOptions? assetOptions = default) where T : IContentData
-	{
-		return AddItem(contentArea, default, options, assetOptions);
-	}
-
-	public static ContentArea AddExistingItem<T>(
-		this ContentArea contentArea,
-		ContentReference contentReference) where T : IContentData
+		ContentReference contentReference)
 	{
 		if (ContentReference.IsNullOrEmpty(contentReference))
 			return contentArea;
@@ -59,36 +43,15 @@ public static class PropertyExtensions
 		return AddItemToContentArea(contentArea, contentReference);
 	}
 
-	public static ContentArea AddExistingItem<T>(
-		this ContentArea contentArea,
-		string name,
-		AssetOptions? assetOptions = default) where T : IContentData
-	{
-		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-		var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
-		var folder = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
-		var content = contentRepository
-			.GetChildren<T>(folder, globalOptions.Language)
-			.Cast<IContent>()
-			.FirstOrDefault(x => x.Name.Equals(name));
-
-		return content != null
-			? AddItemToContentArea(contentArea, content.ContentLink)
-			: contentArea;
-	}
-
 	public static ContentArea AddItem<T>(
 		this ContentArea contentArea,
 		string? name = default,
-		Action<T>? options = default,
-		AssetOptions? assetOptions = default) where T : IContentData
+		Action<T>? options = default) where T : IContentData, new()
 	{
 		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
 		var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
 		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
-		var folder = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
-		var content = contentRepository.GetDefault<T>(folder, globalOptions.Language);
+		var content = contentRepository.GetDefault<T>(contentBuilderManager.CurrentReference, globalOptions.Language);
 
 		PropertyHelpers.InitProperties(content);
 		options?.Invoke(content);
@@ -99,80 +62,55 @@ public static class PropertyExtensions
 		if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
 			return AddItemToContentArea(contentArea, iContent.ContentLink);
 
-		var contentRef = contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-		//var contentToMove = contentRepository.GetChildren<IContent>(GetOrCreateTempFolder(globalOptions), globalOptions.DefaultLanguage);
-		//foreach (var item in contentToMove.Where(x => x.ContentLink != contentRef))
-		//{
-		//    contentRepository.Move(item.ContentLink, contentRef, AccessLevel.NoAccess, AccessLevel.NoAccess);
-		//}
+		contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
 		return AddItemToContentArea(contentArea, iContent.ContentLink);
 	}
 
-	public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData
+	public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData, new()
 	{
-		return AddItems<T>(contentArea, default, default, default, default);
+		return AddItems<T>(contentArea, default, default, default);
 	}
 
 	public static ContentArea AddItems<T>(
 		this ContentArea contentArea,
 		string name,
-		[Range(1, 10000)] int total) where T : IContentData
+		[Range(1, 10000)] int total) where T : IContentData, new()
 	{
-		return AddItems<T>(contentArea, name, default, total, default);
+		return AddItems<T>(contentArea, name, default, total);
 	}
 
 	public static ContentArea AddItems<T>(
 		this ContentArea contentArea,
 		Action<T> options,
-		[Range(1, 10000)] int total) where T : IContentData
+		[Range(1, 10000)] int total) where T : IContentData, new()
 	{
-		return AddItems(contentArea, default, options, total, default);
+		return AddItems(contentArea, default, options, total);
 	}
 
 	public static ContentArea AddItems<T>(
 		this ContentArea contentArea,
-		string name,
-		Action<T> options,
-		[Range(1, 10000)] int total) where T : IContentData
+		[Range(1, 10000)] int total) where T : IContentData, new()
 	{
-		return AddItems(contentArea, name, options, total, default);
-	}
-
-	public static ContentArea AddItems<T>(
-		this ContentArea contentArea,
-		[Range(1, 10000)] int total) where T : IContentData
-	{
-		return AddItems<T>(contentArea, default, default, total, default);
-	}
-
-	public static ContentArea AddItems<T>(
-		this ContentArea contentArea,
-		Action<T> options,
-		[Range(1, 10000)] int total,
-		AssetOptions assetOptions) where T : IContentData
-	{
-		return AddItems(contentArea, default, options, total, assetOptions);
+		return AddItems<T>(contentArea, default, default, total);
 	}
 
 	public static ContentArea AddItems<T>(
 		this ContentArea contentArea,
 		string? name = default,
 		Action<T>? options = default,
-		[Range(1, 10000)] int total = 1,
-		AssetOptions? assetOptions = default) where T : IContentData
+		[Range(1, 10000)] int total = 1) where T : IContentData, new()
 	{
 		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
 		var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
 		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
-		var parent = contentBuilderManager.GetOrCreateBlockFolder(assetOptions);
 
 		T content;
 		var typeName = typeof(T).Name;
 
 		for (int i = 0; i < total; i++)
 		{
-			content = contentRepository.GetDefault<T>(parent, globalOptions.Language);
+			content = contentRepository.GetDefault<T>(contentBuilderManager.CurrentReference, globalOptions.Language);
 
 			PropertyHelpers.InitProperties(content);
 			options?.Invoke(content);
@@ -186,7 +124,7 @@ public static class PropertyExtensions
 				continue;
 			}
 
-			var contentRef = contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+			contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 			AddItemToContentArea(contentArea, iContent.ContentLink);
 		}
 
