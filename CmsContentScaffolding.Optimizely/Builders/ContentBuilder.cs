@@ -6,6 +6,7 @@ using EPiServer.Authorization;
 using EPiServer.Core;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
+using EPiServer.Web;
 
 namespace CmsContentScaffolding.Optimizely.Builders;
 
@@ -16,6 +17,7 @@ internal class ContentBuilder : IContentBuilder
 	private readonly IBlobFactory _blobFactory;
 	private readonly ContentAssetHelper _contentAssetHelper;
 	private readonly ContentBuilderOptions _contentBuilderOptions;
+	private readonly IUrlSegmentGenerator _urlSegmentGenerator;
 	private readonly bool _buildContent;
 	private bool disposedValue;
 
@@ -24,7 +26,8 @@ internal class ContentBuilder : IContentBuilder
 		IContentBuilderManager contentBuilderManager,
 		ContentBuilderOptions contentBuilderOptions,
 		IBlobFactory blobFactory,
-		ContentAssetHelper contentAssetHelper)
+		ContentAssetHelper contentAssetHelper,
+		IUrlSegmentGenerator urlSegmentGenerator)
 	{
 		_contentRepository = contentRepository;
 		_contentBuilderManager = contentBuilderManager;
@@ -32,6 +35,7 @@ internal class ContentBuilder : IContentBuilder
 		_blobFactory = blobFactory;
 		_buildContent = ApplyOptions();
 		_contentAssetHelper = contentAssetHelper;
+		_urlSegmentGenerator = urlSegmentGenerator;
 	}
 
 	public IAssetsBuilder UseAssets(ContentReference? root = null)
@@ -45,7 +49,7 @@ internal class ContentBuilder : IContentBuilder
 	public IPagesBuilder UsePages(ContentReference? root = null)
 	{
 		if (_buildContent)
-			return new PagesBuilder(root ?? ContentReference.RootPage, _contentRepository, _contentBuilderManager, _contentBuilderOptions, _contentAssetHelper);
+			return new PagesBuilder(root ?? ContentReference.RootPage, _contentRepository, _contentBuilderManager, _contentBuilderOptions, _contentAssetHelper, _urlSegmentGenerator);
 
 		return PagesBuilder.Empty;
 	}

@@ -5,6 +5,7 @@ using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Security;
+using EPiServer.Web;
 using System.ComponentModel.DataAnnotations;
 
 namespace CmsContentScaffolding.Optimizely.Builders;
@@ -15,6 +16,7 @@ internal class PagesBuilder : IPagesBuilder
 	private readonly IContentRepository _contentRepository;
 	private readonly IContentBuilderManager _contentBuilderManager;
 	private readonly ContentAssetHelper _contentAssetHelper;
+	private readonly IUrlSegmentGenerator _urlSegmentGenerator;
 	private readonly ContentBuilderOptions _options;
 	private readonly bool _stop = false;
 
@@ -25,7 +27,8 @@ internal class PagesBuilder : IPagesBuilder
 		IContentRepository contentRepository,
 		IContentBuilderManager contentBuilderManager,
 		ContentBuilderOptions options,
-		ContentAssetHelper contentAssetHelper)
+		ContentAssetHelper contentAssetHelper,
+		IUrlSegmentGenerator urlSegmentGenerator)
 	{
 		_parent = ContentReference.IsNullOrEmpty(parent)
 			? ContentReference.RootPage
@@ -34,6 +37,7 @@ internal class PagesBuilder : IPagesBuilder
 		_options = options;
 		_contentBuilderManager = contentBuilderManager;
 		_contentAssetHelper = contentAssetHelper;
+		_urlSegmentGenerator = urlSegmentGenerator;
 	}
 
 	public static IPagesBuilder Empty => new PagesBuilder();
@@ -80,6 +84,7 @@ internal class PagesBuilder : IPagesBuilder
 		value?.Invoke(page);
 
 		_contentBuilderManager.GetOrSetContentName<T>(page);
+		page.URLSegment = _urlSegmentGenerator.Create(page.Name);
 
 		var existingPage = _contentRepository.GetChildren<T>(_parent, _options.Language).FirstOrDefault(x => x.Name.Equals(page.Name));
 
@@ -104,7 +109,7 @@ internal class PagesBuilder : IPagesBuilder
 		if (options == null)
 			return this;
 
-		var builder = new PagesBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _contentAssetHelper);
+		var builder = new PagesBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _contentAssetHelper, _urlSegmentGenerator);
 		options?.Invoke(builder);
 
 		return this;
@@ -138,6 +143,7 @@ internal class PagesBuilder : IPagesBuilder
 			value?.Invoke(page);
 
 			_contentBuilderManager.GetOrSetContentName<T>(page, default, i.ToString());
+			page.URLSegment = _urlSegmentGenerator.Create(page.Name);
 
 			//Skip if page with same name already exists
 			if (_contentRepository.GetChildren<T>(_parent, _options.Language).Any(x => x.Name.Equals(page.Name, StringComparison.InvariantCultureIgnoreCase)))
