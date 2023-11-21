@@ -114,7 +114,9 @@ internal class ContentBuilderManager : IContentBuilderManager
 	{
 		if (_options.BuildMode == BuildMode.OnlyIfEmptyInDefaultLanguage)
 		{
-			if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.Language)) && !ContentReference.RootPage.CompareToIgnoreWorkID(SiteDefinition.Current.StartPage))
+			if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.Language)) &&
+				!ContentReference.IsNullOrEmpty(SiteDefinition.Current.StartPage) &&
+				!ContentReference.RootPage.CompareToIgnoreWorkID(SiteDefinition.Current.StartPage))
 			{
 				var pages = _contentLoader.GetChildren<IContentData>(SiteDefinition.Current.StartPage, _options.Language);
 				return pages is null || !pages.Any();
