@@ -22,7 +22,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 	private readonly UIRoleProvider _uIRoleProvider;
 	private readonly UIUserProvider _uIUserProvider;
 	private readonly ContentBuilderOptions _options;
-	public ContentReference CurrentReference { get; set; }
+	public ContentReference CurrentReference { get; set; } = ContentReference.EmptyReference;
 
 	public ContentBuilderManager(
 		ISiteDefinitionRepository siteDefinitionRepository,
@@ -77,21 +77,21 @@ internal class ContentBuilderManager : IContentBuilderManager
 		};
 
 		_siteDefinitionRepository.Save(siteDefinition);
+		SiteDefinition.Current = siteDefinition;
 
 		return siteDefinition;
 	}
 
 	public void SetAsStartPage(ContentReference pageRef)
 	{
-		var site = GetOrCreateSite();
-
-		if (!ContentReference.RootPage.CompareToIgnoreWorkID(site.StartPage) || site.StartPage.CompareToIgnoreWorkID(pageRef))
+		if (!ContentReference.RootPage.CompareToIgnoreWorkID(SiteDefinition.Current.StartPage) || SiteDefinition.Current.StartPage.CompareToIgnoreWorkID(pageRef))
 			return;
 
-		var siteWritable = site.CreateWritableClone();
+		var siteWritable = SiteDefinition.Current.CreateWritableClone();
 		siteWritable.StartPage = pageRef;
 		siteWritable.SiteAssetsRoot = GetOrCreateSiteAssetsRoot(siteWritable);
 		_siteDefinitionRepository.Save(siteWritable);
+		SiteDefinition.Current = siteWritable;
 
 		if (_options.Roles is null || !_options.Roles.Any())
 			return;
@@ -112,21 +112,18 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 	public bool IsInstallationEmpty()
 	{
-		var site = GetOrCreateSite();
-
 		if (_options.BuildMode == BuildMode.OnlyIfEmptyInDefaultLanguage)
 		{
-			if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.Language)) && !ContentReference.RootPage.CompareToIgnoreWorkID(site.StartPage))
+			if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.Language)) && !ContentReference.RootPage.CompareToIgnoreWorkID(SiteDefinition.Current.StartPage))
 			{
-				var pages = _contentLoader.GetChildren<IContentData>(site.StartPage, _options.Language);
+				var pages = _contentLoader.GetChildren<IContentData>(SiteDefinition.Current.StartPage, _options.Language);
 				return pages is null || !pages.Any();
 			}
-
 			return true;
 		}
 		else if (_options.BuildMode.Equals(BuildMode.OnlyIfEmptyRegardlessOfLanguage))
 		{
-			var pages = _contentLoader.GetChildren<IContentData>(site.RootPage);
+			var pages = _contentLoader.GetChildren<IContentData>(SiteDefinition.Current.RootPage);
 			return pages is null || !pages.Any();
 		}
 		return false;

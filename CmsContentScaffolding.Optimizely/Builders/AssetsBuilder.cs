@@ -6,6 +6,7 @@ using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
+using EPiServer.Web;
 
 namespace CmsContentScaffolding.Optimizely.Builders;
 
@@ -46,10 +47,9 @@ internal class AssetsBuilder : IAssetsBuilder
 		contentReference = ContentReference.EmptyReference;
 		if (_stop) return Empty;
 
-		var site = _contentBuilderManager.GetOrCreateSite();
 		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
-			: site.SiteAssetsRoot;
+			: SiteDefinition.Current.SiteAssetsRoot;
 		var existingBlock = _contentRepository
 			.GetChildren<T>(contentReference, _options.Language)
 			.SingleOrDefault(x => ((IContent)x).Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
@@ -83,10 +83,9 @@ internal class AssetsBuilder : IAssetsBuilder
 		contentReference = ContentReference.EmptyReference;
 		if (_stop) return Empty;
 
-		var site = _contentBuilderManager.GetOrCreateSite();
 		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
-			: site.SiteAssetsRoot;
+			: SiteDefinition.Current.SiteAssetsRoot;
 		var content = _contentRepository.GetDefault<T>(contentReference, _options.Language);
 
 		PropertyHelpers.InitProperties(content);
@@ -125,10 +124,9 @@ internal class AssetsBuilder : IAssetsBuilder
 		contentReference = ContentReference.EmptyReference;
 		if (_stop) return Empty;
 
-		var site = _contentBuilderManager.GetOrCreateSite();
 		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
-			: site.SiteAssetsRoot;
+			: SiteDefinition.Current.SiteAssetsRoot;
 		var existingContent = _contentRepository
 			.GetChildren<ContentFolder>(contentReference, _options.Language)
 			.SingleOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
@@ -164,10 +162,9 @@ internal class AssetsBuilder : IAssetsBuilder
 		contentReference = ContentReference.EmptyReference;
 		if (_stop) return Empty;
 
-		var site = _contentBuilderManager.GetOrCreateSite();
 		contentReference = _parent is not null && !ContentReference.IsNullOrEmpty(_parent)
 			? _parent
-			: site.SiteAssetsRoot;
+			: SiteDefinition.Current.SiteAssetsRoot;
 
 		var media = _contentRepository.GetDefault<T>(contentReference, _options.Language);
 		value?.Invoke(media);

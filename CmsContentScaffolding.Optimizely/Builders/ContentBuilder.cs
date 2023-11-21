@@ -58,6 +58,8 @@ internal class ContentBuilder : IContentBuilder
 	{
 		var proceedBuildingContent = false;
 
+		_contentBuilderManager.GetOrCreateSite();
+
 		switch (_contentBuilderOptions.BuildMode)
 		{
 			case BuildMode.Append:
@@ -101,6 +103,7 @@ internal class ContentBuilder : IContentBuilder
 			if (disposing)
 			{
 				PropertyHelpers.TypeProperties.Clear();
+				SiteDefinition.Current = SiteDefinition.Empty;
 			}
 			// TODO: free unmanaged resources (unmanaged objects) and override finalizer
 			// TODO: set large fields to null

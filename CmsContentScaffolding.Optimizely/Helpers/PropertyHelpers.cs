@@ -1,11 +1,11 @@
-﻿using CmsContentScaffolding.Optimizely.Interfaces;
-using CmsContentScaffolding.Optimizely.Models;
+﻿using CmsContentScaffolding.Optimizely.Models;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
+using EPiServer.Web;
 using Microsoft.CodeAnalysis;
 using System.Reflection;
 
@@ -18,10 +18,10 @@ public static class PropertyHelpers
 	public static ContentReference GetOrAddImage<TMedia>(string name, Stream stream, int width = 1200, int height = 800) where TMedia : MediaData
 	{
 		var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
 		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-		var site = contentBuilderManager.GetOrCreateSite();
-		var mediaFolder = ContentReference.IsNullOrEmpty(site.SiteAssetsRoot) ? site.GlobalAssetsRoot : site.SiteAssetsRoot;
+		var mediaFolder = ContentReference.IsNullOrEmpty(SiteDefinition.Current.SiteAssetsRoot)
+			? SiteDefinition.Current.GlobalAssetsRoot
+			: SiteDefinition.Current.SiteAssetsRoot;
 		var existingItems = contentRepository
 			.GetChildren<TMedia>(mediaFolder)
 			.Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
