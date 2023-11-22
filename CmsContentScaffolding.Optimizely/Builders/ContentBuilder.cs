@@ -68,11 +68,8 @@ internal class ContentBuilder : IContentBuilder
 			case BuildMode.Overwrite:
 				proceedBuildingContent = true;
 				break;
-			case BuildMode.OnlyIfEmptyInDefaultLanguage:
-				proceedBuildingContent = _contentBuilderManager.IsInstallationEmpty();
-				break;
-			case BuildMode.OnlyIfEmptyRegardlessOfLanguage:
-				proceedBuildingContent = _contentBuilderManager.IsInstallationEmpty();
+			case BuildMode.OnlyIfEmpty:
+				proceedBuildingContent = !_contentBuilderManager.IsInstallationEmpty();
 				break;
 			default:
 				break;

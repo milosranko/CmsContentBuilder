@@ -109,22 +109,11 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 	public bool IsInstallationEmpty()
 	{
-		if (_options.BuildMode == BuildMode.OnlyIfEmptyInDefaultLanguage)
+		if (_options.BuildMode == BuildMode.OnlyIfEmpty)
 		{
-			if (_languageBranchRepository.ListAll().Any(x => x.Culture.Equals(_options.Language)) &&
-				!ContentReference.IsNullOrEmpty(SiteDefinition.Current.StartPage) &&
-				!ContentReference.RootPage.CompareToIgnoreWorkID(SiteDefinition.Current.StartPage))
-			{
-				var pages = _contentLoader.GetChildren<IContentData>(SiteDefinition.Current.StartPage, _options.Language);
-				return pages is null || !pages.Any();
-			}
-			return true;
+			return !SiteDefinition.Current.Name.Equals(_options.SiteName) && !SiteDefinition.Current.Hosts.Any(x => x.Language.Equals(_options.Language));
 		}
-		else if (_options.BuildMode.Equals(BuildMode.OnlyIfEmptyRegardlessOfLanguage))
-		{
-			var pages = _contentLoader.GetChildren<IContentData>(SiteDefinition.Current.RootPage);
-			return pages is null || !pages.Any();
-		}
+
 		return false;
 	}
 

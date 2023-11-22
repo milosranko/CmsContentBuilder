@@ -4,7 +4,6 @@ public enum BuildMode
 {
 	Append,
 	Overwrite,
-	OnlyIfEmptyInDefaultLanguage,
-	OnlyIfEmptyRegardlessOfLanguage,
+	OnlyIfEmpty,
 	Translate
 }

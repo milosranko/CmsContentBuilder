@@ -180,7 +180,7 @@ internal static class ApplicationBuilderExtensions
 				o.SiteName = "Site 2";
 				o.DefaultHost = "https://localhost:5001";
 				o.Language = new CultureInfo("en");
-				o.BuildMode = BuildMode.OnlyIfEmptyInDefaultLanguage;
+				o.BuildMode = BuildMode.OnlyIfEmpty;
 				o.PublishContent = true;
 				o.BlocksLocation = BlocksLocation.SiteRoot;
 				o.Roles = new Dictionary<string, AccessLevel>
