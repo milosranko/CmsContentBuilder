@@ -9,8 +9,6 @@ internal interface IContentBuilderManager
 {
 	ContentReference CurrentReference { get; set; }
 	SiteDefinition GetOrCreateSite();
-	//ContentReference GetOrCreateTempFolder();
-	//void DeleteTempFolder();
 	void SetAsStartPage(ContentReference pageRef);
 	bool IsInstallationEmpty();
 	void ApplyDefaultLanguage();

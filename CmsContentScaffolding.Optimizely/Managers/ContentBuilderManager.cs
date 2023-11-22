@@ -18,7 +18,6 @@ internal class ContentBuilderManager : IContentBuilderManager
 	private readonly IContentLoader _contentLoader;
 	private readonly ILanguageBranchRepository _languageBranchRepository;
 	private readonly IContentTypeRepository _contentTypeRepository;
-	private readonly ContentAssetHelper _contentAssetHelper;
 	private readonly UIRoleProvider _uIRoleProvider;
 	private readonly UIUserProvider _uIUserProvider;
 	private readonly ContentBuilderOptions _options;
@@ -33,8 +32,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 		UIRoleProvider uIRoleProvider,
 		UIUserProvider uIUserProvider,
 		IContentSecurityRepository contentSecurityRepository,
-		IContentTypeRepository contentTypeRepository,
-		ContentAssetHelper contentAssetHelper)
+		IContentTypeRepository contentTypeRepository)
 	{
 		_siteDefinitionRepository = siteDefinitionRepository;
 		_contentRepository = contentRepository;
@@ -45,7 +43,6 @@ internal class ContentBuilderManager : IContentBuilderManager
 		_uIUserProvider = uIUserProvider;
 		_contentSecurityRepository = contentSecurityRepository;
 		_contentTypeRepository = contentTypeRepository;
-		_contentAssetHelper = contentAssetHelper;
 	}
 
 	public SiteDefinition GetOrCreateSite()

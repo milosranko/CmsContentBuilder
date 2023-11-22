@@ -11,11 +11,10 @@ public static class StartupExtensions
 {
 	public static IServiceCollection AddCmsContentScaffolding(this IServiceCollection services)
 	{
-		services.AddScoped<IContentBuilderManager, ContentBuilderManager>();
-		services.AddScoped(x => new ContentBuilderOptions());
-		services.AddTransient<IContentBuilder, ContentBuilder>();
-
-		return services;
+		return services
+			.AddScoped<IContentBuilderManager, ContentBuilderManager>()
+			.AddScoped(x => new ContentBuilderOptions())
+			.AddTransient<IContentBuilder, ContentBuilder>();
 	}
 
 	public static IApplicationBuilder UseCmsContentScaffolding(
