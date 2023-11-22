@@ -45,15 +45,17 @@ internal class ContentBuilderManager : IContentBuilderManager
 		_contentTypeRepository = contentTypeRepository;
 	}
 
-	public SiteDefinition GetOrCreateSite()
+	public void SetOrCreateSiteContext()
 	{
 		var existingSite = _siteDefinitionRepository
 			.List()
-			.Where(x => x.Name.Equals(_options.SiteName))
-			.SingleOrDefault();
+			.SingleOrDefault(x => x.Name.Equals(_options.SiteName) && x.Hosts.Any(x => x.Language.Equals(_options.Language)));
 
 		if (existingSite is not null)
-			return existingSite;
+		{
+			SiteDefinition.Current = existingSite;
+			return;
+		}
 
 		var siteUri = new Uri(_options.DefaultHost);
 		var siteDefinition = new SiteDefinition
@@ -75,8 +77,6 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 		_siteDefinitionRepository.Save(siteDefinition);
 		SiteDefinition.Current = siteDefinition;
-
-		return siteDefinition;
 	}
 
 	public void SetAsStartPage(ContentReference pageRef)
@@ -107,15 +107,9 @@ internal class ContentBuilderManager : IContentBuilderManager
 		}
 	}
 
-	public bool IsInstallationEmpty()
-	{
-		if (_options.BuildMode == BuildMode.OnlyIfEmpty)
-		{
-			return !SiteDefinition.Current.Name.Equals(_options.SiteName) && !SiteDefinition.Current.Hosts.Any(x => x.Language.Equals(_options.Language));
-		}
-
-		return false;
-	}
+	public bool SiteExists =>
+		SiteDefinition.Current.Name.Equals(_options.SiteName) &&
+		SiteDefinition.Current.Hosts.Any(x => x.Language.Equals(_options.Language));
 
 	public void ApplyDefaultLanguage()
 	{

@@ -1,16 +1,15 @@
 ﻿using CmsContentScaffolding.Optimizely.Models;
 using EPiServer.Core;
 using EPiServer.Security;
-using EPiServer.Web;
 
 namespace CmsContentScaffolding.Optimizely.Interfaces;
 
 internal interface IContentBuilderManager
 {
+	bool SiteExists { get; }
 	ContentReference CurrentReference { get; set; }
-	SiteDefinition GetOrCreateSite();
+	void SetOrCreateSiteContext();
 	void SetAsStartPage(ContentReference pageRef);
-	bool IsInstallationEmpty();
 	void ApplyDefaultLanguage();
 	void CreateDefaultRoles(IDictionary<string, AccessLevel> roles);
 	void CreateRoles(IDictionary<string, AccessLevel>? roles);

@@ -18,7 +18,7 @@ internal class ContentBuilder : IContentBuilder
 	private readonly ContentAssetHelper _contentAssetHelper;
 	private readonly ContentBuilderOptions _contentBuilderOptions;
 	private readonly IUrlSegmentGenerator _urlSegmentGenerator;
-	private readonly bool _buildContent;
+	private bool _buildContent = false;
 	private bool disposedValue;
 
 	public ContentBuilder(
@@ -33,9 +33,11 @@ internal class ContentBuilder : IContentBuilder
 		_contentBuilderManager = contentBuilderManager;
 		_contentBuilderOptions = contentBuilderOptions;
 		_blobFactory = blobFactory;
-		_buildContent = ApplyOptions();
 		_contentAssetHelper = contentAssetHelper;
 		_urlSegmentGenerator = urlSegmentGenerator;
+
+		_contentBuilderManager.SetOrCreateSiteContext();
+		ApplyOptions();
 	}
 
 	public IAssetsBuilder UseAssets(ContentReference? root = null)
@@ -54,29 +56,25 @@ internal class ContentBuilder : IContentBuilder
 		return PagesBuilder.Empty;
 	}
 
-	private bool ApplyOptions()
+	private void ApplyOptions()
 	{
-		var proceedBuildingContent = false;
-
-		_contentBuilderManager.GetOrCreateSite();
-
 		switch (_contentBuilderOptions.BuildMode)
 		{
 			case BuildMode.Append:
-				proceedBuildingContent = true;
+				_buildContent = true;
 				break;
 			case BuildMode.Overwrite:
-				proceedBuildingContent = true;
+				_buildContent = true;
 				break;
 			case BuildMode.OnlyIfEmpty:
-				proceedBuildingContent = !_contentBuilderManager.IsInstallationEmpty();
+				_buildContent = !_contentBuilderManager.SiteExists;
 				break;
 			default:
 				break;
 		}
 
-		if (!proceedBuildingContent)
-			return false;
+		if (!_buildContent)
+			return;
 
 		_contentBuilderManager.ApplyDefaultLanguage();
 
@@ -89,8 +87,6 @@ internal class ContentBuilder : IContentBuilder
 
 		_contentBuilderManager.CreateRoles(_contentBuilderOptions.Roles);
 		_contentBuilderManager.CreateUsers(_contentBuilderOptions.Users);
-
-		return true;
 	}
 
 	protected virtual void Dispose(bool disposing)
