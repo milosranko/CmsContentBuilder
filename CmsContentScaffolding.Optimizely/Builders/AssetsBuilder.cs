@@ -67,7 +67,7 @@ internal class AssetsBuilder : IAssetsBuilder
 
 		var iContent = (IContent)block;
 
-		_contentBuilderManager.GetOrSetContentName<T>(iContent, name);
+		_contentBuilderManager.SetContentName<T>(iContent, name);
 		contentReference = _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
 		return this;
@@ -97,7 +97,7 @@ internal class AssetsBuilder : IAssetsBuilder
 
 		if (existingContent is null)
 		{
-			_contentBuilderManager.GetOrSetContentName<T>(content);
+			_contentBuilderManager.SetContentName<T>(content);
 			contentReference = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 		}
 		else

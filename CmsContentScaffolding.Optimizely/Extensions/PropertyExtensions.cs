@@ -57,7 +57,7 @@ public static class PropertyExtensions
 		options?.Invoke(content);
 
 		var iContent = (IContent)content;
-		contentBuilderManager.GetOrSetContentName<T>(iContent, name);
+		contentBuilderManager.SetContentName<T>(iContent, name);
 
 		if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
 			return AddItemToContentArea(contentArea, iContent.ContentLink);
@@ -116,7 +116,7 @@ public static class PropertyExtensions
 			options?.Invoke(content);
 
 			var iContent = (IContent)content;
-			contentBuilderManager.GetOrSetContentName<T>(iContent, name, i.ToString());
+			contentBuilderManager.SetContentName<T>(iContent, name, i.ToString());
 
 			if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
 			{

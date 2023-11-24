@@ -83,7 +83,7 @@ internal class PagesBuilder : IPagesBuilder
 		page.ContentAssetsID = assetsFolder.ContentGuid;
 		value?.Invoke(page);
 
-		_contentBuilderManager.GetOrSetContentName<T>(page);
+		_contentBuilderManager.SetContentName<T>(page);
 		page.URLSegment = _urlSegmentGenerator.Create(page.Name);
 
 		var existingPage = _contentRepository.GetChildren<T>(_parent, _options.Language).FirstOrDefault(x => x.Name.Equals(page.Name));
@@ -142,7 +142,7 @@ internal class PagesBuilder : IPagesBuilder
 
 			value?.Invoke(page);
 
-			_contentBuilderManager.GetOrSetContentName<T>(page, default, i.ToString());
+			_contentBuilderManager.SetContentName<T>(page, default, i.ToString());
 			page.URLSegment = _urlSegmentGenerator.Create(page.Name);
 
 			//Skip if page with same name already exists

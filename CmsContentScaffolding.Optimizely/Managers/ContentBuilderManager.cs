@@ -203,7 +203,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 		}
 	}
 
-	public void GetOrSetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData
+	public void SetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData
 	{
 		if (!string.IsNullOrEmpty(content.Name) && !content.Name.Equals(Constants.TempPageName, StringComparison.InvariantCultureIgnoreCase))
 			return;
