@@ -51,6 +51,9 @@ public static class PropertyHelpers
 				.ToArray());
 
 		for (int i = 0; i < TypeProperties[type].Length; i++)
-			TypeProperties[type][i].SetValue(content, TypeProperties[type][i].PropertyType.Name.Equals(nameof(ContentArea)) ? new ContentArea() : new XhtmlString());
+		{
+			if (TypeProperties[type][i].GetValue(content) is null)
+				TypeProperties[type][i].SetValue(content, TypeProperties[type][i].PropertyType.Name.Equals(nameof(ContentArea)) ? new ContentArea() : new XhtmlString());
+		}
 	}
 }

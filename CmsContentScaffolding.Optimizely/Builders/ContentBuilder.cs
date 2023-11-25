@@ -36,8 +36,8 @@ internal class ContentBuilder : IContentBuilder
 		_contentAssetHelper = contentAssetHelper;
 		_urlSegmentGenerator = urlSegmentGenerator;
 
-		_contentBuilderManager.SetOrCreateSiteContext();
 		ApplyOptions();
+		_contentBuilderManager.SetOrCreateSiteContext();
 	}
 
 	public IAssetsBuilder UseAssets(ContentReference? root = null)

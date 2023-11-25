@@ -23,11 +23,11 @@ internal static class ApplicationBuilderExtensions
 			builderOptions: o =>
 			{
 				o.SiteName = "Site 1";
-				o.DefaultHost = Site1HostUrl;
+				o.SiteHost = Site1HostUrl;
 				o.Language = new CultureInfo("sr");
-				o.BuildMode = BuildMode.Append;
+				o.StartPageType = typeof(StartPage);
+				o.BuildMode = BuildMode.OnlyIfEmpty;
 				o.PublishContent = true;
-				o.BlocksLocation = BlocksLocation.SiteRoot;
 				o.Roles = new Dictionary<string, AccessLevel>
 				{
 					{ Site1EditorsRole, AccessLevel.Edit }
@@ -178,11 +178,11 @@ internal static class ApplicationBuilderExtensions
 			builderOptions: o =>
 			{
 				o.SiteName = "Site 2";
-				o.DefaultHost = "https://localhost:5001";
+				o.SiteHost = "https://localhost:5001";
+				o.StartPageType = typeof(StartPage);
 				o.Language = new CultureInfo("en");
 				o.BuildMode = BuildMode.OnlyIfEmpty;
 				o.PublishContent = true;
-				o.BlocksLocation = BlocksLocation.SiteRoot;
 				o.Roles = new Dictionary<string, AccessLevel>
 				{
 					{ Site2EditorsRole, AccessLevel.Edit }

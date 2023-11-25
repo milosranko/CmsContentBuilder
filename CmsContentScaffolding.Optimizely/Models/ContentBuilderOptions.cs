@@ -15,11 +15,15 @@ public class ContentBuilderOptions
 	/// <summary>
 	/// Set default host for the builder, default is http://localhost
 	/// </summary>
-	public string DefaultHost { get; set; } = "http://localhost";
+	public string SiteHost { get; set; } = "http://localhost";
 	/// <summary>
 	/// Set site name, default is Demo
 	/// </summary>
 	public string SiteName { get; set; } = "Demo";
+	/// <summary>
+	/// Set type of StartPage, if not set assets won't be able to create under SiteRoot
+	/// </summary>
+	public Type? StartPageType { get; set; }
 	/// <summary>
 	/// Set build mode
 	/// </summary>
@@ -28,10 +32,6 @@ public class ContentBuilderOptions
 	/// Set if content should be published when created, default is False
 	/// </summary>
 	public bool PublishContent { get; set; } = false;
-	/// <summary>
-	/// Set default assets location, default is GlobalRoot
-	/// </summary>
-	public BlocksLocation BlocksLocation { get; set; } = BlocksLocation.GlobalRoot;
 	/// <summary>
 	/// Set to False if you don't want WebAdmins and WebEditors roles to be created
 	/// </summary>

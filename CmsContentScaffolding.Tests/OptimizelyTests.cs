@@ -79,7 +79,7 @@ public class OptimizelyTests
 			.List()
 			.Where(x => x.GetHosts(Language, false).Any())
 			.Single();
-		var startPage = contentLoader.Get<StartPage>(siteDefinition.StartPage);
+		var startPage = contentLoader.Get<StartPage>(siteDefinition.StartPage, Language);
 
 		//Assert
 		Assert.IsNotNull(pages);
@@ -217,7 +217,8 @@ public class OptimizelyTests
 	{
 		//Arrange
 		var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
-		var res = contentLoader.GetChildren<ContentFolder>(ContentReference.SiteBlockFolder, Language);
+		var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+		var res = contentLoader.GetChildren<ContentFolder>(siteDefinitionRepository.Get("Site 1").SiteAssetsRoot, Language);
 
 		//Act
 		var blocks = contentLoader.GetChildren<BlockData>(res.First().ContentLink, Language);

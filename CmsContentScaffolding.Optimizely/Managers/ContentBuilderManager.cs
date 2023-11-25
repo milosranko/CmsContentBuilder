@@ -57,11 +57,13 @@ internal class ContentBuilderManager : IContentBuilderManager
 			return;
 		}
 
-		var siteUri = new Uri(_options.DefaultHost);
+		var startPage = TryCreateStartPage();
+		var siteUri = new Uri(_options.SiteHost);
 		var siteDefinition = new SiteDefinition
 		{
 			Name = _options.SiteName,
-			StartPage = ContentReference.RootPage,
+			StartPage = startPage,
+			SiteAssetsRoot = GetOrCreateSiteAssetsRoot(startPage),
 			SiteUrl = siteUri,
 			Hosts = new List<HostDefinition>
 			{
@@ -79,21 +81,24 @@ internal class ContentBuilderManager : IContentBuilderManager
 		SiteDefinition.Current = siteDefinition;
 	}
 
-	public void SetAsStartPage(ContentReference pageRef)
+	private ContentReference TryCreateStartPage()
 	{
-		if (!ContentReference.RootPage.CompareToIgnoreWorkID(SiteDefinition.Current.StartPage) || SiteDefinition.Current.StartPage.CompareToIgnoreWorkID(pageRef))
-			return;
+		if (_options.StartPageType == null)
+			return ContentReference.RootPage;
 
-		var siteWritable = SiteDefinition.Current.CreateWritableClone();
-		siteWritable.StartPage = pageRef;
-		siteWritable.SiteAssetsRoot = GetOrCreateSiteAssetsRoot(siteWritable);
-		_siteDefinitionRepository.Save(siteWritable);
-		SiteDefinition.Current = siteWritable;
+		var startPageType = _contentTypeRepository.Load(_options.StartPageType);
+		var startPage = _contentRepository.GetDefault<PageData>(ContentReference.RootPage, startPageType.ID, _options.Language);
+		startPage.Name = _options.StartPageType.Name;
 
+		return _contentRepository.Save(startPage, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+	}
+
+	public void SetStartPageSecurity(ContentReference pageRef)
+	{
 		if (_options.Roles is null || !_options.Roles.Any())
 			return;
 
-		if (_contentSecurityRepository.Get(siteWritable.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
+		if (_contentSecurityRepository.Get(SiteDefinition.Current.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
 		{
 			if (startPageSecurity.IsInherited)
 				startPageSecurity.ToLocal();
@@ -108,8 +113,12 @@ internal class ContentBuilderManager : IContentBuilderManager
 	}
 
 	public bool SiteExists =>
-		SiteDefinition.Current.Name.Equals(_options.SiteName) &&
-		SiteDefinition.Current.Hosts.Any(x => x.Language.Equals(_options.Language));
+		_siteDefinitionRepository
+		.List()
+		.Where(x =>
+			x.Name.Equals(_options.SiteName) &&
+			x.Hosts.Any(y => y.Language.Equals(_options.Language)))
+		.Any();
 
 	public void ApplyDefaultLanguage()
 	{
@@ -223,14 +232,14 @@ internal class ContentBuilderManager : IContentBuilderManager
 		content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
 	}
 
-	private ContentReference GetOrCreateSiteAssetsRoot(SiteDefinition site)
+	private ContentReference GetOrCreateSiteAssetsRoot(ContentReference pageRef)
 	{
-		if (!site.SiteAssetsRoot.CompareToIgnoreWorkID(site.GlobalAssetsRoot))
-			return site.SiteAssetsRoot;
+		if (ContentReference.IsNullOrEmpty(pageRef) || pageRef.CompareToIgnoreWorkID(ContentReference.RootPage))
+			return ContentReference.GlobalBlockFolder;
 
-		var siteRoot = _contentRepository.GetDefault<ContentFolder>(site.StartPage);
-		siteRoot.Name = site.Name;
+		var siteRoot = _contentRepository.GetDefault<ContentFolder>(pageRef);
+		siteRoot.Name = _options.SiteName;
 
-		return _contentRepository.Save(siteRoot, SaveAction.Publish, AccessLevel.NoAccess);
+		return _contentRepository.Save(siteRoot, AccessLevel.NoAccess);
 	}
 }

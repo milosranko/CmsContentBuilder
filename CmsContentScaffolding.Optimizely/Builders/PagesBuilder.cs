@@ -67,7 +67,7 @@ internal class PagesBuilder : IPagesBuilder
 		return WithPage(out var contentReference, value, options);
 	}
 
-	public IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null, bool setAsStartPage = false) where T : PageData
+	public IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null, bool isStartPage = false) where T : PageData
 	{
 		contentReference = ContentReference.EmptyReference;
 
@@ -86,15 +86,18 @@ internal class PagesBuilder : IPagesBuilder
 		_contentBuilderManager.SetContentName<T>(page);
 		page.URLSegment = _urlSegmentGenerator.Create(page.Name);
 
-		var existingPage = _contentRepository.GetChildren<T>(_parent, _options.Language).FirstOrDefault(x => x.Name.Equals(page.Name));
+		var existingPage = isStartPage && _options.StartPageType != null && _options.StartPageType.Equals(typeof(T))
+			? _contentRepository
+				.GetChildren<T>(_parent, _options.Language)
+				.Single(x => x.Name.Equals(_options.StartPageType.Name))
+			: _contentRepository
+				.GetChildren<T>(_parent, _options.Language)
+				.FirstOrDefault(x => x.Name.Equals(page.Name));
 
 		if (existingPage is null)
 		{
 			//Save final
 			contentReference = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-
-			if (setAsStartPage)
-				_contentBuilderManager.SetAsStartPage(page.ContentLink);
 		}
 		else
 		{
@@ -102,9 +105,17 @@ internal class PagesBuilder : IPagesBuilder
 			_contentRepository.Delete(contentReference, true, AccessLevel.NoAccess);
 			//Update existing one
 			var existingPageWritable = (T)existingPage.CreateWritableClone();
+			PropertyHelpers.InitProperties(existingPageWritable);
+			assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(existingPageWritable.ContentLink);
+			_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+			existingPageWritable.ContentAssetsID = assetsFolder.ContentGuid;
 			value?.Invoke(existingPageWritable);
+			existingPageWritable.URLSegment = _urlSegmentGenerator.Create(existingPageWritable.Name);
 			contentReference = _contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
 		}
+
+		if (isStartPage)
+			_contentBuilderManager.SetStartPageSecurity(contentReference);
 
 		if (options == null)
 			return this;

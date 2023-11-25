@@ -9,7 +9,7 @@ internal interface IContentBuilderManager
 	bool SiteExists { get; }
 	ContentReference CurrentReference { get; set; }
 	void SetOrCreateSiteContext();
-	void SetAsStartPage(ContentReference pageRef);
+	void SetStartPageSecurity(ContentReference pageRef);
 	void ApplyDefaultLanguage();
 	void CreateDefaultRoles(IDictionary<string, AccessLevel> roles);
 	void CreateRoles(IDictionary<string, AccessLevel>? roles);
