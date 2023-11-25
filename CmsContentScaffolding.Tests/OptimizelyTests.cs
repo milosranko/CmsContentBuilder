@@ -62,8 +62,8 @@ public class OptimizelyTests
 	[ClassCleanup]
 	public static void Uninitialize()
 	{
-		//var dbContext = Globals.Services.GetRequiredService<ApplicationDbContext<ApplicationUser>>();
-		//dbContext.Database.EnsureDeleted();
+		var dbContext = Globals.Services.GetRequiredService<ApplicationDbContext<ApplicationUser>>();
+		dbContext.Database.EnsureDeleted();
 	}
 
 	[TestMethod]
