@@ -90,7 +90,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 		var startPage = _contentRepository.GetDefault<PageData>(ContentReference.RootPage, startPageType.ID, _options.Language);
 		startPage.Name = _options.StartPageType.Name;
 
-		return _contentRepository.Save(startPage, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+		return _contentRepository.Save(startPage, _options.PublishContent ? SaveAction.SkipValidation | SaveAction.Publish : SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
 	}
 
 	public void SetStartPageSecurity(ContentReference pageRef)

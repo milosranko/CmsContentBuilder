@@ -27,6 +27,7 @@ public class StartPage : PageBaseSeo
 	[Display(
 		GroupName = SystemTabNames.Settings,
 		Order = 100)]
+	[Required]
 	public virtual string SiteName { get; set; }
 
 	[Display(
@@ -47,8 +48,9 @@ public class StartPage : PageBaseSeo
 
 	[CultureSpecific]
 	[Display(
-			GroupName = SystemTabNames.Content,
-			Order = 100)]
+		GroupName = SystemTabNames.Content,
+		Order = 100)]
+	[Required]
 	public virtual string Heading { get; set; }
 
 	[CultureSpecific]

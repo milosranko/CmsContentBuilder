@@ -67,6 +67,7 @@ internal static class ApplicationBuilderExtensions
 				.WithStartPage<StartPage>(p =>
 				{
 					p.Name = "Home Page";
+					p.Heading = "Test";
 					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 					p.MainContentArea
 					.AddExistingItem(teaser2)
@@ -168,7 +169,8 @@ internal static class ApplicationBuilderExtensions
 				}, 2)
 				.WithPage<StartPage>(p =>
 				{
-					p.Name = "Home Page";
+					p.Name = "Home Page 1";
+					p.Heading = "Test";
 					p.MainArticlePageReference = articlePageRef;
 					p.NotFoundPageReference = notFoundPageRef;
 				});
@@ -203,6 +205,7 @@ internal static class ApplicationBuilderExtensions
 				.WithStartPage<StartPage>(p =>
 				{
 					p.Name = "Home Page";
+					p.Heading = "Test";
 					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 					p.MainContentArea
 					.AddItems<TeaserBlock>("Teaser Test", b =>

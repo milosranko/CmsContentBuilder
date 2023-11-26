@@ -77,41 +77,53 @@ internal class PagesBuilder : IPagesBuilder
 		PropertyHelpers.InitProperties(page);
 		page.Name = Constants.TempPageName;
 		//Save draft
-		contentReference = _contentRepository.Save(page, SaveAction.Default, AccessLevel.NoAccess);
+		contentReference = _contentRepository.Save(page, SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
 		var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(contentReference);
-		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
 		page.ContentAssetsID = assetsFolder.ContentGuid;
+
+		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
 		value?.Invoke(page);
 
 		_contentBuilderManager.SetContentName<T>(page);
-		page.URLSegment = _urlSegmentGenerator.Create(page.Name);
 
-		var existingPage = isStartPage && _options.StartPageType != null && _options.StartPageType.Equals(typeof(T))
-			? _contentRepository
-				.GetChildren<T>(_parent, _options.Language)
-				.Single(x => x.Name.Equals(_options.StartPageType.Name))
-			: _contentRepository
-				.GetChildren<T>(_parent, _options.Language)
-				.FirstOrDefault(x => x.Name.Equals(page.Name));
+		var existingPage = TryGetExistingPage<T>(page.Name, isStartPage);
 
 		if (existingPage is null)
 		{
 			//Save final
+			page.URLSegment = _urlSegmentGenerator.Create(page.Name);
 			contentReference = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 		}
 		else
 		{
 			//Delete temporary page
-			_contentRepository.Delete(contentReference, true, AccessLevel.NoAccess);
+			//TODO Delete all assets created to page assets folder
+			if (page.ContentAssetsID != Guid.Empty)
+			{
+				var assets = _contentRepository
+					.GetChildren<IContentData>(page.ContentLink, _options.Language)
+					.Cast<IContent>();
+				foreach (var item in assets)
+				{
+					_contentRepository.Delete(item.ContentLink, true, AccessLevel.NoAccess);
+				}
+			}
+
+			_contentRepository.Delete(page.ContentLink, true, AccessLevel.NoAccess);
 			//Update existing one
-			var existingPageWritable = (T)existingPage.CreateWritableClone();
-			PropertyHelpers.InitProperties(existingPageWritable);
-			assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(existingPageWritable.ContentLink);
-			_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
-			existingPageWritable.ContentAssetsID = assetsFolder.ContentGuid;
-			value?.Invoke(existingPageWritable);
-			existingPageWritable.URLSegment = _urlSegmentGenerator.Create(existingPageWritable.Name);
-			contentReference = _contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
+			if (isStartPage || _options.BuildMode == BuildMode.Overwrite)
+			{
+				var existingPageWritable = (T)existingPage.CreateWritableClone();
+				PropertyHelpers.InitProperties(existingPageWritable);
+				assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(existingPageWritable.ContentLink);
+				_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+				existingPageWritable.ContentAssetsID = assetsFolder.ContentGuid;
+				value?.Invoke(existingPageWritable);
+				existingPageWritable.URLSegment = _urlSegmentGenerator.Create(existingPageWritable.Name);
+				_contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
+			}
+
+			contentReference = existingPage.ContentLink;
 		}
 
 		if (isStartPage)
@@ -165,5 +177,26 @@ internal class PagesBuilder : IPagesBuilder
 		}
 
 		return this;
+	}
+
+	private T? TryGetExistingPage<T>(string pageName, bool isStartPage) where T : PageData
+	{
+		if (isStartPage &&
+			_options.StartPageType != null &&
+			_options.StartPageType.Equals(typeof(T)))
+		{
+			return _contentRepository
+				.GetChildren<T>(_parent, _options.Language)
+				.SingleOrDefault(x => x.Name.Equals(_options.StartPageType.Name));
+		}
+
+		if (_options.BuildMode == BuildMode.Overwrite)
+		{
+			return _contentRepository
+				.GetChildren<T>(_parent, _options.Language)
+				.FirstOrDefault(x => x.Name.Equals(pageName));
+		}
+
+		return default;
 	}
 }

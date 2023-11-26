@@ -69,6 +69,9 @@ internal class ContentBuilder : IContentBuilder
 			case BuildMode.OnlyIfEmpty:
 				_buildContent = !_contentBuilderManager.SiteExists;
 				break;
+			case BuildMode.Translate:
+				_buildContent = true;
+				break;
 			default:
 				break;
 		}
