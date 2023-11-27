@@ -42,6 +42,8 @@ internal class PagesBuilder : IPagesBuilder
 
 	public static IPagesBuilder Empty => new PagesBuilder();
 
+	#region WithPage method overloads
+
 	public IPagesBuilder WithStartPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData
 	{
 		return WithPage(out contentReference, value, options, true);
@@ -67,21 +69,15 @@ internal class PagesBuilder : IPagesBuilder
 		return WithPage(out var contentReference, value, options);
 	}
 
-	public IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null, bool isStartPage = false) where T : PageData
+	#endregion
+
+	public IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null, bool isStartPage = false)
+		where T : PageData
 	{
 		contentReference = ContentReference.EmptyReference;
-
 		if (_stop) return Empty;
 
-		var page = _contentRepository.GetDefault<T>(_parent, _options.Language);
-		PropertyHelpers.InitProperties(page);
-		page.Name = Constants.TempPageName;
-		//Save draft
-		contentReference = _contentRepository.Save(page, SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
-		var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(contentReference);
-		page.ContentAssetsID = assetsFolder.ContentGuid;
-
-		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+		var page = CreatePageDraft<T>();
 		value?.Invoke(page);
 
 		_contentBuilderManager.SetContentName<T>(page);
@@ -90,38 +86,13 @@ internal class PagesBuilder : IPagesBuilder
 
 		if (existingPage is null)
 		{
-			//Save final
 			page.URLSegment = _urlSegmentGenerator.Create(page.Name);
 			contentReference = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 		}
 		else
 		{
-			//Delete temporary page
-			//TODO Delete all assets created to page assets folder
-			if (page.ContentAssetsID != Guid.Empty)
-			{
-				var assets = _contentRepository
-					.GetChildren<IContentData>(page.ContentLink, _options.Language)
-					.Cast<IContent>();
-				foreach (var item in assets)
-				{
-					_contentRepository.Delete(item.ContentLink, true, AccessLevel.NoAccess);
-				}
-			}
-
-			_contentRepository.Delete(page.ContentLink, true, AccessLevel.NoAccess);
-			//Update existing one
-			if (isStartPage || _options.BuildMode == BuildMode.Overwrite)
-			{
-				var existingPageWritable = (T)existingPage.CreateWritableClone();
-				PropertyHelpers.InitProperties(existingPageWritable);
-				assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(existingPageWritable.ContentLink);
-				_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
-				existingPageWritable.ContentAssetsID = assetsFolder.ContentGuid;
-				value?.Invoke(existingPageWritable);
-				existingPageWritable.URLSegment = _urlSegmentGenerator.Create(existingPageWritable.Name);
-				_contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
-			}
+			DeletePageDraft(page);
+			UpdateExistingPage(existingPage, isStartPage, value);
 
 			contentReference = existingPage.ContentLink;
 		}
@@ -159,7 +130,7 @@ internal class PagesBuilder : IPagesBuilder
 			PropertyHelpers.InitProperties(page);
 			page.Name = Constants.TempPageName;
 			//Save draft
-			var contentReference = _contentRepository.Save(page, SaveAction.Default, AccessLevel.NoAccess);
+			var contentReference = _contentRepository.Save(page, SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
 			var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(contentReference);
 			_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
 
@@ -178,6 +149,8 @@ internal class PagesBuilder : IPagesBuilder
 
 		return this;
 	}
+
+	#region Private methods
 
 	private T? TryGetExistingPage<T>(string pageName, bool isStartPage) where T : PageData
 	{
@@ -199,4 +172,57 @@ internal class PagesBuilder : IPagesBuilder
 
 		return default;
 	}
+
+	private void UpdateExistingPage<T>(T existingPage, bool isStartPage, Action<T>? value) where T : PageData
+	{
+		if (isStartPage || _options.BuildMode == BuildMode.Overwrite)
+		{
+			var existingPageWritable = (T)existingPage.CreateWritableClone();
+			PropertyHelpers.InitProperties(existingPageWritable);
+
+			var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(existingPageWritable.ContentLink);
+			_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+
+			value?.Invoke(existingPageWritable);
+
+			existingPageWritable.URLSegment = _urlSegmentGenerator.Create(existingPageWritable.Name);
+			_contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
+		}
+	}
+
+	private T CreatePageDraft<T>() where T : PageData
+	{
+		var page = _contentRepository.GetDefault<T>(_parent, _options.Language);
+		PropertyHelpers.InitProperties(page);
+		page.Name = Constants.TempPageName;
+
+		_contentRepository.Save(page, SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
+		var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(page.ContentLink);
+		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+
+		return page;
+	}
+
+	private void DeletePageDraft<T>(T page) where T : PageData
+	{
+		if (page.ContentAssetsID != Guid.Empty)
+		{
+			var assetsFolder = _contentAssetHelper.GetAssetFolder(page.ContentLink);
+			if (assetsFolder is not null)
+			{
+				var assets = _contentRepository
+					.GetChildren<IContentData>(_contentAssetHelper.GetAssetFolder(page.ContentLink).ContentLink)
+					.Cast<IContent>();
+
+				foreach (var item in assets)
+				{
+					_contentRepository.Delete(item.ContentLink, true, AccessLevel.NoAccess);
+				}
+			}
+		}
+
+		_contentRepository.Delete(page.ContentLink, true, AccessLevel.NoAccess);
+	}
+
+	#endregion
 }
