@@ -109,42 +109,47 @@ internal class PagesBuilder : IPagesBuilder
 		return this;
 	}
 
-	public IPagesBuilder WithPages<T>([Range(1, 10000)] int totalPages = 1) where T : PageData
-	{
-		return WithPages<T>(default, totalPages);
-	}
-
 	public IPagesBuilder WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
 	{
+		return WithPages<T>(out var contentReferences, value, totalPages);
+	}
+
+	public IPagesBuilder WithPages<T>(out ContentReference[] contentReferences, [Range(1, 10000)] int totalPages = 1) where T : PageData
+	{
+		return WithPages<T>(out contentReferences, default, totalPages);
+	}
+
+	public IPagesBuilder WithPages<T>(out ContentReference[] contentReferences, Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
+	{
+		contentReferences = Array.Empty<ContentReference>();
+
 		if (_stop) return Empty;
 
 		if (totalPages < 1 || totalPages > 10000)
 			throw new ArgumentOutOfRangeException(nameof(totalPages));
 
+		contentReferences = new ContentReference[totalPages];
 		T page;
 
 		for (int i = 0; i < totalPages; i++)
 		{
-			page = _contentRepository.GetDefault<T>(_parent, _options.Language);
-
-			PropertyHelpers.InitProperties(page);
-			page.Name = Constants.TempPageName;
-			//Save draft
-			var contentReference = _contentRepository.Save(page, SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
-			var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(contentReference);
-			_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
-
+			page = CreatePageDraft<T>();
 			value?.Invoke(page);
 
 			_contentBuilderManager.SetContentName<T>(page, default, i.ToString());
-			page.URLSegment = _urlSegmentGenerator.Create(page.Name);
+			var existingPage = TryGetExistingPage<T>(page.Name, false);
 
-			//Skip if page with same name already exists
-			if (_contentRepository.GetChildren<T>(_parent, _options.Language).Any(x => x.Name.Equals(page.Name, StringComparison.InvariantCultureIgnoreCase)))
-				continue;
-
-			//Save final
-			_contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+			if (existingPage is null)
+			{
+				page.URLSegment = _urlSegmentGenerator.Create(page.Name);
+				contentReferences[i] = _contentRepository.Save(page, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+			}
+			else
+			{
+				DeletePageDraft(page);
+				UpdateExistingPage(existingPage, false, value);
+				contentReferences[i] = existingPage.ContentLink;
+			}
 		}
 
 		return this;
@@ -175,19 +180,19 @@ internal class PagesBuilder : IPagesBuilder
 
 	private void UpdateExistingPage<T>(T existingPage, bool isStartPage, Action<T>? value) where T : PageData
 	{
-		if (isStartPage || _options.BuildMode == BuildMode.Overwrite)
-		{
-			var existingPageWritable = (T)existingPage.CreateWritableClone();
-			PropertyHelpers.InitProperties(existingPageWritable);
+		if (!isStartPage && _options.BuildMode != BuildMode.Overwrite)
+			return;
 
-			var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(existingPageWritable.ContentLink);
-			_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+		var existingPageWritable = (T)existingPage.CreateWritableClone();
+		PropertyHelpers.InitProperties(existingPageWritable);
 
-			value?.Invoke(existingPageWritable);
+		var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(existingPageWritable.ContentLink);
+		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
 
-			existingPageWritable.URLSegment = _urlSegmentGenerator.Create(existingPageWritable.Name);
-			_contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
-		}
+		value?.Invoke(existingPageWritable);
+
+		existingPageWritable.URLSegment = _urlSegmentGenerator.Create(existingPageWritable.Name);
+		_contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
 	}
 
 	private T CreatePageDraft<T>() where T : PageData

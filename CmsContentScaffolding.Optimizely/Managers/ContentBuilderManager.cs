@@ -214,7 +214,9 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 	public void SetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData
 	{
-		if (!string.IsNullOrEmpty(content.Name) && !content.Name.Equals(Constants.TempPageName, StringComparison.InvariantCultureIgnoreCase))
+		if (!string.IsNullOrEmpty(content.Name) &&
+			!content.Name.Equals(Constants.TempPageName, StringComparison.InvariantCultureIgnoreCase) &&
+			string.IsNullOrEmpty(nameSuffix))
 			return;
 
 		if (!string.IsNullOrEmpty(name))
@@ -229,7 +231,10 @@ internal class ContentBuilderManager : IContentBuilderManager
 			return;
 		}
 
-		content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
+		if (!string.IsNullOrEmpty(content.Name) && !string.IsNullOrEmpty(nameSuffix))
+			content.Name = $"{content.Name} {nameSuffix}";
+		else
+			content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
 	}
 
 	private ContentReference GetOrCreateSiteAssetsRoot(ContentReference pageRef)

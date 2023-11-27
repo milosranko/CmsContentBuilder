@@ -57,12 +57,19 @@ public interface IPagesBuilder
 	/// <returns>IPagesBuilder</returns>
 	IPagesBuilder WithPage<T>(Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData;
 	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="totalPages"></param>
+	/// <returns></returns>
+	IPagesBuilder WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData;
+	/// <summary>
 	/// Bulk create pages in the site tree
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	/// <param name="totalPages">Total number of pages to create</param>
 	/// <returns>IPagesBuilder</returns>
-	IPagesBuilder WithPages<T>([Range(1, 10000)] int totalPages = 1) where T : PageData;
+	IPagesBuilder WithPages<T>(out ContentReference[] contentReferences, [Range(1, 10000)] int totalPages = 1) where T : PageData;
 	/// <summary>
 	/// Bulk create pages in the site tree
 	/// </summary>
@@ -70,5 +77,5 @@ public interface IPagesBuilder
 	/// <param name="value">Page properties</param>
 	/// <param name="totalPages">Total number of pages to create</param>
 	/// <returns></returns>
-	IPagesBuilder WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData;
+	IPagesBuilder WithPages<T>(out ContentReference[] contentReferences, Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData;
 }
