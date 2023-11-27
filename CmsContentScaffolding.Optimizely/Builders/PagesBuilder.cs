@@ -109,6 +109,8 @@ internal class PagesBuilder : IPagesBuilder
 		return this;
 	}
 
+	#region WithPages method overloads
+
 	public IPagesBuilder WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
 	{
 		return WithPages<T>(out var contentReferences, value, totalPages);
@@ -118,6 +120,8 @@ internal class PagesBuilder : IPagesBuilder
 	{
 		return WithPages<T>(out contentReferences, default, totalPages);
 	}
+
+	#endregion
 
 	public IPagesBuilder WithPages<T>(out ContentReference[] contentReferences, Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
 	{

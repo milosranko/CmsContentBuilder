@@ -231,8 +231,8 @@ internal class ContentBuilderManager : IContentBuilderManager
 			return;
 		}
 
-		if (!string.IsNullOrEmpty(content.Name) && !string.IsNullOrEmpty(nameSuffix))
-			content.Name = $"{content.Name} {nameSuffix}";
+		if (!string.IsNullOrEmpty(content.Name) && !content.Name.Equals(Constants.TempPageName))
+			content.Name = $"{content.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
 		else
 			content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
 	}
