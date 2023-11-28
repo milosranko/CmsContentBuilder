@@ -12,6 +12,8 @@ namespace CmsContentScaffolding.Optimizely.Builders;
 
 internal class PagesBuilder : IPagesBuilder
 {
+	#region Private properties
+
 	private readonly ContentReference _parent;
 	private readonly IContentRepository _contentRepository;
 	private readonly IContentBuilderManager _contentBuilderManager;
@@ -19,7 +21,14 @@ internal class PagesBuilder : IPagesBuilder
 	private readonly IUrlSegmentGenerator _urlSegmentGenerator;
 	private readonly ContentBuilderOptions _options;
 	private readonly bool _stop = false;
+
+	#endregion
+
+	#region Public properties
+
 	public static IPagesBuilder Empty => new PagesBuilder();
+
+	#endregion
 
 	#region Constructors
 

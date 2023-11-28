@@ -12,6 +12,8 @@ namespace CmsContentScaffolding.Optimizely.Managers;
 
 internal class ContentBuilderManager : IContentBuilderManager
 {
+	#region Private properties
+
 	private readonly ISiteDefinitionRepository _siteDefinitionRepository;
 	private readonly IContentRepository _contentRepository;
 	private readonly IContentSecurityRepository _contentSecurityRepository;
@@ -21,7 +23,14 @@ internal class ContentBuilderManager : IContentBuilderManager
 	private readonly UIRoleProvider _uIRoleProvider;
 	private readonly UIUserProvider _uIUserProvider;
 	private readonly ContentBuilderOptions _options;
+
+	#endregion
+
+	#region Public properties
+
 	public ContentReference CurrentReference { get; set; } = ContentReference.EmptyReference;
+
+	#endregion
 
 	#region Constructors
 

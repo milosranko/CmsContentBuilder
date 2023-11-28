@@ -12,6 +12,8 @@ namespace CmsContentScaffolding.Optimizely.Builders;
 
 internal class ContentBuilder : IContentBuilder
 {
+	#region Private properties
+
 	private readonly IContentRepository _contentRepository;
 	private readonly IContentBuilderManager _contentBuilderManager;
 	private readonly IBlobFactory _blobFactory;
@@ -20,6 +22,8 @@ internal class ContentBuilder : IContentBuilder
 	private readonly IUrlSegmentGenerator _urlSegmentGenerator;
 	private bool _buildContent = false;
 	private bool disposedValue;
+
+	#endregion
 
 	#region Constructor
 

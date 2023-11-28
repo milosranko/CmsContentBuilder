@@ -12,6 +12,8 @@ namespace CmsContentScaffolding.Optimizely.Builders;
 
 internal class AssetsBuilder : IAssetsBuilder
 {
+	#region Private properties
+
 	private readonly ContentReference _parent;
 	private readonly IContentRepository _contentRepository;
 	private readonly IContentBuilderManager _contentBuilderManager;
@@ -19,7 +21,13 @@ internal class AssetsBuilder : IAssetsBuilder
 	private readonly ContentBuilderOptions _options;
 	private readonly bool _stop = false;
 
+	#endregion
+
+	#region Public properties
+
 	public static AssetsBuilder Empty => new();
+
+	#endregion
 
 	#region Constructors
 

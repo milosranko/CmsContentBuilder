@@ -14,6 +14,10 @@ namespace CmsContentScaffolding.Optimizely.Extensions;
 
 public static class PropertyExtensions
 {
+	#region ContentArea extensions
+
+	#region AddItem methods
+
 	public static ContentArea AddItem<T>(this ContentArea contentArea) where T : IContentData, new()
 	{
 		return AddItem<T>(contentArea, default, default);
@@ -66,6 +70,10 @@ public static class PropertyExtensions
 
 		return AddItemToContentArea(contentArea, iContent.ContentLink);
 	}
+
+	#endregion
+
+	#region AddItems methods
 
 	public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData, new()
 	{
@@ -131,6 +139,12 @@ public static class PropertyExtensions
 		return contentArea;
 	}
 
+	#endregion
+
+	#endregion
+
+	#region XhtmlString extensions
+
 	public static XhtmlString AddStringFragment(this XhtmlString xhtmlString, string text)
 	{
 		xhtmlString.Fragments.Add(new StaticFragment(text));
@@ -148,6 +162,10 @@ public static class PropertyExtensions
 		return xhtmlString;
 	}
 
+	#endregion
+
+	#region Private methods
+
 	private static ContentArea AddItemToContentArea(ContentArea contentArea, ContentReference contentReference)
 	{
 		contentArea.Items.Add(new ContentAreaItem
@@ -157,4 +175,6 @@ public static class PropertyExtensions
 
 		return contentArea;
 	}
+
+	#endregion
 }
