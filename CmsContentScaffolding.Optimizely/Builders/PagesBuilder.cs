@@ -19,6 +19,9 @@ internal class PagesBuilder : IPagesBuilder
 	private readonly IUrlSegmentGenerator _urlSegmentGenerator;
 	private readonly ContentBuilderOptions _options;
 	private readonly bool _stop = false;
+	public static IPagesBuilder Empty => new PagesBuilder();
+
+	#region Constructors
 
 	public PagesBuilder() => _stop = true;
 
@@ -40,9 +43,9 @@ internal class PagesBuilder : IPagesBuilder
 		_urlSegmentGenerator = urlSegmentGenerator;
 	}
 
-	public static IPagesBuilder Empty => new PagesBuilder();
+	#endregion
 
-	#region WithPage method overloads
+	#region WithPage methods
 
 	public IPagesBuilder WithStartPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData
 	{
@@ -68,8 +71,6 @@ internal class PagesBuilder : IPagesBuilder
 	{
 		return WithPage(out var contentReference, value, options);
 	}
-
-	#endregion
 
 	public IPagesBuilder WithPage<T>(out ContentReference contentReference, Action<T>? value = null, Action<IPagesBuilder>? options = null, bool isStartPage = false)
 		where T : PageData
@@ -105,7 +106,9 @@ internal class PagesBuilder : IPagesBuilder
 		return this;
 	}
 
-	#region WithPages method overloads
+	#endregion
+
+	#region WithPages methods
 
 	public IPagesBuilder WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
 	{
@@ -116,8 +119,6 @@ internal class PagesBuilder : IPagesBuilder
 	{
 		return WithPages<T>(out contentReferences, default, totalPages);
 	}
-
-	#endregion
 
 	public IPagesBuilder WithPages<T>(out ContentReference[] contentReferences, Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
 	{
@@ -152,6 +153,8 @@ internal class PagesBuilder : IPagesBuilder
 
 		return this;
 	}
+
+	#endregion
 
 	#region Private methods
 

@@ -21,6 +21,8 @@ internal class AssetsBuilder : IAssetsBuilder
 
 	public static AssetsBuilder Empty => new();
 
+	#region Constructors
+
 	public AssetsBuilder() => _stop = true;
 
 	public AssetsBuilder(
@@ -36,6 +38,10 @@ internal class AssetsBuilder : IAssetsBuilder
 		_options = options;
 		_blobFactory = blobFactory;
 	}
+
+	#endregion
+
+	#region Public methods
 
 	public IAssetsBuilder WithBlock<T>(string name, Action<T>? value = null) where T : IContentData
 	{
@@ -191,4 +197,6 @@ internal class AssetsBuilder : IAssetsBuilder
 
 		return this;
 	}
+
+	#endregion
 }

@@ -23,6 +23,8 @@ internal class ContentBuilderManager : IContentBuilderManager
 	private readonly ContentBuilderOptions _options;
 	public ContentReference CurrentReference { get; set; } = ContentReference.EmptyReference;
 
+	#region Constructors
+
 	public ContentBuilderManager(
 		ISiteDefinitionRepository siteDefinitionRepository,
 		IContentRepository contentRepository,
@@ -44,6 +46,10 @@ internal class ContentBuilderManager : IContentBuilderManager
 		_contentSecurityRepository = contentSecurityRepository;
 		_contentTypeRepository = contentTypeRepository;
 	}
+
+	#endregion
+
+	#region Public methods
 
 	public void SetOrCreateSiteContext()
 	{
@@ -79,18 +85,6 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 		_siteDefinitionRepository.Save(siteDefinition);
 		SiteDefinition.Current = siteDefinition;
-	}
-
-	private ContentReference TryCreateStartPage()
-	{
-		if (_options.StartPageType == null)
-			return ContentReference.RootPage;
-
-		var startPageType = _contentTypeRepository.Load(_options.StartPageType);
-		var startPage = _contentRepository.GetDefault<PageData>(ContentReference.RootPage, startPageType.ID, _options.Language);
-		startPage.Name = _options.StartPageType.Name;
-
-		return _contentRepository.Save(startPage, _options.PublishContent ? SaveAction.SkipValidation | SaveAction.Publish : SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
 	}
 
 	public void SetStartPageSecurity(ContentReference pageRef)
@@ -237,6 +231,22 @@ internal class ContentBuilderManager : IContentBuilderManager
 			content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
 	}
 
+	#endregion
+
+	#region Private methods
+
+	private ContentReference TryCreateStartPage()
+	{
+		if (_options.StartPageType == null)
+			return ContentReference.RootPage;
+
+		var startPageType = _contentTypeRepository.Load(_options.StartPageType);
+		var startPage = _contentRepository.GetDefault<PageData>(ContentReference.RootPage, startPageType.ID, _options.Language);
+		startPage.Name = _options.StartPageType.Name;
+
+		return _contentRepository.Save(startPage, _options.PublishContent ? SaveAction.SkipValidation | SaveAction.Publish : SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
+	}
+
 	private ContentReference GetOrCreateSiteAssetsRoot(ContentReference pageRef)
 	{
 		if (ContentReference.IsNullOrEmpty(pageRef) || pageRef.CompareToIgnoreWorkID(ContentReference.RootPage))
@@ -247,4 +257,6 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 		return _contentRepository.Save(siteRoot, AccessLevel.NoAccess);
 	}
+
+	#endregion
 }

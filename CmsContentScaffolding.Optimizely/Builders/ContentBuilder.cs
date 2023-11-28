@@ -21,6 +21,8 @@ internal class ContentBuilder : IContentBuilder
 	private bool _buildContent = false;
 	private bool disposedValue;
 
+	#region Constructor
+
 	public ContentBuilder(
 		IContentRepository contentRepository,
 		IContentBuilderManager contentBuilderManager,
@@ -40,6 +42,10 @@ internal class ContentBuilder : IContentBuilder
 		_contentBuilderManager.SetOrCreateSiteContext();
 	}
 
+	#endregion
+
+	#region Public methods
+
 	public IAssetsBuilder UseAssets(ContentReference? root = null)
 	{
 		if (_buildContent)
@@ -55,6 +61,10 @@ internal class ContentBuilder : IContentBuilder
 
 		return PagesBuilder.Empty;
 	}
+
+	#endregion
+
+	#region Private methods
 
 	private void ApplyOptions()
 	{
@@ -92,6 +102,10 @@ internal class ContentBuilder : IContentBuilder
 		_contentBuilderManager.CreateUsers(_contentBuilderOptions.Users);
 	}
 
+	#endregion
+
+	#region IDisposable implementation
+
 	protected virtual void Dispose(bool disposing)
 	{
 		if (!disposedValue)
@@ -120,4 +134,6 @@ internal class ContentBuilder : IContentBuilder
 		Dispose(disposing: true);
 		GC.SuppressFinalize(this);
 	}
+
+	#endregion
 }
