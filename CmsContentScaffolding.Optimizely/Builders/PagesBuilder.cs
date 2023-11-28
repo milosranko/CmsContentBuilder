@@ -77,11 +77,7 @@ internal class PagesBuilder : IPagesBuilder
 		contentReference = ContentReference.EmptyReference;
 		if (_stop) return Empty;
 
-		var page = CreatePageDraft<T>();
-		value?.Invoke(page);
-
-		_contentBuilderManager.SetContentName<T>(page);
-
+		var page = CreatePageDraftAndInvoke(value);
 		var existingPage = TryGetExistingPage<T>(page.Name, isStartPage);
 
 		if (existingPage is null)
@@ -134,14 +130,12 @@ internal class PagesBuilder : IPagesBuilder
 
 		contentReferences = new ContentReference[totalPages];
 		T page;
+		T? existingPage;
 
 		for (int i = 0; i < totalPages; i++)
 		{
-			page = CreatePageDraft<T>();
-			value?.Invoke(page);
-
-			_contentBuilderManager.SetContentName<T>(page, default, i.ToString());
-			var existingPage = TryGetExistingPage<T>(page.Name, false);
+			page = CreatePageDraftAndInvoke(value, i.ToString());
+			existingPage = TryGetExistingPage<T>(page.Name, false);
 
 			if (existingPage is null)
 			{
@@ -199,7 +193,7 @@ internal class PagesBuilder : IPagesBuilder
 		_contentRepository.Save(existingPageWritable, SaveAction.Patch, AccessLevel.NoAccess);
 	}
 
-	private T CreatePageDraft<T>() where T : PageData
+	private T CreatePageDraftAndInvoke<T>(Action<T>? value = null, string? nameSuffix = default) where T : PageData
 	{
 		var page = _contentRepository.GetDefault<T>(_parent, _options.Language);
 		PropertyHelpers.InitProperties(page);
@@ -208,6 +202,9 @@ internal class PagesBuilder : IPagesBuilder
 		_contentRepository.Save(page, SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
 		var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(page.ContentLink);
 		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+
+		value?.Invoke(page);
+		_contentBuilderManager.SetContentName<T>(page, default, nameSuffix);
 
 		return page;
 	}
