@@ -228,4 +228,21 @@ public class OptimizelyTests
 		Assert.IsNotNull(blocks);
 		Assert.IsTrue(blocks.Count() > 0);
 	}
+
+	[TestMethod]
+	public void GetAssetsFromSite1StartPage_ShouldReturnAssets()
+	{
+		//Arrange
+		var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+		var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+		var assetsHelper = ServiceLocator.Current.GetRequiredService<ContentAssetHelper>();
+		var site = siteDefinitionRepository.Get("Site 1");
+
+		//Act
+		var res = contentLoader.GetChildren<IContentData>(assetsHelper.GetAssetFolder(site.StartPage).ContentLink, Language);
+
+		//Assert
+		Assert.IsNotNull(res);
+		Assert.IsTrue(res.Count() > 0);
+	}
 }
