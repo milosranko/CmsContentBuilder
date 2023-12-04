@@ -44,8 +44,8 @@ internal static class ApplicationBuilderExtensions
 			},
 			builder: b =>
 			{
-				var teaser2 = ContentReference.EmptyReference;
-				var teaser3 = ContentReference.EmptyReference;
+				var teaser2Ref = ContentReference.EmptyReference;
+				var teaser3Ref = ContentReference.EmptyReference;
 				var articlePageRef = ContentReference.EmptyReference;
 
 				b.UseAssets(ContentReference.SiteBlockFolder)
@@ -54,10 +54,10 @@ internal static class ApplicationBuilderExtensions
 					l1
 					.WithFolder("Folder 1_1", l2 =>
 					{
-						l2.WithBlock<TeaserBlock>("Teaser 2", out teaser2, x => x.Heading = "Test");
+						l2.WithBlock<TeaserBlock>("Teaser 2", out teaser2Ref, x => x.Heading = "Test");
 					})
 					.WithMedia<VideoFile>(x => x.Name = "Test video", ResourceHelpers.GetVideo(), ".mp4")
-					.WithBlock<TeaserBlock>("Teaser 3", out teaser3, x => x.Heading = "Test");
+					.WithBlock<TeaserBlock>("Teaser 3", out teaser3Ref, x => x.Heading = "Test");
 				})
 				.WithContent<ContentFolder>(x => x.Name = "Folder1")
 				.WithContent<ImageFile>(x => x.Name = "Image 1")
@@ -70,8 +70,8 @@ internal static class ApplicationBuilderExtensions
 					p.Heading = "Test";
 					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 					p.MainContentArea
-					.AddExistingItem(teaser2)
-					.AddExistingItem(teaser3)
+					.AddExistingItem(teaser2Ref)
+					.AddExistingItem(teaser3Ref)
 					.AddItem<TeaserBlock>("Teaser Test", b =>
 					{
 						b.Heading = ResourceHelpers.Faker.Lorem.Slug();
@@ -107,7 +107,7 @@ internal static class ApplicationBuilderExtensions
 							i.Name = "Test Image";
 							i.ContentLink = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
 						})
-						.AddExistingItem(teaser3);
+						.AddExistingItem(teaser3Ref);
 					}, l2 =>
 					{
 						l2
@@ -116,7 +116,7 @@ internal static class ApplicationBuilderExtensions
 							p.Name = "Article2_1";
 							p.Heading = ResourceHelpers.Faker.Lorem.Slug();
 							p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-							p.MainContent = new XhtmlString(ResourceHelpers.Faker.Lorem.Paragraphs());
+							p.MainContent.AddStringFragment(ResourceHelpers.Faker.Lorem.Paragraphs());
 						})
 						.WithPage<ArticlePage>(l3 =>
 						{
@@ -124,7 +124,7 @@ internal static class ApplicationBuilderExtensions
 							{
 								p.Heading = ResourceHelpers.Faker.Lorem.Slug();
 								p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-								p.MainContent = new XhtmlString(ResourceHelpers.Faker.Lorem.Paragraphs());
+								p.MainContent.AddStringFragment(ResourceHelpers.Faker.Lorem.Paragraphs());
 							}, 20);
 						});
 					})
@@ -132,7 +132,7 @@ internal static class ApplicationBuilderExtensions
 					{
 						p.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-						p.MainContent = new XhtmlString(ResourceHelpers.Faker.Lorem.Paragraphs(10));
+						p.MainContent.AddStringFragment(ResourceHelpers.Faker.Lorem.Paragraphs(10));
 						p.MainContentArea.AddItem<TeaserBlock>(p.Name);
 					}, 100);
 				})

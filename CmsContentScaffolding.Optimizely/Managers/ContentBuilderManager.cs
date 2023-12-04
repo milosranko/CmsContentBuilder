@@ -29,6 +29,13 @@ internal class ContentBuilderManager : IContentBuilderManager
 	#region Public properties
 
 	public ContentReference CurrentReference { get; set; } = ContentReference.EmptyReference;
+	public bool SiteExists =>
+		_siteDefinitionRepository
+		.List()
+		.Where(x =>
+			x.Name.Equals(_options.SiteName) &&
+			x.Hosts.Any(y => y.Language.Equals(_options.Language)))
+		.Any();
 
 	#endregion
 
@@ -114,14 +121,6 @@ internal class ContentBuilderManager : IContentBuilderManager
 			_contentSecurityRepository.Save(startPageSecurity.ContentLink, startPageSecurity, SecuritySaveType.Replace);
 		}
 	}
-
-	public bool SiteExists =>
-		_siteDefinitionRepository
-		.List()
-		.Where(x =>
-			x.Name.Equals(_options.SiteName) &&
-			x.Hosts.Any(y => y.Language.Equals(_options.Language)))
-		.Any();
 
 	public void ApplyDefaultLanguage()
 	{
