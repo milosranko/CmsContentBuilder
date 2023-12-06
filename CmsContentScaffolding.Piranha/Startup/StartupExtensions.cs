@@ -15,44 +15,44 @@ namespace CmsContentScaffolding.Piranha.Startup;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection AddCmsContentScaffolding(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services.AddPiranha(options =>
-        {
-            options.UseCms();
-            options.UseFileStorage();
-            options.UseEF<SQLiteDb>(db =>
-                db.UseSqlite(configuration.GetConnectionString("piranha-unitests")));
-            options.UseIdentityWithSeed<IdentitySQLiteDb>(db =>
-                db.UseSqlite(configuration.GetConnectionString("piranha-unitests")));
-        });
+	public static IServiceCollection AddCmsContentScaffolding(
+		this IServiceCollection services,
+		IConfiguration configuration)
+	{
+		services.AddPiranha(options =>
+		{
+			options.UseCms();
+			options.UseFileStorage();
+			options.UseEF<SQLiteDb>(db =>
+				db.UseSqlite(configuration.GetConnectionString("piranha-unitests")));
+			options.UseIdentityWithSeed<IdentitySQLiteDb>(db =>
+				db.UseSqlite(configuration.GetConnectionString("piranha-unitests")));
+		});
 
-        services.AddScoped<ICmsContentApplicationBuilder, CmsContentApplicationBuilder>();
-        services.AddScoped(x => new CmsContentApplicationBuilderOptions());
+		services.AddScoped<IContentBuilder, ContentBuilder>();
+		services.AddScoped(x => new CmsContentApplicationBuilderOptions());
 
-        return services;
-    }
+		return services;
+	}
 
-    public static void UseCmsContentScaffolding(
-        this IApplicationBuilder app,
-        Assembly modelsAssembly,
-        Action<ICmsContentApplicationBuilder> builder,
-        Action<CmsContentApplicationBuilderOptions>? builderOptions = null)
-    {
-        var options = app.ApplicationServices.GetRequiredService<CmsContentApplicationBuilderOptions>();
-        builderOptions?.Invoke(options);
+	public static void UseCmsContentScaffolding(
+		this IApplicationBuilder app,
+		Assembly modelsAssembly,
+		Action<IContentBuilder> builder,
+		Action<CmsContentApplicationBuilderOptions>? builderOptions = null)
+	{
+		var options = app.ApplicationServices.GetRequiredService<CmsContentApplicationBuilderOptions>();
+		builderOptions?.Invoke(options);
 
-        var api = app.ApplicationServices.GetRequiredService<IApi>();
-        App.Init(api);
+		var api = app.ApplicationServices.GetRequiredService<IApi>();
+		App.Init(api);
 
-        new ContentTypeBuilder(api)
-            .AddAssembly(modelsAssembly)
-            .Build()
-            .DeleteOrphans();
+		new ContentTypeBuilder(api)
+			.AddAssembly(modelsAssembly)
+			.Build()
+			.DeleteOrphans();
 
-        var appBuilder = app.ApplicationServices.GetRequiredService<ICmsContentApplicationBuilder>();
-        builder.Invoke(appBuilder);
-    }
+		var appBuilder = app.ApplicationServices.GetRequiredService<IContentBuilder>();
+		builder.Invoke(appBuilder);
+	}
 }

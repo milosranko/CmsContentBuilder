@@ -45,7 +45,7 @@ public class PiranhaTests
 					},
 					builder: b =>
 					{
-						b
+						b.UsePages()
 						.WithSite<PublicSite>(s =>
 						{
 							s.SiteFooter.Column1Header = PropertyHelpers.AddRandomText();
@@ -68,25 +68,25 @@ public class PiranhaTests
 						}, l1 =>
 						{
 							l1
-							.WithSubPage<ArticlePage>(p =>
+							.WithPage<ArticlePage>(p =>
 							{
 								p.Title = "Article1_1";
 								p.PageRegion.Heading = PropertyHelpers.AddRandomText();
 							}, l2 =>
 							{
 								l2
-								.WithSubPage<ArticlePage>(p =>
+								.WithPage<ArticlePage>(p =>
 								{
 									p.Title = "Article2_1";
 									p.PageRegion.Heading = PropertyHelpers.AddRandomText();
 								})
-								.WithSubPage<ArticlePage>(p =>
+								.WithPage<ArticlePage>(p =>
 								{
 									p.Title = "Article2_2";
 									p.PageRegion.Heading = PropertyHelpers.AddRandomText();
 								});
 							})
-							.WithSubPages<ArticlePage>(p =>
+							.WithPages<ArticlePage>(p =>
 							{
 								p.Title = "Article1_2";
 								p.PageRegion.Heading = PropertyHelpers.AddRandomText();
