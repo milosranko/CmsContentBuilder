@@ -38,10 +38,11 @@ public class OptimizelyTests
 			.ConfigureServices((context, services) =>
 			{
 				services
-					.AddSingleton<IHttpContextFactory, DefaultHttpContextFactory>()
-					.AddCmsAspNetIdentity<ApplicationUser>()
-					.AddCms()
-					.AddCmsContentScaffolding();
+				.AddSingleton<IHttpContextFactory, DefaultHttpContextFactory>()
+				.AddCmsAspNetIdentity<ApplicationUser>()
+				.AddCms()
+				.AddCmsContentScaffolding();
+
 				Globals.Services = services.BuildServiceProvider();
 
 				var dbContext = Globals.Services.GetRequiredService<ApplicationDbContext<ApplicationUser>>();
