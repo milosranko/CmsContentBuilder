@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.6.7</Version>
+    <Version>1.6.8</Version>
     <Title>ContentScaffolding for Optimizely CMS</Title>
     <Company>MDR Solutions</Company>
     <Authors>Milos Rankovic</Authors>
@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EPiServer.CMS" Version="12.4" />
+    <PackageReference Include="EPiServer.CMS" Version="[12.4,13.0)" />
   </ItemGroup>
 
   <ItemGroup>
