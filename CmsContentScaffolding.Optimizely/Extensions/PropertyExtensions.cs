@@ -114,7 +114,6 @@ public static class PropertyExtensions
 		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
 
 		T content;
-		var typeName = typeof(T).Name;
 
 		for (int i = 0; i < total; i++)
 		{
