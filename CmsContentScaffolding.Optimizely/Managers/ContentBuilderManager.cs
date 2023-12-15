@@ -1,4 +1,5 @@
-﻿using CmsContentScaffolding.Optimizely.Interfaces;
+﻿using CmsContentScaffolding.Optimizely.Helpers;
+using CmsContentScaffolding.Optimizely.Interfaces;
 using CmsContentScaffolding.Optimizely.Models;
 using EPiServer;
 using EPiServer.Core;
@@ -237,6 +238,22 @@ internal class ContentBuilderManager : IContentBuilderManager
 			content.Name = $"{content.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
 		else
 			content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
+	}
+
+	public ContentReference CreateItem<T>(string? name = default, string? suffix = default, Action<T>? options = default) where T : IContentData
+	{
+		var content = _contentRepository.GetDefault<T>(CurrentReference, _options.Language);
+
+		PropertyHelpers.InitProperties(content);
+		options?.Invoke(content);
+
+		var iContent = (IContent)content;
+		SetContentName<T>(iContent, name, suffix);
+
+		if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
+			return iContent.ContentLink;
+
+		return _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 	}
 
 	#endregion

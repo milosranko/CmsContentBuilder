@@ -1,12 +1,7 @@
-﻿using CmsContentScaffolding.Optimizely.Helpers;
-using CmsContentScaffolding.Optimizely.Interfaces;
-using CmsContentScaffolding.Optimizely.Models;
-using EPiServer;
+﻿using CmsContentScaffolding.Optimizely.Interfaces;
 using EPiServer.Core;
 using EPiServer.Core.Html.StringParsing;
 using EPiServer.Core.Internal;
-using EPiServer.DataAccess;
-using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using System.ComponentModel.DataAnnotations;
 
@@ -52,23 +47,9 @@ public static class PropertyExtensions
 		string? name = default,
 		Action<T>? options = default) where T : IContentData
 	{
-		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-		var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
 		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
-		var content = contentRepository.GetDefault<T>(contentBuilderManager.CurrentReference, globalOptions.Language);
 
-		PropertyHelpers.InitProperties(content);
-		options?.Invoke(content);
-
-		var iContent = (IContent)content;
-		contentBuilderManager.SetContentName<T>(iContent, name);
-
-		if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
-			return AddItemToContentArea(contentArea, iContent.ContentLink);
-
-		contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-
-		return AddItemToContentArea(contentArea, iContent.ContentLink);
+		return AddItemToContentArea(contentArea, contentBuilderManager.CreateItem(name, default, options));
 	}
 
 	#endregion
@@ -109,31 +90,10 @@ public static class PropertyExtensions
 		Action<T>? options = default,
 		[Range(1, 10000)] int total = 1) where T : IContentData
 	{
-		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-		var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
 		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
 
-		T content;
-
 		for (int i = 0; i < total; i++)
-		{
-			content = contentRepository.GetDefault<T>(contentBuilderManager.CurrentReference, globalOptions.Language);
-
-			PropertyHelpers.InitProperties(content);
-			options?.Invoke(content);
-
-			var iContent = (IContent)content;
-			contentBuilderManager.SetContentName<T>(iContent, name, i.ToString());
-
-			if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
-			{
-				AddItemToContentArea(contentArea, iContent.ContentLink);
-				continue;
-			}
-
-			contentRepository.Save(iContent, globalOptions.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-			AddItemToContentArea(contentArea, iContent.ContentLink);
-		}
+			AddItemToContentArea(contentArea, contentBuilderManager.CreateItem(name, i.ToString(), options));
 
 		return contentArea;
 	}

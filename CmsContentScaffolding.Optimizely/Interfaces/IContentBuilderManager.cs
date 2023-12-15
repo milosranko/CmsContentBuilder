@@ -15,4 +15,5 @@ internal interface IContentBuilderManager
 	void CreateRoles(IDictionary<string, AccessLevel>? roles);
 	void CreateUsers(IEnumerable<UserModel>? users);
 	void SetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData;
+	ContentReference CreateItem<T>(string? name = default, string? suffix = default, Action<T>? options = default) where T : IContentData;
 }
