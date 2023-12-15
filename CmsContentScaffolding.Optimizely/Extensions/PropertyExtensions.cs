@@ -18,21 +18,21 @@ public static class PropertyExtensions
 
 	#region AddItem methods
 
-	public static ContentArea AddItem<T>(this ContentArea contentArea) where T : IContentData, new()
+	public static ContentArea AddItem<T>(this ContentArea contentArea) where T : IContentData
 	{
 		return AddItem<T>(contentArea, default, default);
 	}
 
 	public static ContentArea AddItem<T>(
 		this ContentArea contentArea,
-		string name) where T : IContentData, new()
+		string name) where T : IContentData
 	{
 		return AddItem<T>(contentArea, name, default);
 	}
 
 	public static ContentArea AddItem<T>(
 		this ContentArea contentArea,
-		Action<T> options) where T : IContentData, new()
+		Action<T> options) where T : IContentData
 	{
 		return AddItem(contentArea, default, options);
 	}
@@ -50,7 +50,7 @@ public static class PropertyExtensions
 	public static ContentArea AddItem<T>(
 		this ContentArea contentArea,
 		string? name = default,
-		Action<T>? options = default) where T : IContentData, new()
+		Action<T>? options = default) where T : IContentData
 	{
 		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
 		var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
@@ -75,7 +75,7 @@ public static class PropertyExtensions
 
 	#region AddItems methods
 
-	public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData, new()
+	public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData
 	{
 		return AddItems<T>(contentArea, default, default, default);
 	}
@@ -83,7 +83,7 @@ public static class PropertyExtensions
 	public static ContentArea AddItems<T>(
 		this ContentArea contentArea,
 		string name,
-		[Range(1, 10000)] int total) where T : IContentData, new()
+		[Range(1, 10000)] int total) where T : IContentData
 	{
 		return AddItems<T>(contentArea, name, default, total);
 	}
@@ -91,14 +91,14 @@ public static class PropertyExtensions
 	public static ContentArea AddItems<T>(
 		this ContentArea contentArea,
 		Action<T> options,
-		[Range(1, 10000)] int total) where T : IContentData, new()
+		[Range(1, 10000)] int total) where T : IContentData
 	{
 		return AddItems(contentArea, default, options, total);
 	}
 
 	public static ContentArea AddItems<T>(
 		this ContentArea contentArea,
-		[Range(1, 10000)] int total) where T : IContentData, new()
+		[Range(1, 10000)] int total) where T : IContentData
 	{
 		return AddItems<T>(contentArea, default, default, total);
 	}
@@ -107,7 +107,7 @@ public static class PropertyExtensions
 		this ContentArea contentArea,
 		string? name = default,
 		Action<T>? options = default,
-		[Range(1, 10000)] int total = 1) where T : IContentData, new()
+		[Range(1, 10000)] int total = 1) where T : IContentData
 	{
 		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
 		var globalOptions = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();

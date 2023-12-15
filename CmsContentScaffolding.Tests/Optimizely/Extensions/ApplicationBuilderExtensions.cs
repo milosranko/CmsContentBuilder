@@ -72,7 +72,7 @@ internal static class ApplicationBuilderExtensions
 					p.MainContentArea
 					.AddExistingItem(teaser2Ref)
 					.AddExistingItem(teaser3Ref)
-					.AddItem<TeaserBlock>("Teaser Test", b =>
+					.AddItem<TeaserBlock>("Start Page Teaser", b =>
 					{
 						b.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						b.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
