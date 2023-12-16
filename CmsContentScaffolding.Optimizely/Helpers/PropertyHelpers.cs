@@ -15,7 +15,7 @@ public static class PropertyHelpers
 {
 	public static IDictionary<Type, PropertyInfo[]> TypeProperties = new Dictionary<Type, PropertyInfo[]>();
 
-	public static ContentReference GetOrAddImage<TMedia>(string name, Stream stream, int width = 1200, int height = 800) where TMedia : MediaData
+	public static ContentReference GetOrAddMedia<TMedia>(string name, string extension, Stream stream) where TMedia : MediaData
 	{
 		var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
 		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
@@ -31,7 +31,7 @@ public static class PropertyHelpers
 
 		var blobFactory = ServiceLocator.Current.GetInstance<IBlobFactory>();
 		var image = contentRepository.GetDefault<TMedia>(mediaFolder);
-		var blob = blobFactory.CreateBlob(image.BinaryDataContainer, ".png");
+		var blob = blobFactory.CreateBlob(image.BinaryDataContainer, extension);
 
 		blob.Write(stream);
 		image.BinaryData = blob;

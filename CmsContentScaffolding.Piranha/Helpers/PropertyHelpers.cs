@@ -21,7 +21,7 @@ public static class PropertyHelpers
 	public static ImageField AddRandomImage(IApi api, string name)
 	{
 		var imageId = Guid.NewGuid();
-		var image = ResourceHelpers.GetImage();
+		var image = ResourceHelpers.GetImageStream();
 		var buffer = new byte[image.Length];
 
 		image.Read(buffer, 0, buffer.Length);

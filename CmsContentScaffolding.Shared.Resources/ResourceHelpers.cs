@@ -27,7 +27,7 @@ public static class ResourceHelpers
 		return reader.ReadToEnd();
 	}
 
-	public static Stream GetImage()
+	public static Stream GetImageStream()
 	{
 		var image = _assembly.Value.GetManifestResourceNames()
 			.Where(x => x.EndsWith(".png"))
@@ -36,7 +36,7 @@ public static class ResourceHelpers
 		return _assembly.Value.GetManifestResourceStream(image);
 	}
 
-	public static Stream GetVideo()
+	public static Stream GetVideoStream()
 	{
 		var file = _assembly.Value.GetManifestResourceNames()
 			.Where(x => x.EndsWith(".mp4"))

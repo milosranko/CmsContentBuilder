@@ -56,7 +56,7 @@ internal static class ApplicationBuilderExtensions
 					{
 						l2.WithBlock<TeaserBlock>("Teaser 2", out teaser2Ref, x => x.Heading = "Test");
 					})
-					.WithMedia<VideoFile>(x => x.Name = "Test video", ResourceHelpers.GetVideo(), ".mp4")
+					.WithMedia<VideoFile>(x => x.Name = "Test video", ResourceHelpers.GetVideoStream(), ".mp4")
 					.WithBlock<TeaserBlock>("Teaser 3", out teaser3Ref, x => x.Heading = "Test");
 				})
 				.WithContent<ContentFolder>(x => x.Name = "Folder1")
@@ -68,7 +68,7 @@ internal static class ApplicationBuilderExtensions
 				{
 					p.Name = "Home Page";
 					p.Heading = "Test";
-					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+					p.OpenGraphImage = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					p.MainContentArea
 					.AddExistingItem(teaser2Ref)
 					.AddExistingItem(teaser3Ref)
@@ -76,7 +76,7 @@ internal static class ApplicationBuilderExtensions
 					{
 						b.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						b.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-						b.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 2", ResourceHelpers.GetImage());
+						b.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 2", ".png", ResourceHelpers.GetImageStream());
 					});
 				}, l1 =>
 				{
@@ -88,9 +88,9 @@ internal static class ApplicationBuilderExtensions
 						p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 						p.MainContent
 						.AddStringFragment(ResourceHelpers.Faker.Lorem.Paragraphs())
-						.AddContentFragment(PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage()))
+						.AddContentFragment(PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream()))
 						.AddStringFragment(ResourceHelpers.Faker.Lorem.Paragraphs());
-						p.TopImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+						p.TopImage = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 						p.MainContentArea
 						.AddItem<AccordionContainerBlock>("Accordion Container", b =>
 						{
@@ -98,14 +98,14 @@ internal static class ApplicationBuilderExtensions
 							b.Items.AddItems<AccordionItemBlock>("Accordion Item", b1 =>
 							{
 								b1.Heading = ResourceHelpers.Faker.Lorem.Slug();
-								b1.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+								b1.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 								b1.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 							}, 5);
 						})
 						.AddItem<ImageFile>(options: i =>
 						{
 							i.Name = "Test Image";
-							i.ContentLink = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+							i.ContentLink = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 						})
 						.AddExistingItem(teaser3Ref);
 					}, l2 =>
@@ -140,7 +140,7 @@ internal static class ApplicationBuilderExtensions
 				{
 					p.Name = "Not Found Page";
 					p.Teaser.Heading = ResourceHelpers.Faker.Lorem.Slug(3);
-					p.Teaser.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+					p.Teaser.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					p.Teaser.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 					p.Teaser.LinkButton.LinkText = ResourceHelpers.Faker.Internet.DomainName();
 					p.Teaser.LinkButton.LinkUrl = new Url(ResourceHelpers.Faker.Internet.Url());
@@ -153,7 +153,7 @@ internal static class ApplicationBuilderExtensions
 					{
 						block.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-						block.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+						block.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					}, 10);
 				}, 10)
 				.WithPages<ArticlePage>(p =>
@@ -164,7 +164,7 @@ internal static class ApplicationBuilderExtensions
 					{
 						block.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-						block.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+						block.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					}, 2);
 				}, 2)
 				.WithPage<StartPage>(p =>
@@ -206,13 +206,13 @@ internal static class ApplicationBuilderExtensions
 				{
 					p.Name = "Home Page";
 					p.Heading = "Test";
-					p.OpenGraphImage = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+					p.OpenGraphImage = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					p.MainContentArea
 					.AddItems<TeaserBlock>("Teaser Test", b =>
 					{
 						b.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						b.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-						b.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+						b.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					}, 3);
 				}, l1 =>
 				{
@@ -222,7 +222,7 @@ internal static class ApplicationBuilderExtensions
 				{
 					p.Name = "NotFoundPage";
 					p.Teaser.Heading = ResourceHelpers.Faker.Lorem.Slug();
-					p.Teaser.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+					p.Teaser.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					p.Teaser.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
 					p.Teaser.LinkButton.LinkText = ResourceHelpers.Faker.Internet.DomainName();
 					p.Teaser.LinkButton.LinkUrl = new Url(ResourceHelpers.Faker.Internet.Url());
@@ -235,7 +235,7 @@ internal static class ApplicationBuilderExtensions
 					{
 						block.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-						block.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+						block.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					}, 10);
 				}, 10)
 				.WithPages<ArticlePage>(p =>
@@ -246,7 +246,7 @@ internal static class ApplicationBuilderExtensions
 					{
 						block.Heading = ResourceHelpers.Faker.Lorem.Slug();
 						block.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
-						block.Image = PropertyHelpers.GetOrAddImage<ImageFile>("Image 1", ResourceHelpers.GetImage());
+						block.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
 					}, 2);
 				}, 2);
 			});
