@@ -30,6 +30,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 	#region Public properties
 
 	public ContentReference CurrentReference { get; set; } = ContentReference.EmptyReference;
+
 	public bool SiteExists =>
 		_siteDefinitionRepository
 		.List()
@@ -111,13 +112,15 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 		if (_contentSecurityRepository.Get(SiteDefinition.Current.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
 		{
+			foreach (var role in _options.Roles)
+				if (startPageSecurity.Entries.Any(x => x.Name.Equals(role)))
+					return;
+
 			if (startPageSecurity.IsInherited)
 				startPageSecurity.ToLocal();
 
 			foreach (var role in _options.Roles)
-			{
 				startPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
-			}
 
 			_contentSecurityRepository.Save(startPageSecurity.ContentLink, startPageSecurity, SecuritySaveType.Replace);
 		}
@@ -129,9 +132,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 		var svLang = availableLanguages.SingleOrDefault(x => x.LanguageID.Equals("sv"));
 
 		if (svLang != null && !_options.Language.TwoLetterISOLanguageName.Equals("sv"))
-		{
 			_languageBranchRepository.Disable(svLang.Culture);
-		}
 
 		if (availableLanguages.Any(x => x.Culture.Equals(_options.Language)))
 		{
@@ -209,9 +210,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 			_uIUserProvider.CreateUserAsync(user.UserName, user.Password, user.Email, null, null, true).GetAwaiter().GetResult();
 
 			if (user.Roles.Any())
-			{
 				_uIRoleProvider.AddUserToRolesAsync(user.UserName, user.Roles).GetAwaiter().GetResult();
-			}
 		}
 	}
 

@@ -26,7 +26,7 @@ internal static class ApplicationBuilderExtensions
 				o.SiteHost = Site1HostUrl;
 				o.Language = new CultureInfo("sr");
 				o.StartPageType = typeof(StartPage);
-				o.BuildMode = BuildMode.OnlyIfEmpty;
+				o.BuildMode = BuildMode.Append;
 				o.PublishContent = true;
 				o.Roles = new Dictionary<string, AccessLevel>
 				{
@@ -183,7 +183,7 @@ internal static class ApplicationBuilderExtensions
 				o.SiteHost = "https://localhost:5001";
 				o.StartPageType = typeof(StartPage);
 				o.Language = new CultureInfo("en");
-				o.BuildMode = BuildMode.OnlyIfEmpty;
+				o.BuildMode = BuildMode.Overwrite;
 				o.PublishContent = true;
 				o.Roles = new Dictionary<string, AccessLevel>
 				{

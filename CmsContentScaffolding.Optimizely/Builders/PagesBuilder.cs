@@ -121,7 +121,7 @@ internal class PagesBuilder : IPagesBuilder
 
 	public IPagesBuilder WithPages<T>(Action<T>? value = null, [Range(1, 10000)] int totalPages = 1) where T : PageData
 	{
-		return WithPages<T>(out var contentReferences, value, totalPages);
+		return WithPages(out var contentReferences, value, totalPages);
 	}
 
 	public IPagesBuilder WithPages<T>(out ContentReference[] contentReferences, [Range(1, 10000)] int totalPages = 1) where T : PageData
@@ -172,20 +172,16 @@ internal class PagesBuilder : IPagesBuilder
 		if (isStartPage &&
 			_options.StartPageType != null &&
 			_options.StartPageType.Equals(typeof(T)))
-		{
 			return _contentRepository
 				.GetChildren<T>(_parent, _options.Language)
-				.SingleOrDefault(x => x.Name.Equals(_options.StartPageType.Name));
-		}
-
-		if (_options.BuildMode == BuildMode.Overwrite)
-		{
-			return _contentRepository
+				.SingleOrDefault(x => x.Name.Equals(_options.StartPageType.Name))
+				?? _contentRepository
 				.GetChildren<T>(_parent, _options.Language)
-				.FirstOrDefault(x => x.Name.Equals(pageName));
-		}
+				.SingleOrDefault(x => x.Name.Equals(pageName));
 
-		return default;
+		return _contentRepository
+			.GetChildren<T>(_parent, _options.Language)
+			.FirstOrDefault(x => x.Name.Equals(pageName));
 	}
 
 	private void UpdateExistingPage<T>(T existingPage, bool isStartPage, Action<T>? value) where T : PageData
@@ -233,9 +229,7 @@ internal class PagesBuilder : IPagesBuilder
 					.Cast<IContent>();
 
 				foreach (var item in assets)
-				{
 					_contentRepository.Delete(item.ContentLink, true, AccessLevel.NoAccess);
-				}
 			}
 		}
 
