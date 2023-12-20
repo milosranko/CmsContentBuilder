@@ -7,7 +7,7 @@ namespace CmsContentScaffolding.Optimizely.Interfaces;
 internal interface IContentBuilderManager
 {
 	bool SiteExists { get; }
-	ContentReference CurrentReference { get; set; }
+	ContentReference CurrentAssetsReference { get; set; }
 	void SetOrCreateSiteContext();
 	void SetStartPageSecurity(ContentReference pageRef);
 	void ApplyDefaultLanguage();

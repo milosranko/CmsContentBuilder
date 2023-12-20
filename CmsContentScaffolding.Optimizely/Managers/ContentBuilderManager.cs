@@ -29,7 +29,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 	#region Public properties
 
-	public ContentReference CurrentReference { get; set; } = ContentReference.EmptyReference;
+	public ContentReference CurrentAssetsReference { get; set; } = ContentReference.EmptyReference;
 
 	public bool SiteExists =>
 		_siteDefinitionRepository
@@ -241,7 +241,7 @@ internal class ContentBuilderManager : IContentBuilderManager
 
 	public ContentReference CreateItem<T>(string? name = default, string? suffix = default, Action<T>? options = default) where T : IContentData
 	{
-		var content = _contentRepository.GetDefault<T>(CurrentReference, _options.Language);
+		var content = _contentRepository.GetDefault<T>(CurrentAssetsReference, _options.Language);
 
 		PropertyHelpers.InitProperties(content);
 		options?.Invoke(content);

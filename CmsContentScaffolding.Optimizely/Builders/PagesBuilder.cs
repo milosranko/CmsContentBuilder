@@ -193,7 +193,7 @@ internal class PagesBuilder : IPagesBuilder
 		PropertyHelpers.InitProperties(existingPageWritable);
 
 		var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(existingPageWritable.ContentLink);
-		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+		_contentBuilderManager.CurrentAssetsReference = assetsFolder.ContentLink;
 
 		value?.Invoke(existingPageWritable);
 
@@ -209,7 +209,7 @@ internal class PagesBuilder : IPagesBuilder
 
 		_contentRepository.Save(page, SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
 		var assetsFolder = _contentAssetHelper.GetOrCreateAssetFolder(page.ContentLink);
-		_contentBuilderManager.CurrentReference = assetsFolder.ContentLink;
+		_contentBuilderManager.CurrentAssetsReference = assetsFolder.ContentLink;
 
 		value?.Invoke(page);
 		_contentBuilderManager.SetContentName<T>(page, default, nameSuffix);
