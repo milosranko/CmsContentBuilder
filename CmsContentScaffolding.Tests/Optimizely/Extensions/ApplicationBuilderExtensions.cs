@@ -30,7 +30,7 @@ internal static class ApplicationBuilderExtensions
 				o.PublishContent = true;
 				o.Roles = new Dictionary<string, AccessLevel>
 				{
-					{ Site1EditorsRole, AccessLevel.Edit }
+					{ Site1EditorsRole, AccessLevel.Read | AccessLevel.Create | AccessLevel.Edit }
 				};
 				o.Users = new List<UserModel>
 				{
@@ -187,7 +187,7 @@ internal static class ApplicationBuilderExtensions
 				o.PublishContent = true;
 				o.Roles = new Dictionary<string, AccessLevel>
 				{
-					{ Site2EditorsRole, AccessLevel.Edit }
+					{ Site2EditorsRole, AccessLevel.Read | AccessLevel.Create | AccessLevel.Edit }
 				};
 				o.Users = new List<UserModel>
 				{
