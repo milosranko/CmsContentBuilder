@@ -13,47 +13,46 @@ namespace CmsContentScaffolding.Optimizely.Helpers;
 
 public static class PropertyHelpers
 {
-	public static IDictionary<Type, PropertyInfo[]> TypeProperties = new Dictionary<Type, PropertyInfo[]>();
+    private static readonly Injected<ContentBuilderOptions> _options = default;
+    private static readonly Injected<IContentRepository> _contentRepository = default;
+    private static readonly Injected<IBlobFactory> _blobFactory = default;
+    public static IDictionary<Type, PropertyInfo[]> TypeProperties = new Dictionary<Type, PropertyInfo[]>();
 
-	public static ContentReference GetOrAddMedia<TMedia>(string name, string extension, Stream stream) where TMedia : MediaData
-	{
-		var options = ServiceLocator.Current.GetInstance<ContentBuilderOptions>();
-		var contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
-		var mediaFolder = ContentReference.IsNullOrEmpty(SiteDefinition.Current.SiteAssetsRoot)
-			? SiteDefinition.Current.GlobalAssetsRoot
-			: SiteDefinition.Current.SiteAssetsRoot;
-		var existingItems = contentRepository
-			.GetChildren<TMedia>(mediaFolder)
-			.Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+    public static ContentReference GetOrAddMedia<TMedia>(string name, string extension, Stream stream) where TMedia : MediaData
+    {
+        var mediaFolder = ContentReference.IsNullOrEmpty(SiteDefinition.Current.SiteAssetsRoot)
+            ? SiteDefinition.Current.GlobalAssetsRoot
+            : SiteDefinition.Current.SiteAssetsRoot;
+        var existingItems = _contentRepository.Service
+            .GetChildren<TMedia>(mediaFolder)
+            .Where(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 
-		if (existingItems != null && existingItems.Any())
-			return existingItems.ElementAt(0).ContentLink;
+        if (existingItems != null && existingItems.Any())
+            return existingItems.ElementAt(0).ContentLink;
 
-		var blobFactory = ServiceLocator.Current.GetInstance<IBlobFactory>();
-		var image = contentRepository.GetDefault<TMedia>(mediaFolder);
-		var blob = blobFactory.CreateBlob(image.BinaryDataContainer, extension);
+        var image = _contentRepository.Service.GetDefault<TMedia>(mediaFolder);
+        var blob = _blobFactory.Service.CreateBlob(image.BinaryDataContainer, extension);
 
-		blob.Write(stream);
-		image.BinaryData = blob;
-		image.Name = name;
+        blob.Write(stream);
+        image.BinaryData = blob;
+        image.Name = name;
 
-		return contentRepository.Save(image, options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-	}
+        return _contentRepository.Service.Save(image, _options.Service.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+    }
 
-	public static void InitProperties<T>(T content) where T : IContentData
-	{
-		var type = typeof(T);
+    public static void InitProperties<T>(T content) where T : IContentData
+    {
+        var type = typeof(T);
 
-		if (!TypeProperties.ContainsKey(type))
-			TypeProperties.Add(type, type
-				.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-				.Where(x => x.PropertyType.Name.Equals(nameof(ContentArea)) || x.PropertyType.Name.Equals(nameof(XhtmlString)))
-				.ToArray());
+        if (!TypeProperties.ContainsKey(type))
+            TypeProperties.Add(type, type
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => x.PropertyType.Name.Equals(nameof(ContentArea)) || x.PropertyType.Name.Equals(nameof(XhtmlString)))
+                .ToArray());
 
-		for (int i = 0; i < TypeProperties[type].Length; i++)
-			//if (TypeProperties[type][i].GetValue(content) is null)
-			TypeProperties[type][i].SetValue(content, TypeProperties[type][i].PropertyType.Name.Equals(nameof(ContentArea))
-				? new ContentArea()
-				: new XhtmlString());
-	}
+        for (int i = 0; i < TypeProperties[type].Length; i++)
+            TypeProperties[type][i].SetValue(content, TypeProperties[type][i].PropertyType.Name.Equals(nameof(ContentArea))
+                ? new ContentArea()
+                : new XhtmlString());
+    }
 }
