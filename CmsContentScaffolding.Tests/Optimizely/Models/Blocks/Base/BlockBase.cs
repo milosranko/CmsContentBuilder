@@ -6,17 +6,19 @@ namespace Optimizely.Demo.PublicWeb.Models.Blocks.Base;
 
 public abstract class BlockBase : BlockData
 {
-    public PageData CurrentPage
+    private readonly Injected<IPageRouteHelper> _pageRouteHelper;
+
+    public PageData? CurrentPage
     {
         get
         {
             try
             {
-                return ServiceLocator.Current.GetInstance<IPageRouteHelper>().Page;
+                return _pageRouteHelper.Service.Page;
             }
             catch (Exception)
             {
-                return null;
+                return default;
             }
         }
     }

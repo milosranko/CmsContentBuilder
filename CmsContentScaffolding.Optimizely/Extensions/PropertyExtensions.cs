@@ -9,131 +9,133 @@ namespace CmsContentScaffolding.Optimizely.Extensions;
 
 public static class PropertyExtensions
 {
-	#region ContentArea extensions
+    #region Private fields
 
-	#region AddItem methods
+    private static readonly Injected<IContentBuilderManager> _contentBuilderManager = default;
+    private static readonly Injected<ContentFragmentFactory> _contentFragmentFactory = default;
 
-	public static ContentArea AddItem<T>(this ContentArea contentArea) where T : IContentData
-	{
-		return AddItem<T>(contentArea, default, default);
-	}
+    #endregion
 
-	public static ContentArea AddItem<T>(
-		this ContentArea contentArea,
-		string name) where T : IContentData
-	{
-		return AddItem<T>(contentArea, name, default);
-	}
+    #region ContentArea extensions
 
-	public static ContentArea AddItem<T>(
-		this ContentArea contentArea,
-		Action<T> options) where T : IContentData
-	{
-		return AddItem(contentArea, default, options);
-	}
+    #region AddItem methods
 
-	public static ContentArea AddExistingItem(
-		this ContentArea contentArea,
-		ContentReference contentReference)
-	{
-		if (ContentReference.IsNullOrEmpty(contentReference))
-			return contentArea;
+    public static ContentArea AddItem<T>(this ContentArea contentArea) where T : IContentData
+    {
+        return AddItem<T>(contentArea, default, default);
+    }
 
-		return AddItemToContentArea(contentArea, contentReference);
-	}
+    public static ContentArea AddItem<T>(
+        this ContentArea contentArea,
+        string name) where T : IContentData
+    {
+        return AddItem<T>(contentArea, name, default);
+    }
 
-	public static ContentArea AddItem<T>(
-		this ContentArea contentArea,
-		string? name = default,
-		Action<T>? options = default) where T : IContentData
-	{
-		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
+    public static ContentArea AddItem<T>(
+        this ContentArea contentArea,
+        Action<T> options) where T : IContentData
+    {
+        return AddItem(contentArea, default, options);
+    }
 
-		return AddItemToContentArea(contentArea, contentBuilderManager.CreateItem(name, default, options));
-	}
+    public static ContentArea AddExistingItem(
+        this ContentArea contentArea,
+        ContentReference contentReference)
+    {
+        if (ContentReference.IsNullOrEmpty(contentReference))
+            return contentArea;
 
-	#endregion
+        return AddItemToContentArea(contentArea, contentReference);
+    }
 
-	#region AddItems methods
+    public static ContentArea AddItem<T>(
+        this ContentArea contentArea,
+        string? name = default,
+        Action<T>? options = default) where T : IContentData
+    {
+        return AddItemToContentArea(contentArea, _contentBuilderManager.Service.CreateItem(name, default, options));
+    }
 
-	public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData
-	{
-		return AddItems<T>(contentArea, default, default, default);
-	}
+    #endregion
 
-	public static ContentArea AddItems<T>(
-		this ContentArea contentArea,
-		string name,
-		[Range(1, 10000)] int total) where T : IContentData
-	{
-		return AddItems<T>(contentArea, name, default, total);
-	}
+    #region AddItems methods
 
-	public static ContentArea AddItems<T>(
-		this ContentArea contentArea,
-		Action<T> options,
-		[Range(1, 10000)] int total) where T : IContentData
-	{
-		return AddItems(contentArea, default, options, total);
-	}
+    public static ContentArea AddItems<T>(this ContentArea contentArea) where T : IContentData
+    {
+        return AddItems<T>(contentArea, default, default, default);
+    }
 
-	public static ContentArea AddItems<T>(
-		this ContentArea contentArea,
-		[Range(1, 10000)] int total) where T : IContentData
-	{
-		return AddItems<T>(contentArea, default, default, total);
-	}
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        string name,
+        [Range(1, 10000)] int total) where T : IContentData
+    {
+        return AddItems<T>(contentArea, name, default, total);
+    }
 
-	public static ContentArea AddItems<T>(
-		this ContentArea contentArea,
-		string? name = default,
-		Action<T>? options = default,
-		[Range(1, 10000)] int total = 1) where T : IContentData
-	{
-		var contentBuilderManager = ServiceLocator.Current.GetInstance<IContentBuilderManager>();
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        Action<T> options,
+        [Range(1, 10000)] int total) where T : IContentData
+    {
+        return AddItems(contentArea, default, options, total);
+    }
 
-		for (int i = 0; i < total; i++)
-			AddItemToContentArea(contentArea, contentBuilderManager.CreateItem(name, i.ToString(), options));
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        [Range(1, 10000)] int total) where T : IContentData
+    {
+        return AddItems<T>(contentArea, default, default, total);
+    }
 
-		return contentArea;
-	}
+    public static ContentArea AddItems<T>(
+        this ContentArea contentArea,
+        string? name = default,
+        Action<T>? options = default,
+        [Range(1, 10000)] int total = 1) where T : IContentData
+    {
+        for (int i = 0; i < total; i++)
+            AddItemToContentArea(contentArea, _contentBuilderManager.Service.CreateItem(name, i.ToString(), options));
 
-	#endregion
+        return contentArea;
+    }
 
-	#endregion
+    #endregion
 
-	#region XhtmlString extensions
+    #endregion
 
-	public static XhtmlString AddStringFragment(this XhtmlString xhtmlString, string text)
-	{
-		xhtmlString.Fragments.Add(new StaticFragment(text));
+    #region XhtmlString extensions
 
-		return xhtmlString;
-	}
+    public static XhtmlString AddStringFragment(this XhtmlString xhtmlString, string text)
+    {
+        xhtmlString.Fragments.Add(new StaticFragment(text));
 
-	public static XhtmlString AddContentFragment(this XhtmlString xhtmlString, ContentReference contentReference)
-	{
-		var contentFragmentFactory = ServiceLocator.Current.GetInstance<ContentFragmentFactory>();
-		var fragment = contentFragmentFactory.CreateContentFragment(contentReference, Guid.Empty, null);
+        return xhtmlString;
+    }
 
-		xhtmlString.Fragments.Add(fragment);
+    public static XhtmlString AddContentFragment(this XhtmlString xhtmlString, ContentReference contentReference)
+    {
+        var fragment = _contentFragmentFactory.Service.CreateContentFragment(contentReference, Guid.Empty, null);
 
-		return xhtmlString;
-	}
+        xhtmlString.Fragments.Add(fragment);
 
-	#endregion
+        return xhtmlString;
+    }
 
-	#region Private methods
+    #endregion
 
-	private static ContentArea AddItemToContentArea(ContentArea contentArea, ContentReference contentReference)
-	{
-		contentArea.Items.Add(new ContentAreaItem
-		{
-			ContentLink = contentReference
-		});
+    #region Private methods
 
-		return contentArea;
-	}
+    private static ContentArea AddItemToContentArea(ContentArea contentArea, ContentReference contentReference)
+    {
+        contentArea.Items.Add(new ContentAreaItem
+        {
+            ContentLink = contentReference
+        });
 
-	#endregion
+        return contentArea;
+    }
+
+    #endregion
 }
