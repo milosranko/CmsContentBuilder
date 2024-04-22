@@ -123,7 +123,7 @@ public class OptimizelyTests
 
         //Act
         var res = pageCriteriaQueryService.FindAllPagesWithCriteria(
-            PageReference.RootPage,
+            ContentReference.RootPage,
             criterias,
             Language.TwoLetterISOLanguageName,
             LanguageSelector.MasterLanguage());

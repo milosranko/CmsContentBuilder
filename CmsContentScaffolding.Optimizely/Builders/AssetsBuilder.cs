@@ -12,199 +12,199 @@ namespace CmsContentScaffolding.Optimizely.Builders;
 
 internal class AssetsBuilder : IAssetsBuilder
 {
-	#region Private properties
+    #region Private properties
 
-	private readonly ContentReference _parent;
-	private readonly IContentRepository _contentRepository;
-	private readonly IContentBuilderManager _contentBuilderManager;
-	private readonly IBlobFactory _blobFactory;
-	private readonly ContentBuilderOptions _options;
-	private readonly bool _stop = false;
+    private readonly ContentReference _parent;
+    private readonly IContentRepository _contentRepository;
+    private readonly IContentBuilderManager _contentBuilderManager;
+    private readonly IBlobFactory _blobFactory;
+    private readonly ContentBuilderOptions _options;
+    private readonly bool _stop = false;
 
-	#endregion
+    #endregion
 
-	#region Public properties
+    #region Public properties
 
-	public static AssetsBuilder Empty => new();
+    public static AssetsBuilder Empty => new();
 
-	#endregion
+    #endregion
 
-	#region Constructors
+    #region Constructors
 
-	public AssetsBuilder() => _stop = true;
+    public AssetsBuilder() => _stop = true;
 
-	public AssetsBuilder(
-		ContentReference parent,
-		IContentRepository contentRepository,
-		IContentBuilderManager contentBuilderManager,
-		ContentBuilderOptions options,
-		IBlobFactory blobFactory)
-	{
-		_parent = parent;
-		_contentRepository = contentRepository;
-		_contentBuilderManager = contentBuilderManager;
-		_options = options;
-		_blobFactory = blobFactory;
-	}
+    public AssetsBuilder(
+        ContentReference parent,
+        IContentRepository contentRepository,
+        IContentBuilderManager contentBuilderManager,
+        ContentBuilderOptions options,
+        IBlobFactory blobFactory)
+    {
+        _parent = parent;
+        _contentRepository = contentRepository;
+        _contentBuilderManager = contentBuilderManager;
+        _options = options;
+        _blobFactory = blobFactory;
+    }
 
-	#endregion
+    #endregion
 
-	#region Public methods
+    #region Public methods
 
-	public IAssetsBuilder WithBlock<T>(string name, Action<T>? value = null) where T : IContentData
-	{
-		return WithBlock(name, out var contentReference, value);
-	}
+    public IAssetsBuilder WithBlock<T>(string name, Action<T>? value = null) where T : IContentData
+    {
+        return WithBlock(name, out var contentReference, value);
+    }
 
-	public IAssetsBuilder WithBlock<T>(string name, out ContentReference contentReference, Action<T>? value = null) where T : IContentData
-	{
-		contentReference = ContentReference.EmptyReference;
-		if (_stop) return Empty;
+    public IAssetsBuilder WithBlock<T>(string name, out ContentReference contentReference, Action<T>? value = null) where T : IContentData
+    {
+        contentReference = ContentReference.EmptyReference;
+        if (_stop) return Empty;
 
-		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
-			? _parent
-			: SiteDefinition.Current.SiteAssetsRoot;
-		var existingBlock = _contentRepository
-			.GetChildren<T>(contentReference, _options.Language)
-			.SingleOrDefault(x => ((IContent)x).Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+        contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
+            ? _parent
+            : SiteDefinition.Current.SiteAssetsRoot;
+        var existingBlock = _contentRepository
+            .GetChildren<T>(contentReference, _options.Language)
+            .SingleOrDefault(x => ((IContent)x).Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 
-		if (existingBlock is not null)
-		{
-			contentReference = ((IContent)existingBlock).ContentLink;
-			return this;
-		}
+        if (existingBlock is not null)
+        {
+            contentReference = ((IContent)existingBlock).ContentLink;
+            return this;
+        }
 
-		var block = _contentRepository.GetDefault<T>(contentReference, _options.Language);
+        var block = _contentRepository.GetDefault<T>(contentReference, _options.Language);
 
-		PropertyHelpers.InitProperties(block);
-		value?.Invoke(block);
+        PropertyHelpers.InitProperties(block);
+        value?.Invoke(block);
 
-		var iContent = (IContent)block;
+        var iContent = (IContent)block;
 
-		_contentBuilderManager.SetContentName<T>(iContent, name);
-		contentReference = _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        _contentBuilderManager.SetContentName<T>(iContent, name);
+        contentReference = _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-		return this;
-	}
+        return this;
+    }
 
-	public IAssetsBuilder WithContent<T>(Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
-	{
-		return WithContent(out var contentReference, value, options);
-	}
+    public IAssetsBuilder WithContent<T>(Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
+    {
+        return WithContent(out var contentReference, value, options);
+    }
 
-	public IAssetsBuilder WithContent<T>(out ContentReference contentReference, Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
-	{
-		contentReference = ContentReference.EmptyReference;
-		if (_stop) return Empty;
+    public IAssetsBuilder WithContent<T>(out ContentReference contentReference, Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
+    {
+        contentReference = ContentReference.EmptyReference;
+        if (_stop) return Empty;
 
-		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
-			? _parent
-			: SiteDefinition.Current.SiteAssetsRoot;
-		var content = _contentRepository.GetDefault<T>(contentReference, _options.Language);
+        contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
+            ? _parent
+            : SiteDefinition.Current.SiteAssetsRoot;
+        var content = _contentRepository.GetDefault<T>(contentReference, _options.Language);
 
-		PropertyHelpers.InitProperties(content);
-		value?.Invoke(content);
+        PropertyHelpers.InitProperties(content);
+        value?.Invoke(content);
 
-		var existingContent = _contentRepository
-			.GetChildren<T>(contentReference, _options.Language)
-			.SingleOrDefault(x => ((IContent)x).Name.Equals(content.Name, StringComparison.InvariantCultureIgnoreCase));
+        var existingContent = _contentRepository
+            .GetChildren<T>(contentReference, _options.Language)
+            .SingleOrDefault(x => ((IContent)x).Name.Equals(content.Name, StringComparison.InvariantCultureIgnoreCase));
 
-		if (existingContent is null)
-		{
-			_contentBuilderManager.SetContentName<T>(content);
-			contentReference = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-		}
-		else
-		{
-			contentReference = existingContent.ContentLink;
-		}
+        if (existingContent is null)
+        {
+            _contentBuilderManager.SetContentName<T>(content);
+            contentReference = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        }
+        else
+        {
+            contentReference = existingContent.ContentLink;
+        }
 
-		if (options == null)
-			return this;
+        if (options == null)
+            return this;
 
-		var builder = new AssetsBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _blobFactory);
-		options?.Invoke(builder);
+        var builder = new AssetsBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _blobFactory);
+        options?.Invoke(builder);
 
-		return this;
-	}
+        return this;
+    }
 
-	public IAssetsBuilder WithFolder(string name, Action<IAssetsBuilder>? options = null)
-	{
-		return WithFolder(name, out var contentReference, options);
-	}
+    public IAssetsBuilder WithFolder(string name, Action<IAssetsBuilder>? options = null)
+    {
+        return WithFolder(name, out var contentReference, options);
+    }
 
-	public IAssetsBuilder WithFolder(string name, out ContentReference contentReference, Action<IAssetsBuilder>? options = null)
-	{
-		contentReference = ContentReference.EmptyReference;
-		if (_stop) return Empty;
+    public IAssetsBuilder WithFolder(string name, out ContentReference contentReference, Action<IAssetsBuilder>? options = null)
+    {
+        contentReference = ContentReference.EmptyReference;
+        if (_stop) return Empty;
 
-		contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
-			? _parent
-			: SiteDefinition.Current.SiteAssetsRoot;
-		var existingContent = _contentRepository
-			.GetChildren<ContentFolder>(contentReference, _options.Language)
-			.SingleOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+        contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
+            ? _parent
+            : SiteDefinition.Current.SiteAssetsRoot;
 
-		if (existingContent is null)
-		{
-			var content = _contentRepository.GetDefault<ContentFolder>(contentReference, _options.Language);
-			content.Name = name;
+        var existingContent = _contentRepository
+            .GetChildren<ContentFolder>(contentReference, _options.Language)
+            .SingleOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 
-			contentReference = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-		}
-		else
-		{
-			contentReference = existingContent.ContentLink;
-		}
+        if (existingContent is null)
+        {
+            var content = _contentRepository.GetDefault<ContentFolder>(contentReference, _options.Language);
+            content.Name = name;
+            contentReference = _contentRepository.Save(content, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        }
+        else
+        {
+            contentReference = existingContent.ContentLink;
+        }
 
-		if (options == null)
-			return this;
+        if (options == null)
+            return this;
 
-		var builder = new AssetsBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _blobFactory);
-		options?.Invoke(builder);
+        var builder = new AssetsBuilder(contentReference, _contentRepository, _contentBuilderManager, _options, _blobFactory);
+        options?.Invoke(builder);
 
-		return this;
-	}
+        return this;
+    }
 
-	public IAssetsBuilder WithMedia<T>(Action<T>? value = null, Stream? stream = null, string? extension = null) where T : MediaData
-	{
-		return WithMedia(out var contentReference, value, stream, extension);
-	}
+    public IAssetsBuilder WithMedia<T>(Action<T>? value = null, Stream? stream = null, string? extension = null) where T : MediaData
+    {
+        return WithMedia(out var contentReference, value, stream, extension);
+    }
 
-	public IAssetsBuilder WithMedia<T>(out ContentReference contentReference, Action<T>? value = null, Stream? stream = null, string? extension = null) where T : MediaData
-	{
-		contentReference = ContentReference.EmptyReference;
-		if (_stop) return Empty;
+    public IAssetsBuilder WithMedia<T>(out ContentReference contentReference, Action<T>? value = null, Stream? stream = null, string? extension = null) where T : MediaData
+    {
+        contentReference = ContentReference.EmptyReference;
+        if (_stop) return Empty;
 
-		contentReference = _parent is not null && !ContentReference.IsNullOrEmpty(_parent)
-			? _parent
-			: SiteDefinition.Current.SiteAssetsRoot;
+        contentReference = _parent is not null && !ContentReference.IsNullOrEmpty(_parent)
+            ? _parent
+            : SiteDefinition.Current.SiteAssetsRoot;
 
-		var media = _contentRepository.GetDefault<T>(contentReference, _options.Language);
-		value?.Invoke(media);
+        var media = _contentRepository.GetDefault<T>(contentReference, _options.Language);
+        value?.Invoke(media);
 
-		var existingItem = _contentRepository
-			.GetChildren<T>(contentReference, _options.Language)
-			.FirstOrDefault(x => x.Name.Equals(media.Name, StringComparison.InvariantCultureIgnoreCase));
+        var existingItem = _contentRepository
+            .GetChildren<T>(contentReference, _options.Language)
+            .FirstOrDefault(x => x.Name.Equals(media.Name, StringComparison.InvariantCultureIgnoreCase));
 
-		if (existingItem != null)
-		{
-			contentReference = existingItem.ContentLink;
-			return this;
-		}
+        if (existingItem != null)
+        {
+            contentReference = existingItem.ContentLink;
+            return this;
+        }
 
-		if (stream is not null && !string.IsNullOrEmpty(extension))
-		{
-			var blob = _blobFactory.CreateBlob(media.BinaryDataContainer, extension);
+        if (stream is not null && !string.IsNullOrEmpty(extension))
+        {
+            var blob = _blobFactory.CreateBlob(media.BinaryDataContainer, extension);
 
-			blob.Write(stream);
-			media.BinaryData = blob;
-		}
+            blob.Write(stream);
+            media.BinaryData = blob;
+        }
 
-		contentReference = _contentRepository.Save(media, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+        contentReference = _contentRepository.Save(media, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
-		return this;
-	}
+        return this;
+    }
 
-	#endregion
+    #endregion
 }

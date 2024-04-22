@@ -13,10 +13,21 @@ namespace CmsContentScaffolding.Optimizely.Helpers;
 
 public static class PropertyHelpers
 {
+    #region Private fields
+
     private static readonly Injected<ContentBuilderOptions> _options = default;
     private static readonly Injected<IContentRepository> _contentRepository = default;
     private static readonly Injected<IBlobFactory> _blobFactory = default;
+
+    #endregion
+
+    #region Public fields
+
     public static IDictionary<Type, PropertyInfo[]> TypeProperties = new Dictionary<Type, PropertyInfo[]>();
+
+    #endregion
+
+    #region Public methods
 
     public static ContentReference GetOrAddMedia<TMedia>(string name, string extension, Stream stream) where TMedia : MediaData
     {
@@ -55,4 +66,6 @@ public static class PropertyHelpers
                 ? new ContentArea()
                 : new XhtmlString());
     }
+
+    #endregion
 }
