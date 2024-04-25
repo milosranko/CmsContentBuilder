@@ -1,6 +1,7 @@
 ﻿using CmsContentScaffolding.Optimizely.Models;
 using EPiServer.Core;
 using EPiServer.Security;
+using System.Globalization;
 
 namespace CmsContentScaffolding.Optimizely.Interfaces;
 
@@ -14,6 +15,8 @@ internal interface IContentBuilderManager
     void SetOrCreateSiteContext();
     void SetStartPageSecurity(ContentReference pageRef);
     void ApplyDefaultLanguage();
+    void CreateAndEnableLanguage(CultureInfo culture);
+    void AppendLanguageToExistingLanguages(ContentReference contentReference, CultureInfo language);
     void CreateDefaultRoles(IDictionary<string, AccessLevel> roles);
     void CreateRoles(IDictionary<string, AccessLevel>? roles);
     void CreateUsers(IEnumerable<UserModel>? users);

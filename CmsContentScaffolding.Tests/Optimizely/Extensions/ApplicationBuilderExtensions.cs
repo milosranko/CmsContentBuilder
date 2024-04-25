@@ -24,7 +24,7 @@ internal static class ApplicationBuilderExtensions
             {
                 o.SiteName = "Site 1";
                 o.SiteHost = Site1HostUrl;
-                o.Language = new CultureInfo("sr");
+                o.Language = CultureInfo.GetCultureInfo("sr");
                 o.StartPageType = typeof(StartPage);
                 o.BuildMode = BuildMode.Append;
                 o.PublishContent = true;
@@ -77,6 +77,10 @@ internal static class ApplicationBuilderExtensions
                         b.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                         b.Image = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 2", ".png", ResourceHelpers.GetImageStream());
                     });
+                }, CultureInfo.GetCultureInfo("sv"), t =>
+                {
+                    t.Name = "Start Page [SV]";
+                    t.Heading = "Test Heading [SV]";
                 }, l1 =>
                 {
                     l1
@@ -181,7 +185,7 @@ internal static class ApplicationBuilderExtensions
                 o.SiteName = "Site 2";
                 o.SiteHost = "https://localhost:5001";
                 o.StartPageType = typeof(StartPage);
-                o.Language = new CultureInfo("en");
+                o.Language = CultureInfo.GetCultureInfo("en");
                 o.BuildMode = BuildMode.Overwrite;
                 o.PublishContent = true;
                 o.Roles = new Dictionary<string, AccessLevel>

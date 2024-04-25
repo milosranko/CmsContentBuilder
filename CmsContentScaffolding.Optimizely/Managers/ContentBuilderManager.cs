@@ -8,279 +8,296 @@ using EPiServer.DataAccess;
 using EPiServer.Security;
 using EPiServer.Shell.Security;
 using EPiServer.Web;
+using System.Globalization;
 
 namespace CmsContentScaffolding.Optimizely.Managers;
 
 internal class ContentBuilderManager : IContentBuilderManager
 {
-	#region Private properties
+    #region Private properties
 
-	private readonly ISiteDefinitionRepository _siteDefinitionRepository;
-	private readonly IContentRepository _contentRepository;
-	private readonly IContentSecurityRepository _contentSecurityRepository;
-	private readonly IContentLoader _contentLoader;
-	private readonly ILanguageBranchRepository _languageBranchRepository;
-	private readonly IContentTypeRepository _contentTypeRepository;
-	private readonly UIRoleProvider _uIRoleProvider;
-	private readonly UIUserProvider _uIUserProvider;
-	private readonly ContentBuilderOptions _options;
+    private readonly ISiteDefinitionRepository _siteDefinitionRepository;
+    private readonly IContentRepository _contentRepository;
+    private readonly IContentSecurityRepository _contentSecurityRepository;
+    private readonly IContentLoader _contentLoader;
+    private readonly ILanguageBranchRepository _languageBranchRepository;
+    private readonly IContentTypeRepository _contentTypeRepository;
+    private readonly UIRoleProvider _uIRoleProvider;
+    private readonly UIUserProvider _uIUserProvider;
+    private readonly ContentBuilderOptions _options;
 
-	#endregion
+    #endregion
 
-	#region Public properties
+    #region Public properties
 
-	public ContentReference CurrentAssetsReference { get; set; } = ContentReference.EmptyReference;
+    public ContentReference CurrentAssetsReference { get; set; } = ContentReference.EmptyReference;
 
-	public bool SiteExists =>
-		_siteDefinitionRepository
-		.List()
-		.Where(x =>
-			x.Name.Equals(_options.SiteName) &&
-			x.Hosts.Any(y => y.Language.Equals(_options.Language)))
-		.Any();
+    public bool SiteExists =>
+        _siteDefinitionRepository
+        .List()
+        .Where(x =>
+            x.Name.Equals(_options.SiteName) &&
+            x.Hosts.Any(y => y.Language.Equals(_options.Language)))
+        .Any();
 
-	#endregion
+    #endregion
 
-	#region Constructors
+    #region Constructors
 
-	public ContentBuilderManager(
-		ISiteDefinitionRepository siteDefinitionRepository,
-		IContentRepository contentRepository,
-		ContentBuilderOptions options,
-		IContentLoader contentLoader,
-		ILanguageBranchRepository languageBranchRepository,
-		UIRoleProvider uIRoleProvider,
-		UIUserProvider uIUserProvider,
-		IContentSecurityRepository contentSecurityRepository,
-		IContentTypeRepository contentTypeRepository)
-	{
-		_siteDefinitionRepository = siteDefinitionRepository;
-		_contentRepository = contentRepository;
-		_options = options;
-		_contentLoader = contentLoader;
-		_languageBranchRepository = languageBranchRepository;
-		_uIRoleProvider = uIRoleProvider;
-		_uIUserProvider = uIUserProvider;
-		_contentSecurityRepository = contentSecurityRepository;
-		_contentTypeRepository = contentTypeRepository;
-	}
+    public ContentBuilderManager(
+        ISiteDefinitionRepository siteDefinitionRepository,
+        IContentRepository contentRepository,
+        ContentBuilderOptions options,
+        IContentLoader contentLoader,
+        ILanguageBranchRepository languageBranchRepository,
+        UIRoleProvider uIRoleProvider,
+        UIUserProvider uIUserProvider,
+        IContentSecurityRepository contentSecurityRepository,
+        IContentTypeRepository contentTypeRepository)
+    {
+        _siteDefinitionRepository = siteDefinitionRepository;
+        _contentRepository = contentRepository;
+        _options = options;
+        _contentLoader = contentLoader;
+        _languageBranchRepository = languageBranchRepository;
+        _uIRoleProvider = uIRoleProvider;
+        _uIUserProvider = uIUserProvider;
+        _contentSecurityRepository = contentSecurityRepository;
+        _contentTypeRepository = contentTypeRepository;
+    }
 
-	#endregion
+    #endregion
 
-	#region Public methods
+    #region Public methods
 
-	public void SetOrCreateSiteContext()
-	{
-		var existingSite = _siteDefinitionRepository
-			.List()
-			.SingleOrDefault(x => x.Name.Equals(_options.SiteName) && x.Hosts.Any(x => x.Language.Equals(_options.Language)));
+    public void SetOrCreateSiteContext()
+    {
+        var existingSite = _siteDefinitionRepository
+            .List()
+            .SingleOrDefault(x => x.Name.Equals(_options.SiteName) && x.Hosts.Any(x => x.Language.Equals(_options.Language)));
 
-		if (existingSite is not null)
-		{
-			SiteDefinition.Current = existingSite;
-			return;
-		}
+        if (existingSite is not null)
+        {
+            SiteDefinition.Current = existingSite;
+            return;
+        }
 
-		var startPage = TryCreateStartPage();
-		var siteUri = new Uri(_options.SiteHost);
-		var siteDefinition = new SiteDefinition
-		{
-			Name = _options.SiteName,
-			StartPage = startPage,
-			SiteAssetsRoot = GetOrCreateSiteAssetsRoot(startPage),
-			SiteUrl = siteUri,
-			Hosts = new List<HostDefinition>
-			{
-				new()
-				{
-					Name = siteUri.Authority,
-					Language = _options.Language,
-					Type = HostDefinitionType.Primary,
-					UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
-				}
-			}
-		};
+        var startPage = TryCreateStartPage();
+        var siteUri = new Uri(_options.SiteHost);
+        var siteDefinition = new SiteDefinition
+        {
+            Name = _options.SiteName,
+            StartPage = startPage,
+            SiteAssetsRoot = GetOrCreateSiteAssetsRoot(startPage),
+            SiteUrl = siteUri,
+            Hosts = new List<HostDefinition>
+            {
+                new()
+                {
+                    Name = siteUri.Authority,
+                    Language = _options.Language,
+                    Type = HostDefinitionType.Primary,
+                    UseSecureConnection = siteUri.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase)
+                }
+            }
+        };
 
-		_siteDefinitionRepository.Save(siteDefinition);
-		SiteDefinition.Current = siteDefinition;
-	}
+        _siteDefinitionRepository.Save(siteDefinition);
+        SiteDefinition.Current = siteDefinition;
+    }
 
-	public void SetStartPageSecurity(ContentReference pageRef)
-	{
-		if (_options.Roles is null || !_options.Roles.Any())
-			return;
+    public void SetStartPageSecurity(ContentReference pageRef)
+    {
+        if (_options.Roles is null || !_options.Roles.Any())
+            return;
 
-		if (_contentSecurityRepository.Get(SiteDefinition.Current.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
-		{
-			foreach (var role in _options.Roles)
-				if (startPageSecurity.Entries.Any(x => x.Name.Equals(role)))
-					return;
+        if (_contentSecurityRepository.Get(SiteDefinition.Current.StartPage).CreateWritableClone() is IContentSecurityDescriptor startPageSecurity)
+        {
+            foreach (var role in _options.Roles)
+                if (startPageSecurity.Entries.Any(x => x.Name.Equals(role)))
+                    return;
 
-			if (startPageSecurity.IsInherited)
-				startPageSecurity.ToLocal();
+            if (startPageSecurity.IsInherited)
+                startPageSecurity.ToLocal();
 
-			foreach (var role in _options.Roles)
-				startPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
+            foreach (var role in _options.Roles)
+                startPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
 
-			_contentSecurityRepository.Save(startPageSecurity.ContentLink, startPageSecurity, SecuritySaveType.Replace);
-		}
-	}
+            _contentSecurityRepository.Save(startPageSecurity.ContentLink, startPageSecurity, SecuritySaveType.Replace);
+        }
+    }
 
-	public void ApplyDefaultLanguage()
-	{
-		var availableLanguages = _languageBranchRepository.ListAll();
-		var svLang = availableLanguages.SingleOrDefault(x => x.LanguageID.Equals("sv"));
+    public void ApplyDefaultLanguage()
+    {
+        DisableLanguage("sv");
+        CreateAndEnableLanguage(_options.Language);
+        AppendLanguageToExistingLanguages(ContentReference.RootPage, _options.Language);
+    }
 
-		if (svLang != null && !_options.Language.TwoLetterISOLanguageName.Equals("sv"))
-			_languageBranchRepository.Disable(svLang.Culture);
+    public void CreateAndEnableLanguage(CultureInfo culture)
+    {
+        var availableLanguages = _languageBranchRepository.ListAll();
 
-		if (availableLanguages.Any(x => x.Culture.Equals(_options.Language)))
-		{
-			var existingLanguage = availableLanguages.Single(x => x.Culture.Equals(_options.Language));
+        if (availableLanguages.Any(x => x.Culture.Equals(culture)))
+        {
+            var existingLanguage = availableLanguages.Single(x => x.Culture.Equals(culture));
 
-			if (!existingLanguage.Enabled)
-				_languageBranchRepository.Enable(existingLanguage.Culture);
-		}
-		else
-		{
-			var newLanguageBranch = new LanguageBranch(_options.Language);
-			_languageBranchRepository.Save(newLanguageBranch);
-			_languageBranchRepository.Enable(newLanguageBranch.Culture);
-		}
+            if (!existingLanguage.Enabled)
+                _languageBranchRepository.Enable(existingLanguage.Culture);
+        }
+        else
+        {
+            var newLanguageBranch = new LanguageBranch(culture);
+            _languageBranchRepository.Save(newLanguageBranch);
+            _languageBranchRepository.Enable(newLanguageBranch.Culture);
+        }
+    }
 
-		var rootPage = _contentLoader.Get<PageData>(ContentReference.RootPage);
-		if (!rootPage.ExistingLanguages.Any(x => x.Equals(_options.Language)))
-		{
-			var rootPageClone = rootPage.CreateWritableClone();
-			rootPageClone.ExistingLanguages.Append(_options.Language);
-			_contentRepository.Save(rootPageClone, SaveAction.Default, AccessLevel.NoAccess);
-		}
-	}
+    public void AppendLanguageToExistingLanguages(ContentReference contentReference, CultureInfo language)
+    {
+        var page = _contentLoader.Get<PageData>(contentReference);
 
-	public void CreateDefaultRoles(IDictionary<string, AccessLevel> roles)
-	{
-		if (!roles.Any())
-			return;
+        if (!page.ExistingLanguages.Any(x => x.Equals(language)))
+        {
+            var pageClone = page.CreateWritableClone();
+            _ = pageClone.ExistingLanguages.Append(language);
+            _contentRepository.Save(pageClone, SaveAction.Default, AccessLevel.NoAccess);
+        }
+    }
 
-		var rootPageSecurity = _contentSecurityRepository.Get(ContentReference.RootPage).CreateWritableClone() as IContentSecurityDescriptor;
+    public void CreateDefaultRoles(IDictionary<string, AccessLevel> roles)
+    {
+        if (!roles.Any())
+            return;
 
-		foreach (var role in roles)
-		{
-			if (_uIRoleProvider.RoleExistsAsync(role.Key).GetAwaiter().GetResult())
-				continue;
+        var rootPageSecurity = _contentSecurityRepository.Get(ContentReference.RootPage).CreateWritableClone() as IContentSecurityDescriptor;
 
-			_uIRoleProvider.CreateRoleAsync(role.Key).GetAwaiter().GetResult();
+        foreach (var role in roles)
+        {
+            if (_uIRoleProvider.RoleExistsAsync(role.Key).GetAwaiter().GetResult())
+                continue;
 
-			if (rootPageSecurity == null || rootPageSecurity.Entries.Any(x => x.Name.Equals(role.Key)))
-				continue;
+            _uIRoleProvider.CreateRoleAsync(role.Key).GetAwaiter().GetResult();
 
-			rootPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
-			_contentSecurityRepository.Save(rootPageSecurity.ContentLink, rootPageSecurity, SecuritySaveType.Replace);
-		}
-	}
+            if (rootPageSecurity == null || rootPageSecurity.Entries.Any(x => x.Name.Equals(role.Key)))
+                continue;
 
-	public void CreateRoles(IDictionary<string, AccessLevel>? roles)
-	{
-		if (roles is null || !roles.Any())
-			return;
+            rootPageSecurity.AddEntry(new AccessControlEntry(role.Key, role.Value, SecurityEntityType.Role));
+            _contentSecurityRepository.Save(rootPageSecurity.ContentLink, rootPageSecurity, SecuritySaveType.Replace);
+        }
+    }
 
-		foreach (var role in roles)
-		{
-			if (_uIRoleProvider.RoleExistsAsync(role.Key).GetAwaiter().GetResult())
-				continue;
+    public void CreateRoles(IDictionary<string, AccessLevel>? roles)
+    {
+        if (roles is null || !roles.Any())
+            return;
 
-			_uIRoleProvider.CreateRoleAsync(role.Key).GetAwaiter().GetResult();
-		}
-	}
+        foreach (var role in roles)
+        {
+            if (_uIRoleProvider.RoleExistsAsync(role.Key).GetAwaiter().GetResult())
+                continue;
 
-	public void CreateUsers(IEnumerable<UserModel>? users)
-	{
-		if (users is null || !users.Any())
-			return;
+            _uIRoleProvider.CreateRoleAsync(role.Key).GetAwaiter().GetResult();
+        }
+    }
 
-		IUIUser? uiUser;
+    public void CreateUsers(IEnumerable<UserModel>? users)
+    {
+        if (users is null || !users.Any())
+            return;
 
-		foreach (var user in users)
-		{
-			uiUser = _uIUserProvider.GetUserAsync(user.UserName).GetAwaiter().GetResult();
+        IUIUser? uiUser;
 
-			if (uiUser != null)
-				continue;
+        foreach (var user in users)
+        {
+            uiUser = _uIUserProvider.GetUserAsync(user.UserName).GetAwaiter().GetResult();
 
-			_uIUserProvider.CreateUserAsync(user.UserName, user.Password, user.Email, null, null, true).GetAwaiter().GetResult();
+            if (uiUser != null)
+                continue;
 
-			if (user.Roles.Any())
-				_uIRoleProvider.AddUserToRolesAsync(user.UserName, user.Roles).GetAwaiter().GetResult();
-		}
-	}
+            _uIUserProvider.CreateUserAsync(user.UserName, user.Password, user.Email, null, null, true).GetAwaiter().GetResult();
 
-	public void SetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData
-	{
-		if (!string.IsNullOrEmpty(content.Name) &&
-			!content.Name.Equals(Constants.TempPageName, StringComparison.InvariantCultureIgnoreCase) &&
-			string.IsNullOrEmpty(nameSuffix))
-			return;
+            if (user.Roles.Any())
+                _uIRoleProvider.AddUserToRolesAsync(user.UserName, user.Roles).GetAwaiter().GetResult();
+        }
+    }
 
-		if (!string.IsNullOrEmpty(name))
-		{
-			if (!string.IsNullOrEmpty(nameSuffix))
-			{
-				content.Name = $"{name} {nameSuffix}";
-				return;
-			}
+    public void SetContentName<T>(IContent content, string? name = default, string? nameSuffix = default) where T : IContentData
+    {
+        if (!string.IsNullOrEmpty(content.Name) &&
+            !content.Name.Equals(Constants.TempPageName, StringComparison.InvariantCultureIgnoreCase) &&
+            string.IsNullOrEmpty(nameSuffix))
+            return;
 
-			content.Name = name;
-			return;
-		}
+        if (!string.IsNullOrEmpty(name))
+        {
+            if (!string.IsNullOrEmpty(nameSuffix))
+            {
+                content.Name = $"{name} {nameSuffix}";
+                return;
+            }
 
-		if (!string.IsNullOrEmpty(content.Name) && !content.Name.Equals(Constants.TempPageName))
-			content.Name = $"{content.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
-		else
-			content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
-	}
+            content.Name = name;
+            return;
+        }
 
-	public ContentReference CreateItem<T>(string? name = default, string? suffix = default, Action<T>? options = default) where T : IContentData
-	{
-		var content = _contentRepository.GetDefault<T>(CurrentAssetsReference, _options.Language);
+        if (!string.IsNullOrEmpty(content.Name) && !content.Name.Equals(Constants.TempPageName))
+            content.Name = $"{content.Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
+        else
+            content.Name = $"{_contentTypeRepository.Load<T>().Name} {nameSuffix ?? Guid.NewGuid().ToString()}";
+    }
 
-		PropertyHelpers.InitProperties(content);
-		options?.Invoke(content);
+    public ContentReference CreateItem<T>(string? name = default, string? suffix = default, Action<T>? options = default) where T : IContentData
+    {
+        var content = _contentRepository.GetDefault<T>(CurrentAssetsReference, _options.Language);
 
-		var iContent = (IContent)content;
-		SetContentName<T>(iContent, name, suffix);
+        PropertyHelpers.InitProperties(content);
+        options?.Invoke(content);
 
-		if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
-			return iContent.ContentLink;
+        var iContent = (IContent)content;
+        SetContentName<T>(iContent, name, suffix);
 
-		return _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-	}
+        if (!ContentReference.IsNullOrEmpty(iContent.ContentLink))
+            return iContent.ContentLink;
 
-	#endregion
+        return _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+    }
 
-	#region Private methods
+    #endregion
 
-	private ContentReference TryCreateStartPage()
-	{
-		if (_options.StartPageType == null)
-			return ContentReference.RootPage;
+    #region Private methods
 
-		var startPageType = _contentTypeRepository.Load(_options.StartPageType);
-		var startPage = _contentRepository.GetDefault<PageData>(ContentReference.RootPage, startPageType.ID, _options.Language);
-		startPage.Name = _options.StartPageType.Name;
+    private ContentReference TryCreateStartPage()
+    {
+        if (_options.StartPageType == null)
+            return ContentReference.RootPage;
 
-		return _contentRepository.Save(startPage, _options.PublishContent ? SaveAction.SkipValidation | SaveAction.Publish : SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
-	}
+        var startPageType = _contentTypeRepository.Load(_options.StartPageType);
+        var startPage = _contentRepository.GetDefault<PageData>(ContentReference.RootPage, startPageType.ID, _options.Language);
+        startPage.Name = _options.StartPageType.Name;
 
-	private ContentReference GetOrCreateSiteAssetsRoot(ContentReference pageRef)
-	{
-		if (ContentReference.IsNullOrEmpty(pageRef) || pageRef.CompareToIgnoreWorkID(ContentReference.RootPage))
-			return ContentReference.GlobalBlockFolder;
+        return _contentRepository.Save(startPage, _options.PublishContent ? SaveAction.SkipValidation | SaveAction.Publish : SaveAction.SkipValidation | SaveAction.Default, AccessLevel.NoAccess);
+    }
 
-		var siteRoot = _contentRepository.GetDefault<ContentFolder>(pageRef);
-		siteRoot.Name = _options.SiteName;
+    private ContentReference GetOrCreateSiteAssetsRoot(ContentReference pageRef)
+    {
+        if (ContentReference.IsNullOrEmpty(pageRef) || pageRef.CompareToIgnoreWorkID(ContentReference.RootPage))
+            return ContentReference.GlobalBlockFolder;
 
-		return _contentRepository.Save(siteRoot, AccessLevel.NoAccess);
-	}
+        var siteRoot = _contentRepository.GetDefault<ContentFolder>(pageRef);
+        siteRoot.Name = _options.SiteName;
 
-	#endregion
+        return _contentRepository.Save(siteRoot, AccessLevel.NoAccess);
+    }
+
+    private void DisableLanguage(string languageId)
+    {
+        var availableLanguages = _languageBranchRepository.ListAll();
+        var lang = availableLanguages.SingleOrDefault(x => x.LanguageID.Equals(languageId, StringComparison.InvariantCultureIgnoreCase));
+
+        if (lang != null && !_options.Language.TwoLetterISOLanguageName.Equals(languageId, StringComparison.InvariantCultureIgnoreCase))
+            _languageBranchRepository.Disable(lang.Culture);
+    }
+
+    #endregion
 }
