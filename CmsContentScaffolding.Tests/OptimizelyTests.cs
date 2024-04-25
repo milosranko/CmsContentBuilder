@@ -244,7 +244,7 @@ public class OptimizelyTests
         //Assert
         Assert.IsNotNull(res);
         Assert.IsNotNull(blocks);
-        Assert.IsTrue(blocks.Count() > 0);
+        Assert.IsTrue(blocks.Any());
     }
 
     [TestMethod]
@@ -261,6 +261,6 @@ public class OptimizelyTests
 
         //Assert
         Assert.IsNotNull(res);
-        Assert.IsTrue(res.Count() > 0);
+        Assert.IsTrue(res.Any());
     }
 }

@@ -49,6 +49,24 @@ public static class PropertyExtensions
         return AddItemToContentArea(contentArea, contentReference);
     }
 
+    public static ContentArea AddExistingItems(
+        this ContentArea contentArea,
+        params ContentReference[] contentReferences)
+    {
+        if (contentReferences == null || contentReferences.Length == 0)
+            return contentArea;
+
+        foreach (var contentReference in contentReferences)
+        {
+            if (ContentReference.IsNullOrEmpty(contentReference))
+                continue;
+
+            AddItemToContentArea(contentArea, contentReference);
+        }
+
+        return contentArea;
+    }
+
     public static ContentArea AddItem<T>(
         this ContentArea contentArea,
         string? name = default,

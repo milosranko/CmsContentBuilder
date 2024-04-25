@@ -70,8 +70,7 @@ internal static class ApplicationBuilderExtensions
                     p.Heading = "Test";
                     p.OpenGraphImage = PropertyHelpers.GetOrAddMedia<ImageFile>("Image 1", ".png", ResourceHelpers.GetImageStream());
                     p.MainContentArea
-                    .AddExistingItem(teaser2Ref)
-                    .AddExistingItem(teaser3Ref)
+                    .AddExistingItems(teaser2Ref, teaser3Ref)
                     .AddItem<TeaserBlock>("Start Page Teaser", b =>
                     {
                         b.Heading = ResourceHelpers.Faker.Lorem.Slug();
