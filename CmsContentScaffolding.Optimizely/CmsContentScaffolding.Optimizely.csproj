@@ -5,8 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.7.3</Version>
-    <Title>ContentScaffolding for Optimizely CMS</Title>
+    <Version>1.8.0</Version>
+    <Title>CmsContentScaffolding for Optimizely CMS</Title>
     <Company>MDR Solutions</Company>
     <Authors>Milos Rankovic</Authors>
     <Description>Unit testing helper for Optimizely CMS</Description>
