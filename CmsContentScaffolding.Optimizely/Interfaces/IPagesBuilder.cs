@@ -51,6 +51,16 @@ public interface IPagesBuilder
     /// <returns>IPagesBuilder</returns>
     IPagesBuilder WithPage<T>(Action<IPagesBuilder> options) where T : PageData;
     /// <summary>
+    /// Create or update page in the site tree with translation
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="value"></param>
+    /// <param name="translationLanguage"></param>
+    /// <param name="translation"></param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    IPagesBuilder WithPage<T>(Action<T> value, CultureInfo translationLanguage, Action<T> translation, Action<IPagesBuilder>? options = null) where T : PageData;
+    /// <summary>
     /// Create or update page in the site tree
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -68,7 +78,7 @@ public interface IPagesBuilder
     /// <returns>IPagesBuilder</returns>
     IPagesBuilder WithPage<T>(Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData;
     /// <summary>
-    /// 
+    /// Bulk create pages in the site tree
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="totalPages"></param>

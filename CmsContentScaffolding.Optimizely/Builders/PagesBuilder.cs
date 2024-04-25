@@ -82,6 +82,11 @@ internal class PagesBuilder : IPagesBuilder
         return WithPage<T>(out var contentReference, default, options);
     }
 
+    public IPagesBuilder WithPage<T>(Action<T> value, CultureInfo translationLanguage, Action<T> translation, Action<IPagesBuilder>? options = null) where T : PageData
+    {
+        return WithPage(out var contentReference, value, options, false, translationLanguage, translation);
+    }
+
     public IPagesBuilder WithPage<T>(Action<T>? value = null, Action<IPagesBuilder>? options = null) where T : PageData
     {
         return WithPage(out var contentReference, value, options);

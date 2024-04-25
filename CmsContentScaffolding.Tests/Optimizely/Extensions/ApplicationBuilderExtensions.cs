@@ -121,7 +121,17 @@ internal static class ApplicationBuilderExtensions
                             p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
                             p.MainContent.AddStringFragment(ResourceHelpers.Faker.Lorem.Paragraphs());
                         })
-                        .WithPage<ArticlePage>(l3 =>
+                        .WithPage<ArticlePage>(p =>
+                        {
+                            p.Name = "Article 22";
+                            p.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                            p.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
+                        }, CultureInfo.GetCultureInfo("sv"), t =>
+                        {
+                            t.Name = "Article 22 [SV]";
+                            t.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                            t.LeadText = ResourceHelpers.Faker.Lorem.Paragraph();
+                        }, l3 =>
                         {
                             l3.WithPages<ArticlePage>(p =>
                             {
