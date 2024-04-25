@@ -4,7 +4,7 @@ namespace CmsContentScaffolding.Tests.Optimizely.Constants;
 
 internal static class StringConstants
 {
-    public static CultureInfo Language => new("sr");
+    public static CultureInfo Language => CultureInfo.GetCultureInfo("sr");
     public const string Site1HostUrl = "https://localhost:5000";
     public const string Site2HostUrl = "https://localhost:5001";
     public const string TeaserBlocksFolderName = "Teaser Blocks Test";
