@@ -7,6 +7,7 @@ using EPiServer.DataAccess;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
 using EPiServer.Web;
+using System.Globalization;
 
 namespace CmsContentScaffolding.Optimizely.Builders;
 
@@ -53,38 +54,22 @@ internal class AssetsBuilder : IAssetsBuilder
 
     public IAssetsBuilder WithBlock<T>(string name, Action<T>? value = null) where T : IContentData
     {
-        return WithBlock(name, out var contentReference, value);
+        return WithBlock(true, name, out var contentReference, value);
+    }
+
+    public IAssetsBuilder WithBlock<T>(string name, Action<T> value, CultureInfo translationLanguage, string translatedName, Action<T> translation) where T : IContentData
+    {
+        return WithBlock(true, name, out _, value, translationLanguage, translatedName, translation);
     }
 
     public IAssetsBuilder WithBlock<T>(string name, out ContentReference contentReference, Action<T>? value = null) where T : IContentData
     {
-        contentReference = ContentReference.EmptyReference;
-        if (_stop) return Empty;
+        return WithBlock(true, name, out contentReference, value, null, null, null);
+    }
 
-        contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
-            ? _parent
-            : SiteDefinition.Current.SiteAssetsRoot;
-        var existingBlock = _contentRepository
-            .GetChildren<T>(contentReference, _options.Language)
-            .SingleOrDefault(x => ((IContent)x).Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
-
-        if (existingBlock is not null)
-        {
-            contentReference = ((IContent)existingBlock).ContentLink;
-            return this;
-        }
-
-        var block = _contentRepository.GetDefault<T>(contentReference, _options.Language);
-
-        PropertyHelpers.InitProperties(block);
-        value?.Invoke(block);
-
-        var iContent = (IContent)block;
-
-        _contentBuilderManager.SetContentName<T>(iContent, name);
-        contentReference = _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
-
-        return this;
+    public IAssetsBuilder WithBlock<T>(string name, out ContentReference contentReference, Action<T>? value = null, CultureInfo? translationLanguage = null, string? translatedName = null, Action<T>? translation = null) where T : IContentData
+    {
+        return WithBlock(true, name, out contentReference, value, translationLanguage, translatedName, translation);
     }
 
     public IAssetsBuilder WithContent<T>(Action<T>? value = null, Action<IAssetsBuilder>? options = null) where T : IContent
@@ -204,6 +189,59 @@ internal class AssetsBuilder : IAssetsBuilder
         contentReference = _contentRepository.Save(media, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
 
         return this;
+    }
+
+    #endregion
+
+    #region Private methods
+
+    private IAssetsBuilder WithBlock<T>(bool privateMarket, string name, out ContentReference contentReference, Action<T>? value = null, CultureInfo? translationLanguage = null, string? translatedName = null, Action<T>? translation = null) where T : IContentData
+    {
+        contentReference = ContentReference.EmptyReference;
+        if (_stop) return Empty;
+
+        contentReference = _parent != null && !ContentReference.IsNullOrEmpty(_parent)
+            ? _parent
+            : SiteDefinition.Current.SiteAssetsRoot;
+        var existingBlock = _contentRepository
+            .GetChildren<T>(contentReference, _options.Language)
+            .SingleOrDefault(x => ((IContent)x).Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+
+        if (existingBlock is not null)
+        {
+            contentReference = ((IContent)existingBlock).ContentLink;
+            return this;
+        }
+
+        var block = _contentRepository.GetDefault<T>(contentReference, _options.Language);
+
+        PropertyHelpers.InitProperties(block);
+        value?.Invoke(block);
+
+        var iContent = (IContent)block;
+
+        _contentBuilderManager.SetContentName<T>(iContent, name);
+        contentReference = _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
+
+        CreateTranslation(contentReference, translationLanguage, translatedName, translation);
+
+        return this;
+    }
+
+    private void CreateTranslation<T>(ContentReference contentReference, CultureInfo? translationLanguage, string? translatedName = null, Action<T>? translation = null) where T : IContentData
+    {
+        if (ContentReference.IsNullOrEmpty(contentReference) || translationLanguage == null || string.IsNullOrEmpty(translatedName) || translation == null)
+            return;
+
+        _contentBuilderManager.CreateAndEnableLanguage(translationLanguage);
+
+        var translatedBlock = _contentRepository.CreateLanguageBranch<T>(contentReference, translationLanguage);
+        translation?.Invoke(translatedBlock);
+
+        var iContent = (IContent)translatedBlock;
+
+        _contentBuilderManager.SetContentName<T>(iContent, translatedName);
+        _ = _contentRepository.Save(iContent, _options.PublishContent ? SaveAction.Publish : SaveAction.Default, AccessLevel.NoAccess);
     }
 
     #endregion

@@ -57,7 +57,13 @@ internal static class ApplicationBuilderExtensions
                         l2.WithBlock<TeaserBlock>("Teaser 2", out teaser2Ref, x => x.Heading = "Test");
                     })
                     .WithMedia<VideoFile>(x => x.Name = "Test video", ResourceHelpers.GetVideoStream(), ".mp4")
-                    .WithBlock<TeaserBlock>("Teaser 3", out teaser3Ref, x => x.Heading = "Test");
+                    .WithBlock<TeaserBlock>(
+                        "Teaser 3",
+                        out _,
+                        x => x.Heading = "Test",
+                        CultureInfo.GetCultureInfo("fr"),
+                        "Teaser 3 [FR]",
+                        t => { t.Heading = "Test [FR]"; });
                 })
                 .WithContent<ContentFolder>(x => x.Name = "Folder1")
                 .WithContent<ImageFile>(x => x.Name = "Image 1")

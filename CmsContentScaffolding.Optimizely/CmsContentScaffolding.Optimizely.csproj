@@ -7,7 +7,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>1.8.0</Version>
     <Title>CmsContentScaffolding for Optimizely CMS</Title>
-    <Company>MDR Solutions</Company>
+    <Company>MDR Solutions DOO</Company>
     <Authors>Milos Rankovic</Authors>
     <Description>Unit testing helper for Optimizely CMS</Description>
     <RepositoryUrl>https://github.com/milosranko/CmsContentScaffolding</RepositoryUrl>

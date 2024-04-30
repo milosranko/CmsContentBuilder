@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Optimizely.Demo.PublicWeb.Models.Blocks;
 using Optimizely.Demo.PublicWeb.Models.Pages;
+using System.Globalization;
 using static CmsContentScaffolding.Tests.Optimizely.Constants.StringConstants;
 
 namespace CmsContentScaffolding.Tests;
@@ -245,6 +247,25 @@ public class OptimizelyTests
         Assert.IsNotNull(res);
         Assert.IsNotNull(blocks);
         Assert.IsTrue(blocks.Any());
+    }
+
+    [TestMethod]
+    public void GetTranslatedBlockFromFolder_ShouldReturnTranslatedBlock()
+    {
+        //Arrange
+        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+        var res = contentLoader.GetChildren<ContentFolder>(siteDefinitionRepository.Get("Site 1").SiteAssetsRoot, Language);
+
+        //Act
+        var block = contentLoader
+            .GetChildren<TeaserBlock>(res.First().ContentLink, CultureInfo.GetCultureInfo("fr"))
+            .FirstOrDefault();
+
+        //Assert
+        Assert.IsNotNull(res);
+        Assert.IsNotNull(block);
+        Assert.IsNotNull(block.Heading);
     }
 
     [TestMethod]
