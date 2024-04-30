@@ -269,6 +269,21 @@ public class OptimizelyTests
     }
 
     [TestMethod]
+    public void GetTranslatedStartPage_ShouldReturnTranslatedPage()
+    {
+        //Arrange
+        var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
+        var siteDefinitionRepository = ServiceLocator.Current.GetRequiredService<ISiteDefinitionRepository>();
+
+        //Act
+        var page = contentLoader.Get<StartPage>(siteDefinitionRepository.Get("Site 1").StartPage, CultureInfo.GetCultureInfo("sv"));
+
+        //Assert
+        Assert.IsNotNull(page);
+        Assert.IsTrue(page.Name.Equals("Start Page [SV]", StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    [TestMethod]
     public void GetAssetsFromSite1StartPage_ShouldReturnAssets()
     {
         //Arrange
