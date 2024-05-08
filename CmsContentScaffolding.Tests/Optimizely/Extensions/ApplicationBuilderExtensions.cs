@@ -34,12 +34,7 @@ internal static class ApplicationBuilderExtensions
                 };
                 o.Users = new List<UserModel>
                 {
-                    new() {
-                        UserName = "Site1User",
-                        Email = "Site1User@test.com",
-                        Password = TestUserPassword,
-                        Roles = new[] { Site1EditorsRole }
-                    }
+                    new("Site1User", "Site1User@test.com", TestUserPassword, new[] { Site1EditorsRole })
                 };
             },
             builder: b =>
@@ -210,12 +205,7 @@ internal static class ApplicationBuilderExtensions
                 };
                 o.Users = new List<UserModel>
                 {
-                    new() {
-                        UserName = "Site2User",
-                        Email = "Site2User@test.com",
-                        Password = TestUserPassword,
-                        Roles = new[] { Site2EditorsRole }
-                    }
+                    new("Site2User", "Site2User@test.com", TestUserPassword, new[] { Site2EditorsRole })
                 };
             },
             builder: b =>

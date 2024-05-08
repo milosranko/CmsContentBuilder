@@ -6,7 +6,7 @@ namespace CmsContentScaffolding.Optimizely.Models;
 /// <summary>
 /// Default options for the builder
 /// </summary>
-public class ContentBuilderOptions
+public record ContentBuilderOptions
 {
     /// <summary>
     /// Set language for the builder, default is English

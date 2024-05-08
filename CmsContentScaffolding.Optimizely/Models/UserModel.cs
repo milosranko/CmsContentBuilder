@@ -1,9 +1,3 @@
 ﻿namespace CmsContentScaffolding.Optimizely.Models;
 
-public class UserModel
-{
-    public string UserName { get; set; }
-    public string Password { get; set; }
-    public string Email { get; set; }
-    public string[] Roles { get; set; }
-}
+public record UserModel(string UserName, string Password, string Email, string[] Roles);
