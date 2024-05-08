@@ -39,3 +39,30 @@ Optimizely CMS and Piranha CMS supported
               level1.WithPages<ArticlePage>(totalPages: 100);
           });
       });
+
+Also you can scaffold Optimizely Commerce catalog structure:
+
+b.UseAssets(referenceConverter.GetRootLink())
+.WithContent<CatalogContent>(x =>
+{
+    x.Name = "Catalog 1";
+    x.DefaultCurrency = "EUR";
+    x.DefaultLanguage = "en";
+    x.WeightBase = "kgs";
+    x.LengthBase = "cm";
+}, l1 => l1.WithContent<FashionNode>(x => x.Name = "Men", l2 =>
+            l2.WithContent<FashionNode>(x => x.Name = "Shoes", l3 =>
+                l3.WithContent<FashionProduct>(x => x.Name = "Product 1", l4 =>
+                    l4
+                    .WithContent<FashionVariant>(v => v.Name = "Variant 1")
+                    .WithContent<FashionVariant>(v => v.Name = "Variant 2"))
+                .WithContent<FashionProduct>(x => x.Name = "Product 2")
+                .WithContent<FashionProduct>(x => x.Name = "Product 3")
+         ).WithContent<FashionNode>(x => x.Name = "Accessories", l3 =>
+            l3
+            .WithContent<FashionProduct>(x => x.Name = "Product 1")
+            .WithContent<FashionProduct>(x => x.Name = "Product 2")
+            .WithContent<FashionProduct>(x => x.Name = "Product 3")
+         )
+    )
+);
