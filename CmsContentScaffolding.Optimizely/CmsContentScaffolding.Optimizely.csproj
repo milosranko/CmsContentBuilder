@@ -14,6 +14,9 @@
     <Copyright>MDR Solutions DOO</Copyright>
     <PackageProjectUrl>https://github.com/milosranko/CmsContentScaffolding</PackageProjectUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>optimizely, unit test, scaffolding</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

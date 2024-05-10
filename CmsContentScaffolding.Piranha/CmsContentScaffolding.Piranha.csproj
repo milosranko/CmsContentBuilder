@@ -13,6 +13,9 @@
     <RepositoryUrl>https://github.com/milosranko/CmsContentScaffolding</RepositoryUrl>
     <Copyright>MDR Solutions DOO</Copyright>
     <Version>1.3.0</Version>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>piranha, unit test, scaffolding</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

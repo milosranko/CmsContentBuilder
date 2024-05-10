@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -13,6 +13,9 @@
     <Copyright>MDR Solutions DOO</Copyright>
     <PackageProjectUrl>https://github.com/milosranko/CmsContentScaffolding</PackageProjectUrl>
     <RepositoryUrl>https://github.com/milosranko/CmsContentScaffolding</RepositoryUrl>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>unit test, scaffolding, resources, faker</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
