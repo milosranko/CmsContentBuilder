@@ -215,3 +215,4 @@ app.UseCmsContentScaffolding(
         );
     });
 ```
+For more code examples take a look in Tests project, also check out blog post on Optimizely World: https://world.optimizely.com/blogs/milosr/dates/2024/4/optimizely-unit-testing-using-cmscontentscaffolding-package/
