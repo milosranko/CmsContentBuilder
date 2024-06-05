@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.unittest.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.unittest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EPiServer.CMS" Version="12.4.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.3.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.3.1" />
+    <PackageReference Include="coverlet.collector" Version="3.2.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CmsContentScaffolding.Optimizely\CmsContentScaffolding.Optimizely.csproj" />
+    <ProjectReference Include="..\CmsContentScaffolding.Shared.Resources\CmsContentScaffolding.Shared.Resources.csproj" />
+  </ItemGroup>
+
+</Project>

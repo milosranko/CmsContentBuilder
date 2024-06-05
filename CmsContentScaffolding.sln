@@ -5,11 +5,13 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmsContentScaffolding.Piranha", "CmsContentScaffolding.Piranha\CmsContentScaffolding.Piranha.csproj", "{64247BE6-4E33-4EA0-98E7-9E2BFA91784E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmsContentScaffolding.Tests", "CmsContentScaffolding.Tests\CmsContentScaffolding.Tests.csproj", "{1080BC35-0769-42E0-927E-BC8B5C0C6E6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmsContentScaffolding.Optimizely.Tests", "CmsContentScaffolding.Tests\CmsContentScaffolding.Optimizely.Tests.csproj", "{1080BC35-0769-42E0-927E-BC8B5C0C6E6D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmsContentScaffolding.Optimizely", "CmsContentScaffolding.Optimizely\CmsContentScaffolding.Optimizely.csproj", "{7859C518-305D-420E-BFC4-EB052003616A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmsContentScaffolding.Shared.Resources", "CmsContentScaffolding.Shared.Resources\CmsContentScaffolding.Shared.Resources.csproj", "{6EA3DFAA-B0E7-4BB0-B3C4-F8ADE941CAB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmsContentScaffolding.Piranha.Tests", "CmsContentScaffolding.Piranha.Tests\CmsContentScaffolding.Piranha.Tests.csproj", "{BC1C2EA8-649F-4D4F-A65F-EE5455E1E208}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{6EA3DFAA-B0E7-4BB0-B3C4-F8ADE941CAB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EA3DFAA-B0E7-4BB0-B3C4-F8ADE941CAB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EA3DFAA-B0E7-4BB0-B3C4-F8ADE941CAB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC1C2EA8-649F-4D4F-A65F-EE5455E1E208}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC1C2EA8-649F-4D4F-A65F-EE5455E1E208}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC1C2EA8-649F-4D4F-A65F-EE5455E1E208}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC1C2EA8-649F-4D4F-A65F-EE5455E1E208}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

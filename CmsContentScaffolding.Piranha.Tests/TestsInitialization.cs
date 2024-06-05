@@ -1,4 +1,4 @@
-﻿namespace CmsContentScaffolding.Optimizely.Tests;
+﻿namespace CmsContentScaffolding.Piranha.Tests;
 
 [TestClass]
 public class TestsInitialization
