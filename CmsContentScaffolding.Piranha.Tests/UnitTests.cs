@@ -1,6 +1,7 @@
 using CmsContentScaffolding.Piranha.Extensions;
 using CmsContentScaffolding.Piranha.Models;
 using CmsContentScaffolding.Piranha.Startup;
+using CmsContentScaffolding.Shared.Resources;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -48,22 +49,22 @@ public class UnitTests
                         b.UsePages()
                         .WithSite<PublicSite>(s =>
                         {
-                            s.SiteFooter.Column1Header = PropertyHelpers.AddRandomText();
-                            s.SiteFooter.Column2Header = PropertyHelpers.AddRandomText();
-                            s.SiteFooter.Column3Header = PropertyHelpers.AddRandomText();
+                            s.SiteFooter.Column1Header = ResourceHelpers.Faker.Lorem.Paragraphs();
+                            s.SiteFooter.Column2Header = ResourceHelpers.Faker.Lorem.Paragraphs();
+                            s.SiteFooter.Column3Header = ResourceHelpers.Faker.Lorem.Paragraphs();
                         })
                         .WithPage<StartPage>(p =>
                         {
                             p.Title = "StartPage";
-                            p.PrimaryImage = PropertyHelpers.AddRandomImage(Globals.Services.GetRequiredService<IApi>(), "PrimaryImage.png");
+                            p.PrimaryImage = PropertyHelpers.AddRandomImage(Globals.Services.GetRequiredService<IApi>(), "PrimaryImage.png", ResourceHelpers.GetImageStream());
                             p.Blocks
                             .Add<TeaserBlock>(block =>
                             {
-                                block.Heading = PropertyHelpers.AddRandomText();
+                                block.Heading = ResourceHelpers.Faker.Lorem.Slug();
                             })
                             .Add<HtmlBlock>(block =>
                             {
-                                block.Body = PropertyHelpers.AddRandomHtml();
+                                block.Body = ResourceHelpers.Faker.Lorem.Paragraphs();
                             });
                         }, l1 =>
                         {
@@ -71,40 +72,40 @@ public class UnitTests
                             .WithPage<ArticlePage>(p =>
                             {
                                 p.Title = "Article1_1";
-                                p.PageRegion.Heading = PropertyHelpers.AddRandomText();
+                                p.PageRegion.Heading = ResourceHelpers.Faker.Lorem.Slug();
                             }, l2 =>
                             {
                                 l2
                                 .WithPage<ArticlePage>(p =>
                                 {
                                     p.Title = "Article2_1";
-                                    p.PageRegion.Heading = PropertyHelpers.AddRandomText();
+                                    p.PageRegion.Heading = ResourceHelpers.Faker.Lorem.Slug();
                                 })
                                 .WithPage<ArticlePage>(p =>
                                 {
                                     p.Title = "Article2_2";
-                                    p.PageRegion.Heading = PropertyHelpers.AddRandomText();
+                                    p.PageRegion.Heading = ResourceHelpers.Faker.Lorem.Slug();
                                 });
                             })
                             .WithPages<ArticlePage>(p =>
                             {
                                 p.Title = "Article1_2";
-                                p.PageRegion.Heading = PropertyHelpers.AddRandomText();
+                                p.PageRegion.Heading = ResourceHelpers.Faker.Lorem.Slug();
                             }, 100);
                         })
                         .WithPage<ArticlePage>(p =>
                         {
                             p.Title = "Article2";
-                            p.PageRegion.Heading = PropertyHelpers.AddRandomText();
-                            p.PageRegion.LeadText = PropertyHelpers.AddRandomText(100);
-                            p.PageRegion.MainContent = PropertyHelpers.AddRandomHtml();
+                            p.PageRegion.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                            p.PageRegion.LeadText = ResourceHelpers.Faker.Lorem.Paragraphs(1);
+                            p.PageRegion.MainContent = ResourceHelpers.Faker.Lorem.Paragraphs();
                         })
                         .WithPages<ArticlePage>(p =>
                         {
                             p.Title = "Article3";
-                            p.PageRegion.Heading = PropertyHelpers.AddRandomText();
-                            p.PageRegion.LeadText = PropertyHelpers.AddRandomText(150);
-                            p.PageRegion.MainContent = PropertyHelpers.AddRandomHtml();
+                            p.PageRegion.Heading = ResourceHelpers.Faker.Lorem.Slug();
+                            p.PageRegion.LeadText = ResourceHelpers.Faker.Lorem.Paragraphs(1);
+                            p.PageRegion.MainContent = ResourceHelpers.Faker.Lorem.Paragraphs();
                         }, 100);
                     });
             });
